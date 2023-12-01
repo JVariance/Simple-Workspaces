@@ -1,0 +1,102 @@
+{
+	"manifest_version": 2,
+	"icons": {
+		"16": "icon/workspaces-dark-filled-16.png",
+		"32": "icon/workspaces-dark-filled-32.png"
+	},
+	"{{firefox}}.permissions": [
+		"activeTab",
+		"scripting",
+		"storage",
+		"tabHide",
+		"tabs"
+	],
+	"commands": {
+		"next-workspace": {
+			"suggested_key": {
+				"default": "Ctrl+Alt+X"
+			},
+			"description": "Switches to the next workspace."
+		},
+		"previous-workspace": {
+			"suggested_key": {
+				"default": "Ctrl+Alt+Y"
+			},
+			"description": "Switches to the previous workspace."
+		},
+		"new-workspace": {
+			"suggested_key": {
+				"default": "Ctrl+Alt+D"
+			},
+			"description": "Creates a new workspace."
+		}
+	},
+	"{{firefox}}.sidebar_action": {
+		"default_panel": "src/pages/Sidebar/sidebar.html",
+		"default_title": "Workspaces",
+		"open_at_install": true,
+		"default_icon": {
+			"16": "icon/workspaces-dark-filled-16.png",
+			"32": "icon/workspaces-dark-filled-32.png",
+			"48": "icon/workspaces-dark-filled-48.png",
+			"96": "icon/workspaces-dark-filled-96.png"
+		},
+		"theme_icons": [
+			{
+				"light": "icon/workspaces-light-filled-16.png",
+				"dark": "icon/workspaces-dark-filled-16.png",
+				"size": 16
+			},
+			{
+				"light": "icon/workspaces-light-filled-32.png",
+				"dark": "icon/workspaces-dark-filled-32.png",
+				"size": 32
+			},
+			{
+				"light": "icon/workspaces-light-filled-48.png",
+				"dark": "icon/workspaces-dark-filled-48.png",
+				"size": 48
+			},
+			{
+				"light": "icon/workspaces-light-filled-96.png",
+				"dark": "icon/workspaces-dark-filled-96.png",
+				"size": 96
+			}
+		]
+	},
+	"{{firefox}}.browser_action": {
+		"default_popup": "src/pages/Popup/popup.html",
+		"default_icon": {
+			"16": "icon/workspaces-dark-filled-16.png",
+			"32": "icon/workspaces-dark-filled-32.png",
+			"48": "icon/workspaces-dark-filled-48.png",
+			"96": "icon/workspaces-dark-filled-96.png"
+		},
+		"default_title": "Workspaces",
+		"theme_icons": [
+			{
+				"light": "icon/workspaces-light-filled-16.png",
+				"dark": "icon/workspaces-dark-filled-16.png",
+				"size": 16
+			},
+			{
+				"light": "icon/workspaces-light-filled-32.png",
+				"dark": "icon/workspaces-dark-filled-32.png",
+				"size": 32
+			},
+			{
+				"light": "icon/workspaces-light-filled-48.png",
+				"dark": "icon/workspaces-dark-filled-48.png",
+				"size": 48
+			},
+			{
+				"light": "icon/workspaces-light-filled-96.png",
+				"dark": "icon/workspaces-dark-filled-96.png",
+				"size": 96
+			}
+		]
+	},
+	"background": {
+		"{{firefox}}.scripts": ["src/background.ts"]
+	}
+}
