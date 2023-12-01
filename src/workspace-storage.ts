@@ -10,6 +10,7 @@ export class WorkspaceStorage {
 	#addingWorkspace = false;
 	#focusedWindowId!: number;
 	#initializingNewWindow = false;
+	#removingWorkspace = false;
 
 	constructor() {}
 
@@ -160,6 +161,35 @@ export class WorkspaceStorage {
 		});
 	}
 
+	removeWorkspace(id: string): Promise<boolean> {
+		return new Promise(async (resolve) => {
+			this.#removingWorkspace = true;
+			const workspace = this.#workspaces.find(
+				(workspace) => workspace.id === id
+			)!;
+
+			const workspacesInWindow = this.#workspaces.map(
+				(_workspace) => _workspace.windowId === workspace.windowId
+			);
+
+			if (workspacesInWindow.length <= 1) return;
+
+			if (workspace.active) {
+				await this.switchToPreviousWorkspace({ windowId: workspace.windowId });
+			}
+
+			await Browser.tabs.remove(workspace.tabIds);
+
+			this.#workspaces = this.#workspaces.filter(
+				(workspace) => workspace.id !== id
+			);
+
+			this.#persistWorkspace();
+			this.#removingWorkspace = false;
+			resolve(true);
+		});
+	}
+
 	removeWorkspaces({ windowId }: { windowId: number }) {
 		return new Promise(async (resolve) => {
 			this.#workspaces = this.#workspaces.filter(
@@ -185,6 +215,7 @@ export class WorkspaceStorage {
 
 	removeTab(tabId: number, windowId: number) {
 		// if (this.#addingWorkspace) return;
+		if (this.#removingWorkspace) return;
 		const { activeWorkspace } = this.#getActiveWorkspace({ windowId });
 
 		activeWorkspace.tabIds = activeWorkspace.tabIds.filter(

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { tick } from "svelte";
+	import { createEventDispatcher, tick } from "svelte";
 	import Icon from "./Icon.svelte";
 
 	export let workspace: Workspace;
@@ -11,6 +11,8 @@
 	let workspaceButton: HTMLButtonElement;
 	let nameInput: HTMLInputElement;
 
+	const dispatch = createEventDispatcher();
+
 	export { classes as class };
 
 	async function toggleEditMode() {
@@ -19,6 +21,14 @@
 			await tick();
 			nameInput?.focus();
 		}
+	}
+
+	function removeWorkspace() {
+		dispatch("removeWorkspace");
+	}
+
+	function switchWorkspace() {
+		dispatch("switchWorkspace");
 	}
 
 	$: if (selected) {
@@ -35,7 +45,7 @@
 		class:active
 		class:selected
 		class="workspace grid gap-2 p-4 {editMode
-			? 'grid-cols-[max-content_1fr_max-content]'
+			? 'grid-cols-[max-content_1fr_max-content_max-content]'
 			: 'grid-cols-[1fr_max-content]'} justify-items-start items-center p-1 rounded-md {classes} focus-within:bg-neutral-700 [&.active]:bg-[#5021ff]"
 	>
 		{#if editMode}
@@ -53,9 +63,12 @@
 				bind:this={nameInput}
 				value={name}
 			/>
+			<button on:click={removeWorkspace}
+				><Icon icon="remove" width={16} /></button
+			>
 		{:else}
 			<button
-				on:click
+				on:click={switchWorkspace}
 				class="outline-transparent outline-none"
 				bind:this={workspaceButton}
 			>

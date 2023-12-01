@@ -89,6 +89,17 @@
 		}
 	}
 
+	function removeWorkspace(workspace: Workspace) {
+		(async () => {
+			await Browser.runtime.sendMessage({
+				msg: "removeWorkspace",
+				workspaceId: workspace.id,
+			});
+
+			workspaces = await getWorkspaces({ windowId });
+		})();
+	}
+
 	function getCurrentWorkspaceIndex() {
 		return workspaces.findIndex(
 			(workspace) => workspace.id === activeWorkspace.id
@@ -180,8 +191,11 @@
 					{workspace}
 					active={workspace.active}
 					selected={i === selectedWorkspaceIndex}
-					on:click={() => {
+					on:switchWorkspace={() => {
 						switchWorkspace(workspace);
+					}}
+					on:removeWorkspace={() => {
+						removeWorkspace(workspace);
 					}}
 				></WorkspaceComponent>
 			{/each}

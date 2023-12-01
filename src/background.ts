@@ -124,6 +124,8 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
 			return workspaceStorage.getWorkspaces({ windowId: message.windowId! });
 		case "addWorkspace":
 			return workspaceStorage.addWorkspace();
+		case "removeWorkspace":
+			return workspaceStorage.removeWorkspace(message.workspaceId);
 		case "reloadAllTabs":
 			(async () => {
 				const tabIds = (
