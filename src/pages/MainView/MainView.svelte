@@ -100,6 +100,27 @@
 		})();
 	}
 
+	function editWorkspace({
+		workspace,
+		icon,
+		name,
+	}: {
+		workspace: Workspace;
+		icon: string;
+		name: string;
+	}) {
+		(async () => {
+			await Browser.runtime.sendMessage({
+				msg: "editWorkspace",
+				workspace,
+				icon,
+				name,
+			});
+
+			workspaces = await getWorkspaces({ windowId });
+		})();
+	}
+
 	function getCurrentWorkspaceIndex() {
 		return workspaces.findIndex(
 			(workspace) => workspace.id === activeWorkspace.id
@@ -109,12 +130,11 @@
 	function onKeyDown(e: KeyboardEvent) {
 		let newIndex;
 
-		e.preventDefault();
-
 		const { key } = e;
 
 		switch (key) {
 			case Key.ArrowDown:
+				e.preventDefault();
 				newIndex = Math.min(workspaces.length, getCurrentWorkspaceIndex() + 1);
 				selectedWorkspaceIndex = newIndex!;
 
@@ -126,10 +146,12 @@
 				}
 				break;
 			case Key.ArrowUp:
+				e.preventDefault();
 				newIndex = Math.max(0, getCurrentWorkspaceIndex() - 1);
 				selectedWorkspaceIndex = newIndex!;
 				break;
 			case Key.Enter:
+				e.preventDefault();
 				activeWorkspace = workspaces.at(selectedWorkspaceIndex)!;
 				switchWorkspace(activeWorkspace);
 				break;
@@ -191,6 +213,9 @@
 					{workspace}
 					active={workspace.active}
 					selected={i === selectedWorkspaceIndex}
+					on:editWorkspace={({ detail: { icon, name } }) => {
+						editWorkspace({ workspace, icon, name });
+					}}
 					on:switchWorkspace={() => {
 						switchWorkspace(workspace);
 					}}

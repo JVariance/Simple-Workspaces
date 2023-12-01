@@ -120,10 +120,12 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
 		case "clearDB":
 			workspaceStorage.clearDB();
 			break;
-		case "getWorkspaces":
-			return workspaceStorage.getWorkspaces({ windowId: message.windowId! });
 		case "addWorkspace":
 			return workspaceStorage.addWorkspace();
+		case "editWorkspace":
+			return workspaceStorage.editWorkspace(message);
+		case "getWorkspaces":
+			return workspaceStorage.getWorkspaces(message);
 		case "removeWorkspace":
 			return workspaceStorage.removeWorkspace(message.workspaceId);
 		case "reloadAllTabs":

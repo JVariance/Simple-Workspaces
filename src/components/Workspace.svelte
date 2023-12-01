@@ -6,6 +6,8 @@
 	export let active = false;
 	export let selected = false;
 
+	let { name: nameValue, icon: iconValue } = workspace;
+
 	let editMode = false;
 	let classes = "";
 	let workspaceButton: HTMLButtonElement;
@@ -15,12 +17,17 @@
 
 	export { classes as class };
 
-	async function toggleEditMode() {
-		editMode = !editMode;
-		if (editMode) {
+	function enableToggleMode() {
+		(async () => {
+			editMode = true;
 			await tick();
 			nameInput?.focus();
-		}
+		})();
+	}
+
+	function editWorkspace() {
+		dispatch("editWorkspace", { workspace, icon: iconValue, name: nameValue });
+		editMode = false;
 	}
 
 	function removeWorkspace() {
@@ -53,7 +60,8 @@
 				class="w-[3ch] text-center bg-transparent"
 				type="text"
 				max="1"
-				value={icon}
+				disabled={!editMode}
+				bind:value={iconValue}
 			/>
 			<input
 				class="bg-transparent border disabled:border-transparent"
@@ -61,7 +69,7 @@
 				type="text"
 				disabled={!editMode}
 				bind:this={nameInput}
-				value={name}
+				bind:value={nameValue}
 			/>
 			<button on:click={removeWorkspace}
 				><Icon icon="remove" width={16} /></button
@@ -77,13 +85,15 @@
 				<span>({tabIds.join(",")})</span>
 			</button>
 		{/if}
-		<button on:click={toggleEditMode}>
-			{#if editMode}
+		{#if editMode}
+			<button on:click={editWorkspace}>
 				<Icon icon="check" width={18} />
-			{:else}
+			</button>
+		{:else}
+			<button on:click={enableToggleMode}>
 				<Icon icon="edit" width={14} />
-			{/if}
-		</button>
+			</button>
+		{/if}
 	</div>
 {/if}
 

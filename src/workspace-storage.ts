@@ -161,6 +161,29 @@ export class WorkspaceStorage {
 		});
 	}
 
+	editWorkspace({
+		workspace,
+		name,
+		icon,
+	}: {
+		workspace: Workspace;
+		name: string;
+		icon: string;
+	}): Promise<boolean> {
+		return new Promise(async (resolve) => {
+			let _workspace = this.#workspaces.find(
+				(worksp) => worksp.id === workspace.id
+			)!;
+
+			_workspace.name = name;
+			_workspace.icon = icon;
+
+			await this.#persistWorkspace();
+
+			resolve(true);
+		});
+	}
+
 	removeWorkspace(id: string): Promise<boolean> {
 		return new Promise(async (resolve) => {
 			this.#removingWorkspace = true;
@@ -168,7 +191,7 @@ export class WorkspaceStorage {
 				(workspace) => workspace.id === id
 			)!;
 
-			const workspacesInWindow = this.#workspaces.map(
+			const workspacesInWindow = this.#workspaces.filter(
 				(_workspace) => _workspace.windowId === workspace.windowId
 			);
 
