@@ -1,5 +1,7 @@
 # <img src="https://raw.githubusercontent.com/JVariance/Firefox-Workspaces/5ea333ff29c10c526ab9c1d96c2c66ed02253ec7/public/icon/workspaces.svg" width="64"/><br/> Firefox Workspaces
 
+> currently in development - not available via extension store
+
 A Browser Extension for Firefox which lets you organize your tabs into workspaces similar to Opera Ones workspaces. It's an alternative to Firefox' "Multi Account Containers"-Feature, which requires reauthentication on websites inside every single container.
 
 ## Features
