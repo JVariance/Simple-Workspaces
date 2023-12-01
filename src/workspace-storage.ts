@@ -160,6 +160,31 @@ export class WorkspaceStorage {
 		});
 	}
 
+	removeWorkspace(id: string): Promise<boolean> {
+		return new Promise(async (resolve) => {
+			const workspace = this.#workspaces.find(
+				(workspace) => workspace.id === id
+			)!;
+
+			const workspacesInWindow = this.#workspaces.map(
+				(_workspace) => _workspace.windowId === workspace.windowId
+			);
+
+			if (workspacesInWindow.length <= 1) return;
+
+			if (workspace.active) {
+				await this.switchToPreviousWorkspace({ windowId: workspace.windowId });
+			}
+
+			this.#workspaces = this.#workspaces.filter(
+				(workspace) => workspace.id !== id
+			);
+
+			this.#persistWorkspace();
+			resolve(true);
+		});
+	}
+
 	removeWorkspaces({ windowId }: { windowId: number }) {
 		return new Promise(async (resolve) => {
 			this.#workspaces = this.#workspaces.filter(

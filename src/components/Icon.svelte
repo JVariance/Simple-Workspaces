@@ -12,6 +12,7 @@
 		add: "ph:plus-bold",
 		check: "tabler:check",
 		edit: "fluent:edit-24-filled",
+		remove: "ic:round-remove-circle",
 		settings: "material-symbols:settings",
 	};
 </script>
