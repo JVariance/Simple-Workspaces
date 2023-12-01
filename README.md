@@ -1,14 +1,12 @@
-# Tab Workspaces
+# <img src="https://raw.githubusercontent.com/JVariance/Firefox-Workspaces/5ea333ff29c10c526ab9c1d96c2c66ed02253ec7/public/icon/workspaces.svg" width="64"/><br/> Firefox Workspaces
 
-This extension was originally inspired by [Workspaces](https://addons.mozilla.org/de/firefox/addon/tab-workspaces/) by @fonse.
+A Browser Extension for Firefox which lets you organize your tabs into workspaces similar to Opera Ones workspaces. It's an alternative to Firefox' "Multi Account Containers"-Feature, which requires reauthentication on websites inside every single container.
 
-## Improvements:
+## Features
 
- - Use of Firefox' hideTab-API --> Tabs are no longer closed and completely reloaded when adding or switching workspaces
- - Redesign -> Dark Theme added
- -  Added sidebar (open with Ctrl+Alt+Q)
+ - Light/Dark Theme
+ - Popup & Sidebar
  - Shortcuts to add and switch workspaces
-
     - New Workspace: Ctrl+Alt+D
     - Switch to next Workspace: Ctrl+Alt+X
     - Switch to previuos Workspace: Ctrl+Alt+Y
@@ -17,9 +15,6 @@ This extension was originally inspired by [Workspaces](https://addons.mozilla.or
  - NYI: Notification informs which workspace is active when switching (can be unchecked in extension's settings)
 
 _______________________________________
-Organize your tabs into workspaces. Switch between workspaces to change which tabs are displayed at the moment.
-
-This extension aims to be an alternative to [Tab Groups](https://addons.mozilla.org/en-US/firefox/addon/tab-groups-panorama/), which is no longer supported as of Firefox 57.
 
 ## Development
 
