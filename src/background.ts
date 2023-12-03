@@ -55,6 +55,12 @@ browser.runtime.onInstalled.addListener((details) => {
 	})();
 });
 
+browser.windows.onCreated.addListener((window) => {
+	(async () => {
+		workspaceStorage.addWindow(window.id!);
+	})();
+});
+
 browser.windows.onFocusChanged.addListener((windowId) => {
 	console.log("onFocusChanged", windowId);
 	if (windowId !== browser.windows.WINDOW_ID_NONE) {
@@ -67,6 +73,7 @@ browser.windows.onRemoved.addListener((windowId) => {
 });
 
 browser.tabs.onCreated.addListener((tab) => {
+	console.info("tabs.onCreated: ", { tab });
 	workspaceStorage.addTab(tab.id!, tab.windowId);
 	informPorts();
 });

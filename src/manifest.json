@@ -40,29 +40,7 @@
 			"32": "icon/workspaces-dark-filled-32.png",
 			"48": "icon/workspaces-dark-filled-48.png",
 			"96": "icon/workspaces-dark-filled-96.png"
-		},
-		"theme_icons": [
-			{
-				"light": "icon/workspaces-light-filled-16.png",
-				"dark": "icon/workspaces-dark-filled-16.png",
-				"size": 16
-			},
-			{
-				"light": "icon/workspaces-light-filled-32.png",
-				"dark": "icon/workspaces-dark-filled-32.png",
-				"size": 32
-			},
-			{
-				"light": "icon/workspaces-light-filled-48.png",
-				"dark": "icon/workspaces-dark-filled-48.png",
-				"size": 48
-			},
-			{
-				"light": "icon/workspaces-light-filled-96.png",
-				"dark": "icon/workspaces-dark-filled-96.png",
-				"size": 96
-			}
-		]
+		}
 	},
 	"{{firefox}}.browser_action": {
 		"default_popup": "src/pages/Popup/popup.html",
