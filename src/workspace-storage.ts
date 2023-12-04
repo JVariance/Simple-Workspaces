@@ -8,6 +8,7 @@ enum StorageKeys {
 export class WorkspaceStorage {
 	#workspaces: Workspace[] = [];
 	#addingWorkspace = false;
+	#switchingWorkspace = false;
 	#focusedWindowId!: number;
 	#removingWorkspace = false;
 
@@ -222,7 +223,7 @@ export class WorkspaceStorage {
 	}
 
 	addTab(tabId: number, windowId: number) {
-		if (this.#addingWorkspace) return;
+		if (this.#addingWorkspace || this.#switchingWorkspace) return;
 		console.info("addTab()", { tabId, windowId });
 
 		let { activeWorkspace, activeWorkspaceIndex } = this.#getActiveWorkspace({
@@ -239,11 +240,15 @@ export class WorkspaceStorage {
 		this.#persistWorkspace();
 	}
 
-	removeTab(tabId: number, windowId: number) {
+	async removeTab(tabId: number, windowId: number) {
+		// const { activeWorkspace } = this.#getActiveWorkspace({ windowId });
+		// await Promise.all([
+		// (() => {
+		// return new Promise(async (resolve) => {
 		console.info("removeTab()");
 		if (this.#removingWorkspace) return;
-
 		const { activeWorkspace } = this.#getActiveWorkspace({ windowId });
+
 		if (!activeWorkspace) return;
 
 		activeWorkspace.tabIds = activeWorkspace.tabIds.filter(
@@ -251,8 +256,17 @@ export class WorkspaceStorage {
 		);
 
 		if (!activeWorkspace.tabIds.length) {
-			this.switchToPreviousWorkspace({ windowId });
+			await this.switchToPreviousWorkspace({ windowId });
 		}
+
+		// return resolve(true);
+		// });
+		// })(),
+		// ]);
+
+		// const newTab = await Browser.tabs.create({ active: true });
+		// activeWorkspace.tabIds.push(newTab.id!);
+		// this.switchToNextWorkspace({ windowId: activeWorkspace.windowId });
 
 		this.#persistWorkspace();
 	}
@@ -279,12 +293,25 @@ export class WorkspaceStorage {
 
 	switchWorkspace(workspace: Workspace) {
 		return new Promise(async (resolve) => {
+			this.#switchingWorkspace = true;
+
 			const { activeWorkspace } = this.#getActiveWorkspace({
 				windowId: workspace.windowId,
 			});
 
 			const currentTabIds = activeWorkspace.tabIds;
 			const nextTabIds = workspace.tabIds;
+
+			if (!nextTabIds.length) {
+				const newTab = await Browser.tabs.create({
+					active: false,
+					windowId: workspace.windowId,
+				});
+
+				workspace.tabIds.push(newTab.id!);
+				workspace.activeTabId = newTab.id!;
+				await this.#persistWorkspace();
+			}
 
 			activeWorkspace.active = false;
 			workspace.active = true;
@@ -295,6 +322,7 @@ export class WorkspaceStorage {
 			await Browser.tabs.update(activeTabId, { active: true });
 			await Browser.tabs.hide(currentTabIds);
 
+			this.#switchingWorkspace = false;
 			return resolve(true);
 		});
 	}
