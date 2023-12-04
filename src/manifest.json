@@ -6,6 +6,7 @@
 	},
 	"{{firefox}}.permissions": [
 		"activeTab",
+		"menus",
 		"scripting",
 		"storage",
 		"tabHide",

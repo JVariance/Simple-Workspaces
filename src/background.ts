@@ -1,7 +1,25 @@
 import browser from "webextension-polyfill";
+import { TabMenu } from "./tabMenu";
 import { WorkspaceStorage } from "./workspace-storage";
 
 let workspaceStorage: WorkspaceStorage;
+let tabMenu: TabMenu;
+
+function initExtension() {
+	return new Promise(async (resolve) => {
+		await initWorkspaceStorage();
+		await initTabMenu();
+		return resolve(true);
+	});
+}
+
+function initTabMenu() {
+	return new Promise(async (resolve) => {
+		tabMenu = new TabMenu();
+		await tabMenu.init(workspaceStorage.workspaces);
+		return resolve(true);
+	});
+}
 
 function initWorkspaceStorage() {
 	return new Promise(async (resolve) => {
@@ -19,7 +37,7 @@ function initWorkspaceStorage() {
 
 browser.runtime.onStartup.addListener(async () => {
 	console.log("onStartup");
-	if (!workspaceStorage) await initWorkspaceStorage();
+	if (!workspaceStorage) await initExtension();
 });
 
 let backgroundListenerPorts: {
@@ -49,9 +67,13 @@ function informPorts() {
 	});
 }
 
+browser.menus.onClicked.addListener((info, tab) => {
+	// info.menuItemId
+});
+
 browser.runtime.onInstalled.addListener((details) => {
 	(async () => {
-		if (!workspaceStorage) await initWorkspaceStorage();
+		if (!workspaceStorage) await initExtension();
 	})();
 });
 
