@@ -9,7 +9,6 @@ export class WorkspaceStorage {
 	#workspaces: Workspace[] = [];
 	#addingWorkspace = false;
 	#focusedWindowId!: number;
-	#initializingNewWindow = false;
 	#removingWorkspace = false;
 
 	constructor() {}
@@ -156,13 +155,6 @@ export class WorkspaceStorage {
 				({ windowId: _windowId }) => _windowId === windowId
 			);
 
-			if (!workspaces.length) {
-				this.#initializingNewWindow = true;
-				const newWorkspace = await this.addWorkspace();
-				workspaces = [newWorkspace];
-				this.#initializingNewWindow = false;
-			}
-
 			return resolve(workspaces);
 		});
 	}
@@ -230,7 +222,7 @@ export class WorkspaceStorage {
 	}
 
 	addTab(tabId: number, windowId: number) {
-		if (this.#addingWorkspace || this.#initializingNewWindow) return;
+		if (this.#addingWorkspace) return;
 		console.info("addTab()", { tabId, windowId });
 
 		let { activeWorkspace, activeWorkspaceIndex } = this.#getActiveWorkspace({
@@ -340,25 +332,10 @@ export class WorkspaceStorage {
 			const tabId: number = (await Browser.tabs.create({ active: false })).id!;
 			newWorkspace.tabIds = [tabId!];
 
-			if (this.#initializingNewWindow) {
-				newWorkspace.active = true;
-				newWorkspace.activeTabId = tabId;
-				const blankTabId = (
-					await Browser.tabs.query({
-						currentWindow: true,
-						index: 0,
-					})
-				)[0].id!;
-
-				await Browser.tabs.remove(blankTabId);
-			} else {
-				await this.switchWorkspace(newWorkspace);
-			}
+			await this.switchWorkspace(newWorkspace);
 
 			this.#workspaces = [...this.#workspaces, newWorkspace];
 			this.#persistWorkspace();
-
-			// return resolve(tabId);
 
 			this.#addingWorkspace = false;
 			return resolve(newWorkspace);
