@@ -67,8 +67,43 @@ function informPorts() {
 	});
 }
 
-browser.menus.onClicked.addListener((info, tab) => {
-	// info.menuItemId
+browser.menus.onShown.addListener((info, tab) => {
+	const workspaces = workspaceStorage.workspaces.filter(
+		(workspace) => workspace.windowId === tab!.windowId!
+	);
+
+	console.log({ workspaces, info, tab });
+
+	tabMenu.update({
+		workspaces,
+	});
+});
+
+browser.menus.onClicked.addListener(async (info, tab) => {
+	const { menuItemId: _menuItemId } = info;
+	const menuItemId = _menuItemId.toString();
+	if (menuItemId.toString().startsWith("workspace-menu")) {
+		const targetWorkspaceId = menuItemId.split("_").at(1)!;
+
+		// const activeTab = await browser.tabs.getCurrent();
+		const highlightedTabIds = (
+			await browser.tabs.query({
+				windowId: tab!.windowId!,
+				highlighted: true,
+			})
+		).map((tab) => tab.id!);
+
+		const tabIds =
+			highlightedTabIds.length > 1 ? highlightedTabIds : [tab!.id!];
+
+		await workspaceStorage.moveTabs({
+			tabIds,
+			targetWorkspaceId,
+			windowId: tab!.windowId!,
+		});
+
+		informPorts();
+	}
 });
 
 browser.runtime.onInstalled.addListener((details) => {

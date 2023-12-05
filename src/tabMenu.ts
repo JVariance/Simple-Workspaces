@@ -1,11 +1,11 @@
 import Browser from "webextension-polyfill";
 
 export class TabMenu {
-	#menu;
+	#parentId;
 
 	constructor() {
-		this.#menu = Browser.menus.create({
-			id: "tab-menu",
+		this.#parentId = Browser.menus.create({
+			id: "rootMenu",
 			title: "Send to Workspace",
 			contexts: ["tab"],
 			// enabled: false,
@@ -20,8 +20,44 @@ export class TabMenu {
 					title: workspace.name,
 					contexts: ["tab"],
 					type: "radio",
-					parentId: "tab-menu",
+					parentId: this.#parentId,
 				});
+
+				return resolve(true);
+			});
+		});
+	}
+
+	#createParentMenu() {
+		this.#parentId = Browser.menus.create({
+			id: "tab-menu",
+			title: "Send to Workspace",
+			contexts: ["tab"],
+			// enabled: false,
+		});
+	}
+
+	update({
+		// windowId,
+		workspaces,
+	}: {
+		// windowId: number;
+		workspaces: Workspace[];
+	}) {
+		return new Promise(async (resolve) => {
+			await Browser.menus.removeAll();
+			this.#createParentMenu();
+			console.info("update", { workspaces });
+			workspaces.forEach((workspace) => {
+				Browser.menus.create({
+					id: `workspace-menu_${workspace.id}`,
+					title: `${workspace.icon} ${workspace.name}`,
+					contexts: ["tab"],
+					type: "normal",
+					parentId: this.#parentId,
+				});
+
+				Browser.menus.refresh();
 
 				return resolve(true);
 			});

@@ -7,10 +7,11 @@ enum StorageKeys {
 
 export class WorkspaceStorage {
 	#workspaces: Workspace[] = [];
+	#focusedWindowId!: number;
 	#addingWorkspace = false;
 	#switchingWorkspace = false;
-	#focusedWindowId!: number;
 	#removingWorkspace = false;
+	#movingTabs = false;
 
 	constructor() {}
 
@@ -96,6 +97,7 @@ export class WorkspaceStorage {
 	#getActiveWorkspace({ windowId }: { windowId: number }): {
 		activeWorkspace: Workspace;
 		activeWorkspaceIndex: number;
+		windowRelativeWorkspaceIndex: number;
 	} {
 		let activeWorkspaceIndex!: number;
 		const activeWorkspace = this.#workspaces.find((workspace, i) => {
@@ -105,8 +107,14 @@ export class WorkspaceStorage {
 			}
 		})!;
 
+		const windowRelativeWorkspaceIndex = this.#workspaces
+			.filter((workspace) => workspace.windowId === windowId)
+			.findIndex((_workspace) => _workspace.id === activeWorkspace.id);
+		// .length - activeWorkspaceIndex;
+
 		return {
 			activeWorkspace,
+			windowRelativeWorkspaceIndex,
 			activeWorkspaceIndex,
 		};
 	}
@@ -118,6 +126,70 @@ export class WorkspaceStorage {
 		if (!activeWorkspace) return;
 
 		activeWorkspace.activeTabId = tabId;
+	}
+
+	moveTabs({
+		targetWorkspaceId,
+		tabIds,
+		windowId,
+	}: {
+		targetWorkspaceId: string;
+		tabIds: number[];
+		windowId: number;
+	}) {
+		return new Promise(async (resolve) => {
+			this.#movingTabs = true;
+			const { activeWorkspace, windowRelativeWorkspaceIndex } =
+				this.#getActiveWorkspace({
+					windowId,
+				});
+
+			const targetWorkspace = this.#workspaces.find(
+				(workspace) => workspace.id === targetWorkspaceId
+			)!;
+
+			targetWorkspace.tabIds.push(...tabIds);
+
+			activeWorkspace.tabIds = activeWorkspace.tabIds.filter(
+				(tabId) => !tabIds.includes(tabId)
+			);
+
+			const activeTabId = activeWorkspace.activeTabId;
+
+			if (tabIds.includes(activeTabId!)) {
+				const newActiveTabId = [...activeWorkspace.tabIds]
+					.reverse()
+					.find((tabId) => !tabIds.includes(tabId));
+
+				if (newActiveTabId) {
+					await Browser.tabs.update(newActiveTabId, { active: true });
+				}
+			}
+
+			console.log({
+				activeWorkspace,
+				windowRelativeWorkspaceIndex,
+			});
+
+			if (!activeWorkspace.tabIds.length) {
+				if (windowRelativeWorkspaceIndex <= 0) {
+					// const newTab = await Browser.tabs.create({ active: true });
+					// activeWorkspace.tabIds.push(newTab.id!);
+					// await Browser.tabs.hide(tabIds);
+					console.log({ activeWorkspace });
+					await this.switchToNextWorkspace({ windowId });
+				} else {
+					await this.switchToPreviousWorkspace({ windowId });
+				}
+			} else {
+				await Browser.tabs.hide(tabIds);
+			}
+
+			this.#persistWorkspace();
+
+			this.#movingTabs = true;
+			return resolve(true);
+		});
 	}
 
 	#getNewWorkspace(): Promise<Workspace> {
@@ -223,7 +295,8 @@ export class WorkspaceStorage {
 	}
 
 	addTab(tabId: number, windowId: number) {
-		if (this.#addingWorkspace || this.#switchingWorkspace) return;
+		if (this.#addingWorkspace || this.#switchingWorkspace || this.#movingTabs)
+			return;
 		console.info("addTab()", { tabId, windowId });
 
 		let { activeWorkspace, activeWorkspaceIndex } = this.#getActiveWorkspace({
@@ -334,6 +407,9 @@ export class WorkspaceStorage {
 			if (index > this.#workspaces.length - 1) return;
 
 			const nextWorkspace = this.#workspaces.at(index)!;
+
+			console.log({ nextWorkspace });
+
 			await this.switchWorkspace(nextWorkspace);
 			resolve(true);
 		});
