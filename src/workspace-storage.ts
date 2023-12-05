@@ -179,7 +179,8 @@ export class WorkspaceStorage {
 					console.log({ activeWorkspace });
 					await this.switchToNextWorkspace({ windowId });
 				} else {
-					await this.switchToPreviousWorkspace({ windowId });
+					// await this.switchToPreviousWorkspace({ windowId });
+					await this.switchWorkspace(targetWorkspace);
 				}
 			} else {
 				await Browser.tabs.hide(tabIds);
