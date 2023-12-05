@@ -17,9 +17,7 @@ function initTabMenu() {
 	return new Promise(async (resolve) => {
 		tabMenu = new TabMenu();
 		await tabMenu.init(
-			workspaceStorage.windows.find(
-				({ id }) => id === workspaceStorage.focusedWindowId
-			)!.workspaces
+			workspaceStorage.windows.get(workspaceStorage.focusedWindowId)!.workspaces
 		);
 		return resolve(true);
 	});
@@ -73,7 +71,7 @@ function informPorts() {
 
 browser.menus.onShown.addListener((info, tab) => {
 	const workspaces = workspaceStorage.windows
-		.find(({ id }) => id === tab.windowId)!
+		.get(tab.windowId!)!
 		.workspaces.filter((workspace) => workspace.windowId === tab!.windowId!);
 
 	console.log({ workspaces, info, tab });
@@ -130,7 +128,8 @@ browser.windows.onFocusChanged.addListener((windowId) => {
 });
 
 browser.windows.onRemoved.addListener((windowId) => {
-	workspaceStorage.removeWorkspaces({ windowId });
+	workspaceStorage.removeWindow(windowId);
+	// workspaceStorage.removeWorkspaces({ windowId });
 });
 
 browser.tabs.onCreated.addListener((tab) => {
@@ -230,8 +229,14 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
 		case "switchWorkspace":
 			const { workspaceId } = message as { workspaceId: string };
 			const nextWorkspace = workspaceStorage.windows
-				.find(({ id }) => id === workspaceStorage.focusedWindowId)!
+				.get(workspaceStorage.focusedWindowId)!
 				.workspaces.find(({ id }) => id === workspaceId)!;
+
+			console.log({
+				workspaceId,
+				nextWorkspace,
+				windows: workspaceStorage.windows,
+			});
 
 			workspaceStorage.switchWorkspace(nextWorkspace);
 			break;
