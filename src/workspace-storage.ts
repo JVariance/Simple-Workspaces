@@ -1,12 +1,14 @@
 import Browser from "webextension-polyfill";
 
 enum StorageKeys {
+	windows = "tw_windows",
 	workspaces = "tw_workspaces",
 	activeWorkspace = "tw_activeWorkspace",
 }
 
 export class WorkspaceStorage {
-	#workspaces: Workspace[] = [];
+	#windows: Map<Ext.Window["id"], Ext.Window> = new Map();
+	// #workspaces: Ext.Workspace[] = [];
 	#focusedWindowId!: number;
 	#addingWorkspace = false;
 	#switchingWorkspace = false;
@@ -19,9 +21,9 @@ export class WorkspaceStorage {
 		console.info("init WorkspaceStorage");
 		// this.clearDB();
 		return new Promise(async (resolve) => {
-			let { [StorageKeys.workspaces]: localWorkspaces } =
-				(await Browser.storage.local.get(StorageKeys.workspaces)) as {
-					[StorageKeys.workspaces]: Workspace[];
+			let { [StorageKeys.windows]: localWindows } =
+				(await Browser.storage.local.get(StorageKeys.windows)) as {
+					[StorageKeys.windows]: Ext.Window[];
 				};
 
 			const currentWindows = await Browser.windows.getAll();
@@ -31,7 +33,8 @@ export class WorkspaceStorage {
 			// console.log({ currentWindows, focusedWindow });
 			this.#focusedWindowId = focusedWindow.id!;
 
-			if (!localWorkspaces) {
+			if (!localWindows) {
+				// localWindows = new Map();
 				for (let window of currentWindows) {
 					const currentTabIds = (
 						await Browser.tabs.query({
@@ -39,75 +42,90 @@ export class WorkspaceStorage {
 						})
 					).map((tab) => tab.id!);
 
-					const newWorkspace = await this.#getNewWorkspace();
+					const newWindow = { id: window.id!, workspaces: [] } as Ext.Window;
+					console.log({ newWindow: structuredClone(newWindow) });
+					const newWorkspace = await this.#getNewWorkspace(newWindow);
+					newWorkspace.tabIds = currentTabIds || [];
+					newWindow.workspaces.push(newWorkspace);
 
-					localWorkspaces = [
-						{
-							...newWorkspace,
-							windowId: window.id!,
-							tabIds: currentTabIds || [],
-						},
-					];
+					this.#windows.set(newWindow.id, newWindow);
+					// console.log({ localWindows });
+
+					// localWindows.push(newWindow);
 				}
-			}
-
-			this.#workspaces = localWorkspaces;
-
-			const someWorkspaceInFocusedWindowExists = this.#workspaces.find(
-				({ windowId }) => windowId === this.#focusedWindowId
-			);
-
-			if (!someWorkspaceInFocusedWindowExists) {
-				const newWorkspace = await this.#getNewWorkspace();
-				const tabIds = (
-					await Browser.tabs.query({ windowId: this.#focusedWindowId })
-				).flatMap(({ id }) => id!);
-				this.#workspaces.push({
-					...newWorkspace,
-					activeTabId: tabIds?.at(0),
-					tabIds,
-				});
-			}
-
-			await Browser.tabs.hide(
-				this.#workspaces
-					.filter(({ active }) => !active)
-					.flatMap(({ tabIds }) => tabIds)
-			);
-
-			for (let workspace of this.#workspaces.filter(({ active }) => active)) {
-				await Browser.tabs.update(
-					workspace.activeTabId || workspace.tabIds[0],
-					{ active: true }
+			} else {
+				this.#windows = new Map(
+					localWindows as Iterable<readonly [number, Ext.Window]>
 				);
+			}
+
+			// this.#windows = localWindows;
+
+			// const someWorkspaceInFocusedWindowExists = this.#workspaces.find(
+			// 	({ windowId }) => windowId === this.#focusedWindowId
+			// );
+
+			// if (!someWorkspaceInFocusedWindowExists) {
+			// 	const newWorkspace = await this.#getNewWorkspace();
+			// 	const tabIds = (
+			// 		await Browser.tabs.query({ windowId: this.#focusedWindowId })
+			// 	).flatMap(({ id }) => id!);
+			// 	this.#workspaces.push({
+			// 		...newWorkspace,
+			// 		activeTabId: tabIds?.at(0),
+			// 		tabIds,
+			// 	});
+			// }
+
+			for (let { workspaces } of this.#windows.values()) {
+				console.log({ workspaces });
+				await Browser.tabs.hide(
+					workspaces
+						.filter(({ active }) => !active)
+						.flatMap(({ tabIds }) => tabIds)
+				);
+
+				for (let workspace of workspaces.filter(({ active }) => active)) {
+					console.log({ workspace });
+					await Browser.tabs.update(
+						workspace.activeTabId || workspace.tabIds[0],
+						{ active: true }
+					);
+				}
 			}
 
 			resolve(true);
 		});
 	}
 
-	get workspaces(): Workspace[] {
-		return this.#workspaces;
+	get windows(): Map<Ext.Window["id"], Ext.Window> {
+		return this.#windows;
 	}
+
+	// get workspaces(): Ext.Workspace[] {
+	// 	return this.#workspaces;
+	// }
 
 	set focusedWindowId(id: number) {
 		this.#focusedWindowId = id;
 	}
 
 	#getActiveWorkspace({ windowId }: { windowId: number }): {
-		activeWorkspace: Workspace;
+		activeWorkspace: Ext.Workspace;
 		activeWorkspaceIndex: number;
 		windowRelativeWorkspaceIndex: number;
 	} {
+		const { workspaces } = this.#windows.get(windowId)!;
+
 		let activeWorkspaceIndex!: number;
-		const activeWorkspace = this.#workspaces.find((workspace, i) => {
+		const activeWorkspace = workspaces.find((workspace, i) => {
 			if (workspace.active && workspace.windowId === windowId) {
 				activeWorkspaceIndex = i;
 				return workspace;
 			}
 		})!;
 
-		const windowRelativeWorkspaceIndex = this.#workspaces
+		const windowRelativeWorkspaceIndex = workspaces
 			.filter((workspace) => workspace.windowId === windowId)
 			.findIndex((_workspace) => _workspace.id === activeWorkspace.id);
 		// .length - activeWorkspaceIndex;
@@ -138,13 +156,15 @@ export class WorkspaceStorage {
 		windowId: number;
 	}) {
 		return new Promise(async (resolve) => {
+			const { workspaces } = this.#windows.get(windowId)!;
+
 			this.#movingTabs = true;
 			const { activeWorkspace, windowRelativeWorkspaceIndex } =
 				this.#getActiveWorkspace({
 					windowId,
 				});
 
-			const targetWorkspace = this.#workspaces.find(
+			const targetWorkspace = workspaces.find(
 				(workspace) => workspace.id === targetWorkspaceId
 			)!;
 
@@ -193,12 +213,12 @@ export class WorkspaceStorage {
 		});
 	}
 
-	#getNewWorkspace(): Promise<Workspace> {
+	#getNewWorkspace(window: Ext.Window): Promise<Ext.Workspace> {
 		return new Promise(async (resolve) => {
 			return resolve({
 				id: crypto.randomUUID(),
 				icon: "🐠",
-				name: `Workspace ${this.#workspaces.length + 1}`,
+				name: `Workspace ${window.workspaces.length + 1}`,
 				tabIds: [],
 				active: true,
 				windowId: this.#focusedWindowId,
@@ -209,12 +229,13 @@ export class WorkspaceStorage {
 
 	#persistWorkspace() {
 		return Browser.storage.local.set({
-			[StorageKeys.workspaces]: this.#workspaces,
+			[StorageKeys.windows]: Array.from(this.#windows),
 		});
 	}
 
 	clearDB() {
 		Browser.storage.local.remove([
+			StorageKeys.windows,
 			StorageKeys.workspaces,
 			StorageKeys.activeWorkspace,
 		]);
@@ -222,30 +243,37 @@ export class WorkspaceStorage {
 		// Browser.storage.local.set({[StorageKeys.activeWorkspace]: });
 	}
 
-	getWorkspaces({ windowId }: { windowId: number }): Promise<Workspace[]> {
+	getWorkspaces({ windowId }: { windowId: number }): Promise<Ext.Workspace[]> {
 		return new Promise(async (resolve) => {
 			console.info("getWorkspaces()");
-			let workspaces = this.#workspaces.filter(
-				({ windowId: _windowId }) => _windowId === windowId
-			);
+
+			console.log({ windows: this.#windows, windowId });
+
+			const window = this.#windows.get(windowId)!;
+
+			if (!window) return;
+
+			const { workspaces } = window;
 
 			return resolve(workspaces);
 		});
 	}
 
 	editWorkspace({
+		windowId,
 		workspace,
 		name,
 		icon,
 	}: {
-		workspace: Workspace;
+		windowId: Ext.Window["id"];
+		workspace: Ext.Workspace;
 		name: string;
 		icon: string;
 	}): Promise<boolean> {
 		return new Promise(async (resolve) => {
-			let _workspace = this.#workspaces.find(
-				(worksp) => worksp.id === workspace.id
-			)!;
+			const { workspaces } = this.#windows.get(windowId)!;
+
+			let _workspace = workspaces.find((worksp) => worksp.id === workspace.id)!;
 
 			_workspace.name = name;
 			_workspace.icon = icon;
@@ -258,12 +286,12 @@ export class WorkspaceStorage {
 
 	removeWorkspace(id: string): Promise<boolean> {
 		return new Promise(async (resolve) => {
-			this.#removingWorkspace = true;
-			const workspace = this.#workspaces.find(
-				(workspace) => workspace.id === id
-			)!;
+			let { workspaces } = this.#windows.get(this.#focusedWindowId)!;
 
-			const workspacesInWindow = this.#workspaces.filter(
+			this.#removingWorkspace = true;
+			const workspace = workspaces.find((workspace) => workspace.id === id)!;
+
+			const workspacesInWindow = workspaces.filter(
 				(_workspace) => _workspace.windowId === workspace.windowId
 			);
 
@@ -275,9 +303,7 @@ export class WorkspaceStorage {
 
 			await Browser.tabs.remove(workspace.tabIds);
 
-			this.#workspaces = this.#workspaces.filter(
-				(workspace) => workspace.id !== id
-			);
+			workspaces = workspaces.filter((workspace) => workspace.id !== id);
 
 			this.#persistWorkspace();
 			this.#removingWorkspace = false;
@@ -287,11 +313,13 @@ export class WorkspaceStorage {
 
 	removeWorkspaces({ windowId }: { windowId: number }) {
 		return new Promise(async (resolve) => {
-			this.#workspaces = this.#workspaces.filter(
+			let { workspaces } = this.#windows.get(windowId)!;
+
+			workspaces = workspaces.filter(
 				(workspace) => workspace.windowId !== windowId
 			);
 
-			resolve(this.#workspaces);
+			resolve(workspaces);
 		});
 	}
 
@@ -299,6 +327,8 @@ export class WorkspaceStorage {
 		if (this.#addingWorkspace || this.#switchingWorkspace || this.#movingTabs)
 			return;
 		console.info("addTab()", { tabId, windowId });
+
+		const { workspaces } = this.#windows.get(windowId)!;
 
 		let { activeWorkspace, activeWorkspaceIndex } = this.#getActiveWorkspace({
 			windowId,
@@ -310,7 +340,7 @@ export class WorkspaceStorage {
 
 		activeWorkspace.tabIds.push(tabId);
 
-		this.#workspaces[activeWorkspaceIndex] = activeWorkspace;
+		workspaces[activeWorkspaceIndex] = activeWorkspace;
 		this.#persistWorkspace();
 	}
 
@@ -349,7 +379,9 @@ export class WorkspaceStorage {
 		console.info("<addWindow>");
 		return new Promise(async (resolve) => {
 			this.#focusedWindowId = windowId;
-			const newWorkspace = await this.#getNewWorkspace();
+			const newWindow = { id: windowId, workspaces: [] } as Ext.Window;
+			const newWorkspace = await this.#getNewWorkspace(newWindow);
+			newWindow.workspaces.push(newWorkspace);
 
 			const tabsInWindow = await Browser.tabs.query({ windowId });
 			const newTab = await Browser.tabs.create({ active: true, windowId });
@@ -358,14 +390,14 @@ export class WorkspaceStorage {
 			newWorkspace.tabIds.push(newTab.id!);
 			newWorkspace.activeTabId = newTab.id!;
 
-			this.#workspaces = [...this.#workspaces, newWorkspace];
+			newWindow.workspaces = [...newWindow.workspaces, newWorkspace];
 			this.#persistWorkspace();
 			console.info("</addWindow>");
 			resolve(true);
 		});
 	}
 
-	switchWorkspace(workspace: Workspace) {
+	switchWorkspace(workspace: Ext.Workspace) {
 		return new Promise(async (resolve) => {
 			this.#switchingWorkspace = true;
 
@@ -405,9 +437,11 @@ export class WorkspaceStorage {
 		return new Promise(async (resolve) => {
 			const index =
 				this.#getActiveWorkspace({ windowId }).activeWorkspaceIndex + 1;
-			if (index > this.#workspaces.length - 1) return;
+			const { workspaces } = this.#windows.get(windowId)!;
 
-			const nextWorkspace = this.#workspaces.at(index)!;
+			if (index > workspaces.length - 1) return;
+
+			const nextWorkspace = workspaces.at(index)!;
 
 			console.log({ nextWorkspace });
 
@@ -418,28 +452,31 @@ export class WorkspaceStorage {
 
 	switchToPreviousWorkspace({ windowId }: { windowId: number }) {
 		return new Promise(async (resolve) => {
+			const { workspaces } = this.#windows.get(windowId)!;
 			const index =
 				this.#getActiveWorkspace({ windowId }).activeWorkspaceIndex - 1;
 			if (index < 0) return;
 
-			const previousWorkspace = this.#workspaces.at(index)!;
+			const previousWorkspace = workspaces.at(index)!;
 			await this.switchWorkspace(previousWorkspace);
 			resolve(true);
 		});
 	}
 
-	addWorkspace(): Promise<Workspace> {
+	addWorkspace(): Promise<Ext.Workspace> {
 		console.info("addWorkspace()");
 		return new Promise(async (resolve) => {
+			const window = this.#windows.get(this.#focusedWindowId)!;
+
 			this.#addingWorkspace = true;
-			const newWorkspace = await this.#getNewWorkspace();
+			const newWorkspace = await this.#getNewWorkspace(window);
 
 			const tabId: number = (await Browser.tabs.create({ active: false })).id!;
 			newWorkspace.tabIds = [tabId!];
 
 			await this.switchWorkspace(newWorkspace);
 
-			this.#workspaces = [...this.#workspaces, newWorkspace];
+			window.workspaces = [...window.workspaces, newWorkspace];
 			this.#persistWorkspace();
 
 			this.#addingWorkspace = false;

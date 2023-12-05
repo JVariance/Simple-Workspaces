@@ -16,7 +16,11 @@ function initExtension() {
 function initTabMenu() {
 	return new Promise(async (resolve) => {
 		tabMenu = new TabMenu();
-		await tabMenu.init(workspaceStorage.workspaces);
+		await tabMenu.init(
+			workspaceStorage.windows.find(
+				({ id }) => id === workspaceStorage.focusedWindowId
+			)!.workspaces
+		);
 		return resolve(true);
 	});
 }
@@ -68,9 +72,9 @@ function informPorts() {
 }
 
 browser.menus.onShown.addListener((info, tab) => {
-	const workspaces = workspaceStorage.workspaces.filter(
-		(workspace) => workspace.windowId === tab!.windowId!
-	);
+	const workspaces = workspaceStorage.windows
+		.find(({ id }) => id === tab.windowId)!
+		.workspaces.filter((workspace) => workspace.windowId === tab!.windowId!);
 
 	console.log({ workspaces, info, tab });
 
@@ -131,7 +135,7 @@ browser.windows.onRemoved.addListener((windowId) => {
 
 browser.tabs.onCreated.addListener((tab) => {
 	console.info("tabs.onCreated: ", { tab });
-	workspaceStorage.addTab(tab.id!, tab.windowId);
+	workspaceStorage.addTab(tab.id!, tab.windowId!);
 	informPorts();
 });
 
@@ -225,9 +229,10 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
 			});
 		case "switchWorkspace":
 			const { workspaceId } = message as { workspaceId: string };
-			const nextWorkspace = workspaceStorage.workspaces.find(
-				({ id }) => id === workspaceId
-			)!;
+			const nextWorkspace = workspaceStorage.windows
+				.find(({ id }) => id === workspaceStorage.focusedWindowId)!
+				.workspaces.find(({ id }) => id === workspaceId)!;
+
 			workspaceStorage.switchWorkspace(nextWorkspace);
 			break;
 		default:

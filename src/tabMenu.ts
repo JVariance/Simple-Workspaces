@@ -12,7 +12,7 @@ export class TabMenu {
 		});
 	}
 
-	init(workspaces: Workspace[]) {
+	init(workspaces: Ext.Workspace[]) {
 		return new Promise(async (resolve) => {
 			workspaces.forEach((workspace) => {
 				Browser.menus.create({
@@ -42,7 +42,7 @@ export class TabMenu {
 		workspaces,
 	}: {
 		// windowId: number;
-		workspaces: Workspace[];
+		workspaces: Ext.Workspace[];
 	}) {
 		return new Promise(async (resolve) => {
 			await Browser.menus.removeAll();

@@ -6,7 +6,7 @@
 	import Browser from "webextension-polyfill";
 	import Icon from "@root/components/Icon.svelte";
 
-	let workspaces: Workspace[] = [];
+	let workspaces: Ext.Workspace[] = [];
 	// let activeWorkspace: Workspace;
 	let selectedWorkspaceIndex: number;
 	let newWorkspaceButton: HTMLButtonElement;
@@ -19,11 +19,11 @@
 		windowId,
 	}: {
 		windowId: number;
-	}): Promise<Workspace[]> {
+	}): Promise<Ext.Workspace[]> {
 		return Browser.runtime.sendMessage({ msg: "getWorkspaces", windowId });
 	}
 
-	function switchWorkspace(workspace: Workspace) {
+	function switchWorkspace(workspace: Ext.Workspace) {
 		(async () => {
 			await Browser.runtime.sendMessage({
 				msg: "switchWorkspace",
@@ -89,7 +89,7 @@
 		}
 	}
 
-	function removeWorkspace(workspace: Workspace) {
+	function removeWorkspace(workspace: Ext.Workspace) {
 		(async () => {
 			await Browser.runtime.sendMessage({
 				msg: "removeWorkspace",
@@ -105,13 +105,14 @@
 		icon,
 		name,
 	}: {
-		workspace: Workspace;
+		workspace: Ext.Workspace;
 		icon: string;
 		name: string;
 	}) {
 		(async () => {
 			await Browser.runtime.sendMessage({
 				msg: "editWorkspace",
+				windowId,
 				workspace,
 				icon,
 				name,
