@@ -40,6 +40,7 @@ export class Window {
 				).map((tab) => tab.id!);
 				const newWorkspace = await this.#getNewWorkspace();
 				newWorkspace.tabIds = currentTabIds || [];
+				newWorkspace.activeTabId = currentTabIds?.at(0);
 
 				if (!currentTabIds.length) {
 					const newTab = await Browser.tabs.create({
@@ -74,9 +75,9 @@ export class Window {
 	}
 
 	setActiveTab(tabId: number) {
-		console.info("setActiveTab()");
+		console.info("setActiveTab()", { tabId });
 
-		if (!this.#activeWorkspace) return;
+		if (!this.#activeWorkspace || this.#switchingWorkspace) return;
 
 		this.#activeWorkspace.activeTabId = tabId;
 	}
@@ -90,19 +91,37 @@ export class Window {
 		)
 			return;
 
+		this.activeWorkspace.activeTabId = tabId;
 		this.activeWorkspace.tabIds.push(tabId);
 	}
 
-	async removeTab(tabId: number) {
-		if (!this.activeWorkspace || this.#removingWorkspace) return;
+	removeTab(tabId: number) {
+		(async () => {
+			console.info("removeTab", { tabId });
+			if (!this.activeWorkspace || this.#removingWorkspace) return;
 
-		this.activeWorkspace.tabIds = this.activeWorkspace.tabIds.filter(
-			(id) => id !== tabId
-		);
+			this.activeWorkspace.tabIds = this.activeWorkspace.tabIds.filter(
+				(id) => id !== tabId
+			);
 
-		if (!this.activeWorkspace.tabIds.length) {
-			await this.switchToPreviousWorkspace();
-		}
+			console.log({
+				activeWorkspace: structuredClone(this.activeWorkspace),
+				workspaces: structuredClone(this.workspaces),
+			});
+
+			if (this.activeWorkspace.tabIds.length) {
+				// this.#activeWorkspace.activeTabId = this.activeWorkspace.tabIds.at(-1);
+				this.#activeWorkspace.activeTabId = (
+					await Browser.tabs.query({
+						windowId: this.id,
+						active: true,
+					})
+				).at(0)!.id!;
+			} else {
+				this.#activeWorkspace.activeTabId = undefined;
+				await this.switchToPreviousWorkspace();
+			}
+		})();
 	}
 
 	moveTabs({
@@ -170,31 +189,6 @@ export class Window {
 			return resolve(true);
 		});
 	}
-
-	// #getActiveWorkspace(): {
-	// 	activeWorkspace: Ext.Workspace;
-	// 	activeWorkspaceIndex: number;
-	// 	windowRelativeWorkspaceIndex: number;
-	// } {
-	// 	let activeWorkspaceIndex!: number;
-	// 	const activeWorkspace = this.#workspaces.find((workspace, i) => {
-	// 		if (workspace.active) {
-	// 			activeWorkspaceIndex = i;
-	// 			return workspace;
-	// 		}
-	// 	})!;
-
-	// 	const windowRelativeWorkspaceIndex = this.#workspaces
-	// 		.filter((workspace) => workspace.windowId === this.#id)
-	// 		.findIndex((_workspace) => _workspace.id === activeWorkspace.id);
-	// 	// .length - activeWorkspaceIndex;
-
-	// 	return {
-	// 		activeWorkspace,
-	// 		windowRelativeWorkspaceIndex,
-	// 		activeWorkspaceIndex,
-	// 	};
-	// }
 
 	#getNewWorkspace(): Promise<Ext.Workspace> {
 		return new Promise(async (resolve) => {
@@ -281,9 +275,11 @@ export class Window {
 
 			const activeTabId = workspace?.activeTabId || nextTabIds[0];
 
+			console.log({ workspace, nextTabIds, currentTabIds, activeTabId });
+
 			await Browser.tabs.show(nextTabIds);
 			await Browser.tabs.update(activeTabId, { active: true });
-			await Browser.tabs.hide(currentTabIds);
+			if (currentTabIds.length) await Browser.tabs.hide(currentTabIds);
 
 			this.#activeWorkspace = workspace;
 			this.#switchingWorkspace = false;

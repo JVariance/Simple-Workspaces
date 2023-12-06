@@ -194,7 +194,7 @@
 
 <div class="w-[100dvw] p-2 box-border">
 	<h1 class="mb-4">Workspaces</h1>
-	{#if false}
+	{#if true}
 		<div class="flex gap-1 absolute top-0 right-0">
 			<button
 				class="mb-2 border rounded-md p-1"
@@ -211,7 +211,8 @@
 			<button
 				class="mb-2 border rounded-md p-1"
 				on:click={() => {
-					Browser.runtime.sendMessage({ msg: "clearDB" });
+					Browser.storage.local.clear();
+					// .sendMessage({ msg: "clearDB" });
 				}}>clear DB</button
 			>
 		</div>
