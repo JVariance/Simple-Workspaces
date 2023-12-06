@@ -1,14 +1,16 @@
 import browser from "webextension-polyfill";
-import { TabMenu } from "./tabMenu";
-import { WorkspaceStorage } from "./workspace-storage";
+import { TabMenu } from "./TabMenu";
+import { WorkspaceStorage } from "./WorkspaceStorage";
 
 let workspaceStorage: WorkspaceStorage;
 let tabMenu: TabMenu;
 
 function initExtension() {
 	return new Promise(async (resolve) => {
+		// await browser.storage.local.clear();
 		await initWorkspaceStorage();
 		await initTabMenu();
+		informPorts("initialized");
 		return resolve(true);
 	});
 }
@@ -61,10 +63,10 @@ browser.runtime.onConnect.addListener(async (port) => {
 	});
 });
 
-function informPorts() {
+function informPorts(message = "updated") {
 	backgroundListenerPorts.forEach(({ port, windowId }) => {
 		if (windowId === workspaceStorage.focusedWindowId) {
-			port.postMessage({ msg: "updated" });
+			port.postMessage({ msg: message });
 		}
 	});
 }
@@ -98,20 +100,17 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 		const tabIds =
 			highlightedTabIds.length > 1 ? highlightedTabIds : [tab!.id!];
 
-		await workspaceStorage.moveTabs({
+		await workspaceStorage.getWindow(tab!.windowId!).moveTabs({
 			tabIds,
 			targetWorkspaceId,
-			windowId: tab!.windowId!,
 		});
 
 		informPorts();
 	}
 });
 
-browser.runtime.onInstalled.addListener((details) => {
-	(async () => {
-		if (!workspaceStorage) await initExtension();
-	})();
+browser.runtime.onInstalled.addListener(async (details) => {
+	if (!workspaceStorage) await initExtension();
 });
 
 browser.windows.onCreated.addListener((window) => {
@@ -134,17 +133,19 @@ browser.windows.onRemoved.addListener((windowId) => {
 
 browser.tabs.onCreated.addListener((tab) => {
 	console.info("tabs.onCreated: ", { tab });
-	workspaceStorage.addTab(tab.id!, tab.windowId!);
+	workspaceStorage.getWindow(tab.windowId!).addTab(tab.id!);
 	informPorts();
 });
 
 browser.tabs.onRemoved.addListener((tabId, info) => {
-	workspaceStorage.removeTab(tabId, info.windowId);
+	workspaceStorage.getWindow(info.windowId).removeTab(tabId);
 	informPorts();
 });
 
 browser.tabs.onActivated.addListener((activeInfo) => {
-	workspaceStorage.setActiveTab(activeInfo.tabId, activeInfo.windowId);
+	workspaceStorage
+		.getWindow(activeInfo.windowId)
+		.setActiveTab(activeInfo.tabId);
 });
 
 function getCurrentWindow() {
@@ -155,23 +156,19 @@ browser.commands.onCommand.addListener((command) => {
 	switch (command) {
 		case "next-workspace":
 			(async () => {
-				await workspaceStorage.switchToNextWorkspace({
-					windowId: (await getCurrentWindow()).id!,
-				});
+				await workspaceStorage.activeWindow.switchToNextWorkspace();
 				informPorts();
 			})();
 			break;
 		case "previous-workspace":
 			(async () => {
-				await workspaceStorage.switchToPreviousWorkspace({
-					windowId: (await getCurrentWindow()).id!,
-				});
+				await workspaceStorage.activeWindow.switchToPreviousWorkspace();
 				informPorts();
 			})();
 			break;
 		case "new-workspace":
 			(async () => {
-				await workspaceStorage.addWorkspace();
+				await workspaceStorage.activeWindow.addWorkspace();
 				informPorts();
 			})();
 			break;
@@ -180,21 +177,42 @@ browser.commands.onCommand.addListener((command) => {
 	}
 });
 
-browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+browser.runtime.onMessage.addListener((message) => {
 	const { msg } = message;
 
 	switch (msg) {
+		case "checkBackgroundInitialized":
+			return new Promise(async (resolve) => {
+				return resolve(workspaceStorage ? true : false);
+			});
 		case "clearDB":
 			workspaceStorage.clearDB();
 			break;
 		case "addWorkspace":
-			return workspaceStorage.addWorkspace();
+			return new Promise((resolve) => {
+				return resolve(workspaceStorage.activeWindow.addWorkspace());
+			});
 		case "editWorkspace":
-			return workspaceStorage.editWorkspace(message);
+			return new Promise((resolve) => {
+				return resolve(
+					workspaceStorage.getWindow(message.windowId).editWorkspace(message)
+				);
+			});
 		case "getWorkspaces":
-			return workspaceStorage.getWorkspaces(message);
+			console.info("bg - getWorkspaces", { message });
+			console.log(workspaceStorage.getWindow(message.windowId).workspaces);
+			console.log("moini");
+			return new Promise((resolve) => {
+				return resolve(workspaceStorage.getWindow(message.windowId).workspaces);
+			});
 		case "removeWorkspace":
-			return workspaceStorage.removeWorkspace(message.workspaceId);
+			return new Promise((resolve) => {
+				return resolve(
+					workspaceStorage
+						.getWindow(message.windowId)
+						.removeWorkspace(message.workspaceId)
+				);
+			});
 		case "reloadAllTabs":
 			(async () => {
 				const tabIds = (
@@ -238,7 +256,7 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
 				windows: workspaceStorage.windows,
 			});
 
-			workspaceStorage.switchWorkspace(nextWorkspace);
+			workspaceStorage.activeWindow.switchWorkspace(nextWorkspace);
 			break;
 		default:
 			break;

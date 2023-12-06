@@ -41,9 +41,14 @@
 	port.onMessage.addListener((message) => {
 		const { msg } = message;
 		switch (msg) {
+			case "initialized":
+				initView();
+				break;
 			case "updated":
+				console.log("updated");
 				(async () => {
 					workspaces = await getWorkspaces({ windowId });
+					console.log({ workspaces });
 				})();
 				break;
 			default:
@@ -161,9 +166,9 @@
 		}
 	}
 
-	function initExtension(): Promise<void> {
+	function initView(): Promise<void> {
 		return new Promise(async (resolve) => {
-			console.info("initExtension");
+			console.info("initView");
 			windowId = (await Browser.windows.getCurrent()).id!;
 			let localWorkspaces = await getWorkspaces({ windowId });
 			console.log({ localWorkspaces });
@@ -174,7 +179,11 @@
 
 	onMount(() => {
 		(async () => {
-			await initExtension();
+			if (
+				await Browser.runtime.sendMessage({ msg: "checkBackgroundInitialized" })
+			) {
+				await initView();
+			}
 			// activeWorkspace = await getLocalActiveWorkspace();
 			// selectedWorkspaceIndex = getCurrentWorkspaceIndex();
 		})();
