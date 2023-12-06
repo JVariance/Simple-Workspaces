@@ -47,7 +47,7 @@ export class TabMenu {
 		return new Promise(async (resolve) => {
 			await Browser.menus.removeAll();
 			this.#createParentMenu();
-			console.info("update", { workspaces });
+
 			workspaces.forEach((workspace) => {
 				Browser.menus.create({
 					id: `workspace-menu_${workspace.id}`,

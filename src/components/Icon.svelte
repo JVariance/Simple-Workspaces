@@ -13,6 +13,7 @@
 		check: "tabler:check",
 		edit: "fluent:edit-24-filled",
 		remove: "ic:round-remove-circle",
+		search: "tabler:search",
 		settings: "material-symbols:settings",
 	};
 </script>

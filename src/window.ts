@@ -19,16 +19,12 @@ export class Window {
 
 	init({ lookInStorage = true } = {}) {
 		return new Promise(async (resolve) => {
-			console.log({ storageKey: this.#storageKey });
 			// Browser.storage.local.remove(this.#storageKey);
 			const { [this.#storageKey]: localWindow } = lookInStorage
 				? ((await Browser.storage.local.get(this.#storageKey)) as Ext.Window)
 				: {};
 
-			console.log({ localWindow });
-
 			if (localWindow) {
-				console.info("localWindowFound");
 				// {id ,this.#workspaces} = localWindow;
 				this.#id = localWindow.id;
 				this.#workspaces = localWindow.workspaces;
@@ -55,7 +51,6 @@ export class Window {
 
 				this.#workspaces = [newWorkspace];
 
-				console.log({ workspaces: this.#workspaces, id: this.#id });
 				await this.#persist();
 			}
 
@@ -75,8 +70,6 @@ export class Window {
 	}
 
 	setActiveTab(tabId: number) {
-		console.info("setActiveTab()", { tabId });
-
 		if (!this.#activeWorkspace || this.#switchingWorkspace) return;
 
 		this.#activeWorkspace.activeTabId = tabId;
@@ -97,26 +90,22 @@ export class Window {
 
 	removeTab(tabId: number) {
 		(async () => {
-			console.info("removeTab", { tabId });
 			if (!this.activeWorkspace || this.#removingWorkspace) return;
 
 			this.activeWorkspace.tabIds = this.activeWorkspace.tabIds.filter(
 				(id) => id !== tabId
 			);
 
-			console.log({
-				activeWorkspace: structuredClone(this.activeWorkspace),
-				workspaces: structuredClone(this.workspaces),
-			});
+			// console.log({ activeWorkspace: structuredClone(this.activeWorkspace), workspaces: structuredClone(this.workspaces),});
 
 			if (this.activeWorkspace.tabIds.length) {
-				// this.#activeWorkspace.activeTabId = this.activeWorkspace.tabIds.at(-1);
-				this.#activeWorkspace.activeTabId = (
-					await Browser.tabs.query({
-						windowId: this.id,
-						active: true,
-					})
-				).at(0)!.id!;
+				this.#activeWorkspace.activeTabId = this.activeWorkspace.tabIds.at(-1);
+				// this.#activeWorkspace.activeTabId = (
+				// 	await Browser.tabs.query({
+				// 		windowId: this.id,
+				// 		active: true,
+				// 	})
+				// ).at(0)!.id!;
 			} else {
 				this.#activeWorkspace.activeTabId = undefined;
 				await this.switchToPreviousWorkspace();
@@ -160,14 +149,10 @@ export class Window {
 				}
 			}
 
-			console.log({
-				activeWorkspace: this.activeWorkspace,
-				workspaceIndex,
-			});
+			// console.log({ activeWorkspace: this.activeWorkspace, workspaceIndex, });
 
 			if (!this.activeWorkspace.tabIds.length) {
 				if (workspaceIndex <= 0) {
-					console.log({ activeWorkspace: this.activeWorkspace });
 					await this.switchToNextWorkspace();
 				} else {
 					await this.switchWorkspace(targetWorkspace);
@@ -209,7 +194,6 @@ export class Window {
 	}
 
 	addWorkspace(): Promise<Ext.Workspace> {
-		console.info("addWorkspace()");
 		return new Promise(async (resolve) => {
 			this.#addingWorkspace = true;
 			const newWorkspace = await this.#getNewWorkspace();
@@ -275,8 +259,6 @@ export class Window {
 
 			const activeTabId = workspace?.activeTabId || nextTabIds[0];
 
-			console.log({ workspace, nextTabIds, currentTabIds, activeTabId });
-
 			await Browser.tabs.show(nextTabIds);
 			await Browser.tabs.update(activeTabId, { active: true });
 			if (currentTabIds.length) await Browser.tabs.hide(currentTabIds);
@@ -296,8 +278,6 @@ export class Window {
 			if (index > this.#workspaces.length - 1) return;
 
 			const nextWorkspace = this.#workspaces.at(index)!;
-
-			console.log({ nextWorkspace });
 
 			await this.switchWorkspace(nextWorkspace);
 			resolve(true);
@@ -341,10 +321,7 @@ export class Window {
 	}
 
 	#persist() {
-		console.info("persist window", {
-			storageKey: this.#storageKey,
-			workspaces: this.#workspaces,
-		});
+		// console.info("persist window", { storageKey: this.#storageKey, workspaces: this.#workspaces, });
 		return new Promise(async (resolve) => {
 			await Browser.storage.local.set({
 				[this.#storageKey]: { id: this.#id, workspaces: this.#workspaces },

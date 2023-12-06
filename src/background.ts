@@ -4,6 +4,7 @@ import { WorkspaceStorage } from "./WorkspaceStorage";
 
 let workspaceStorage: WorkspaceStorage;
 let tabMenu: TabMenu;
+let removingWindow = false;
 
 function initExtension() {
 	return new Promise(async (resolve) => {
@@ -27,20 +28,14 @@ function initTabMenu() {
 
 function initWorkspaceStorage() {
 	return new Promise(async (resolve) => {
-		console.info("bg - initWorkspaceStorage");
 		workspaceStorage = new WorkspaceStorage();
 		await workspaceStorage.init();
 		return resolve(true);
 	});
-	// console.log({
-	// 	workspaceStorage,
-	// 	workspaces: workspaceStorage.workspaces,
-	// 	activeWorkspace: workspaceStorage.activeWorkspace,
-	// });
+	// console.log({ workspaceStorage, workspaces: workspaceStorage.workspaces, activeWorkspace: workspaceStorage.activeWorkspace, });
 }
 
 browser.runtime.onStartup.addListener(async () => {
-	console.log("onStartup");
 	if (!workspaceStorage) await initExtension();
 });
 
@@ -50,7 +45,6 @@ let backgroundListenerPorts: {
 }[] = [];
 
 browser.runtime.onConnect.addListener(async (port) => {
-	console.log("onConnect - port:", port);
 	backgroundListenerPorts.push({
 		port,
 		windowId: workspaceStorage.focusedWindowId,
@@ -75,8 +69,6 @@ browser.menus.onShown.addListener((info, tab) => {
 	const workspaces = workspaceStorage.windows
 		.get(tab.windowId!)!
 		.workspaces.filter((workspace) => workspace.windowId === tab!.windowId!);
-
-	console.log({ workspaces, info, tab });
 
 	tabMenu.update({
 		workspaces,
@@ -109,31 +101,50 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 	}
 });
 
+/* Event Order:
+	Creation:
+	1. browser.tabs.onCreated
+	2. browser.windows.onCreated
+
+	Removal:
+	1. browser.tabs.onRemoved
+	2. browser.windows.onRemoved
+ */
+
 browser.runtime.onInstalled.addListener(async (details) => {
 	if (!workspaceStorage) await initExtension();
 });
 
 browser.windows.onCreated.addListener((window) => {
 	(async () => {
-		workspaceStorage.addWindow(window.id!);
+		if (!workspaceStorage.windows.has(window.id!)) {
+			await workspaceStorage.addWindow(window.id!);
+		}
 	})();
 });
 
 browser.windows.onFocusChanged.addListener((windowId) => {
-	console.log("onFocusChanged", windowId);
 	if (windowId !== browser.windows.WINDOW_ID_NONE) {
 		workspaceStorage.focusedWindowId = windowId;
 	}
 });
 
 browser.windows.onRemoved.addListener((windowId) => {
-	workspaceStorage.removeWindow(windowId);
+	(async () => {
+		removingWindow = true;
+		await workspaceStorage.removeWindow(windowId);
+		removingWindow = false;
+	})();
 	// workspaceStorage.removeWorkspaces({ windowId });
 });
 
 browser.tabs.onCreated.addListener((tab) => {
-	console.info("tabs.onCreated: ", { tab });
-	workspaceStorage.getWindow(tab.windowId!).addTab(tab.id!);
+	const window = workspaceStorage.getWindow(tab.windowId!);
+	if (window) {
+		window.addTab(tab.id!);
+	} else {
+		workspaceStorage.addWindow(tab.windowId!);
+	}
 	informPorts();
 });
 
@@ -143,9 +154,11 @@ browser.tabs.onRemoved.addListener((tabId, info) => {
 });
 
 browser.tabs.onActivated.addListener((activeInfo) => {
-	workspaceStorage
-		.getWindow(activeInfo.windowId)
-		.setActiveTab(activeInfo.tabId);
+	if (workspaceStorage.windows.has(activeInfo.windowId)) {
+		workspaceStorage
+			.getWindow(activeInfo.windowId)
+			.setActiveTab(activeInfo.tabId);
+	}
 });
 
 function getCurrentWindow() {
@@ -199,9 +212,6 @@ browser.runtime.onMessage.addListener((message) => {
 				);
 			});
 		case "getWorkspaces":
-			console.info("bg - getWorkspaces", { message });
-			console.log(workspaceStorage.getWindow(message.windowId).workspaces);
-			console.log("moini");
 			return new Promise((resolve) => {
 				return resolve(workspaceStorage.getWindow(message.windowId).workspaces);
 			});
@@ -250,11 +260,7 @@ browser.runtime.onMessage.addListener((message) => {
 				.get(workspaceStorage.focusedWindowId)!
 				.workspaces.find(({ id }) => id === workspaceId)!;
 
-			console.log({
-				workspaceId,
-				nextWorkspace,
-				windows: workspaceStorage.windows,
-			});
+			// console.log({workspaceId, nextWorkspace,windows: workspaceStorage.windows,});
 
 			workspaceStorage.activeWindow.switchWorkspace(nextWorkspace);
 			break;

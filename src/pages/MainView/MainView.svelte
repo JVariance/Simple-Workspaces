@@ -5,6 +5,7 @@
 	import WorkspaceComponent from "@components/Workspace.svelte";
 	import Browser from "webextension-polyfill";
 	import Icon from "@root/components/Icon.svelte";
+	import { debounceFunc } from "@root/utils";
 
 	let workspaces: Ext.Workspace[] = [];
 	// let activeWorkspace: Workspace;
@@ -45,10 +46,8 @@
 				initView();
 				break;
 			case "updated":
-				console.log("updated");
 				(async () => {
 					workspaces = await getWorkspaces({ windowId });
-					console.log({ workspaces });
 				})();
 				break;
 			default:
@@ -60,7 +59,6 @@
 		const { msg } = message;
 		switch (msg) {
 			case "tabCreated":
-				console.info("tabCreated");
 				const { tabId } = message;
 				activeWorkspace.tabIds.push(tabId);
 				break;
@@ -168,14 +166,37 @@
 
 	function initView(): Promise<void> {
 		return new Promise(async (resolve) => {
-			console.info("initView");
 			windowId = (await Browser.windows.getCurrent()).id!;
 			let localWorkspaces = await getWorkspaces({ windowId });
-			console.log({ localWorkspaces });
+
 			workspaces = localWorkspaces;
 			return resolve();
 		});
 	}
+
+	let searchResults: string[] = [];
+
+	function search(e: InputEvent & { target: HTMLInputElement }) {
+		const { value } = e.target;
+
+		searchResults = [];
+		if (!value) return;
+
+		(async () => {
+			console.log({ value });
+			const tabs = await Browser.tabs.query({ windowId });
+			const matchingTabs = tabs.filter((tab) => tab.url?.includes(value));
+
+			console.log({ matchingTabs });
+
+			searchResults = [
+				...searchResults,
+				...matchingTabs.map((tab) => tab.url!),
+			];
+		})();
+	}
+
+	const debouncedSearch = debounceFunc(search, 500);
 
 	onMount(() => {
 		(async () => {
@@ -217,6 +238,21 @@
 			>
 		</div>
 	{/if}
+	<search class="my-6 w-full flex gap-2 bg-neutral-800 rounded-md p-1">
+		<label for="search"><Icon icon="search" /></label>
+		<input
+			id="search"
+			type="search"
+			class="w-full bg-transparent p-1 !outline-none !outline-0"
+			on:input={debouncedSearch}
+			placeholder="Search..."
+		/>
+	</search>
+	<div id="search-results" class="mb-6 grid gap-2">
+		{#each searchResults as result}
+			<p>{result}</p>
+		{/each}
+	</div>
 	{#if workspaces.length && activeWorkspace}
 		<div class="grid gap-4 w-full @container">
 			{#each workspaces as workspace, i}
