@@ -2,9 +2,10 @@
 	import { createEventDispatcher, tick } from "svelte";
 	import Icon from "./Icon.svelte";
 
-	export let workspace: Workspace;
+	export let workspace: Ext.Workspace;
 	export let active = false;
 	export let selected = false;
+	export let index: number;
 
 	let { name: nameValue, icon: iconValue } = workspace;
 
@@ -78,6 +79,7 @@
 			<button
 				on:click={switchWorkspace}
 				class="outline-transparent outline-none"
+				data-focusid={index}
 				bind:this={workspaceButton}
 			>
 				<span>{icon}</span>

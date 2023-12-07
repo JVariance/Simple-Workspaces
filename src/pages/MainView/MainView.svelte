@@ -8,9 +8,7 @@
 	import { debounceFunc } from "@root/utils";
 
 	let workspaces: Ext.Workspace[] = [];
-	// let activeWorkspace: Workspace;
-	let selectedWorkspaceIndex: number;
-	let newWorkspaceButton: HTMLButtonElement;
+	let searchInput: HTMLInputElement;
 	let windowId: number;
 
 	$: activeWorkspace = workspaces.find((workspace) => workspace.active)!;
@@ -31,8 +29,7 @@
 				workspaceId: workspace.id,
 			});
 
-			// workspaces = await getWorkspaces({ windowId });
-
+			searchInput.value = "";
 			window.close();
 		})();
 	}
@@ -125,38 +122,33 @@
 		})();
 	}
 
-	function getCurrentWorkspaceIndex() {
-		return workspaces.findIndex(
-			(workspace) => workspace.id === activeWorkspace.id
-		);
+	function focusButton() {
+		(
+			document.querySelector(
+				`[data-focusid='${selectedIndex}']`
+			)! as HTMLButtonElement
+		)?.focus();
 	}
 
-	function onKeyDown(e: KeyboardEvent) {
-		let newIndex;
+	let selectedIndex = 0;
 
+	$: selectedIndex, focusButton();
+
+	function onKeyDown(e: KeyboardEvent) {
 		const { key } = e;
 
 		switch (key) {
 			case Key.ArrowDown:
 				e.preventDefault();
-				newIndex = Math.min(workspaces.length, getCurrentWorkspaceIndex() + 1);
-				selectedWorkspaceIndex = newIndex!;
-
-				if (newIndex === workspaces.length) {
-					(async () => {
-						await tick();
-						newWorkspaceButton.focus();
-					})();
-				}
+				selectedIndex = Math.min(workspaces.length, selectedIndex + 1);
 				break;
 			case Key.ArrowUp:
 				e.preventDefault();
-				newIndex = Math.max(0, getCurrentWorkspaceIndex() - 1);
-				selectedWorkspaceIndex = newIndex!;
+				selectedIndex = Math.max(0, selectedIndex - 1);
 				break;
 			case Key.Enter:
 				e.preventDefault();
-				activeWorkspace = workspaces.at(selectedWorkspaceIndex)!;
+				activeWorkspace = workspaces.at(selectedIndex)!;
 				switchWorkspace(activeWorkspace);
 				break;
 			default:
@@ -180,19 +172,35 @@
 		const { value } = e.target;
 
 		searchResults = [];
-		if (!value) return;
+		if (!value) {
+			workspaces = workspaces.map((workspace) => {
+				workspace.hidden = false;
+				return workspace;
+			});
+			return;
+		}
 
 		(async () => {
 			console.log({ value });
 			const tabs = await Browser.tabs.query({ windowId });
 			const matchingTabs = tabs.filter((tab) => tab.url?.includes(value));
+			const matchingTabIds = matchingTabs.map(({ id }) => id);
 
 			console.log({ matchingTabs });
 
-			searchResults = [
-				...searchResults,
-				...matchingTabs.map((tab) => tab.url!),
-			];
+			workspaces = workspaces.map((workspace) => {
+				const workspaceHasSearchedTab = workspace.tabIds.some((tabId) =>
+					matchingTabIds.includes(tabId)
+				);
+
+				workspace.hidden = !workspaceHasSearchedTab;
+				return workspace;
+			});
+
+			// searchResults = [
+			// 	...searchResults,
+			// 	...matchingTabs.map((tab) => tab.url!),
+			// ];
 		})();
 	}
 
@@ -205,8 +213,6 @@
 			) {
 				await initView();
 			}
-			// activeWorkspace = await getLocalActiveWorkspace();
-			// selectedWorkspaceIndex = getCurrentWorkspaceIndex();
 		})();
 	});
 </script>
@@ -233,7 +239,6 @@
 				class="mb-2 border rounded-md p-1"
 				on:click={() => {
 					Browser.storage.local.clear();
-					// .sendMessage({ msg: "clearDB" });
 				}}>clear DB</button
 			>
 		</div>
@@ -244,6 +249,7 @@
 			id="search"
 			type="search"
 			class="w-full bg-transparent p-1 !outline-none !outline-0"
+			bind:this={searchInput}
 			on:input={debouncedSearch}
 			placeholder="Search..."
 		/>
@@ -259,7 +265,9 @@
 				<WorkspaceComponent
 					{workspace}
 					active={workspace.active}
-					selected={i === selectedWorkspaceIndex}
+					selected={i === selectedIndex}
+					class={workspace.hidden ? "hidden" : ""}
+					index={i}
 					on:editWorkspace={({ detail: { icon, name } }) => {
 						editWorkspace({ workspace, icon, name });
 					}}
@@ -275,8 +283,8 @@
 				id="add-workspace"
 				on:click={addWorkspaceByPointer}
 				on:keydown={addWorkspaceByKey}
-				bind:this={newWorkspaceButton}
-				class:selected={selectedWorkspaceIndex === workspaces.length}
+				data-focusid={workspaces.length}
+				class:selected={selectedIndex === workspaces.length}
 				class="p-4 flex gap-2 rounded-md text-left bg-neutral-800 [&.selected]:bg-neutral-700"
 				><span><Icon icon="add" width={20} /></span>
 				<span>new workspace</span></button
