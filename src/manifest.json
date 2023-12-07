@@ -76,6 +76,6 @@
 		]
 	},
 	"background": {
-		"{{firefox}}.scripts": ["src/background.ts"]
+		"{{firefox}}.scripts": ["src/background/background.ts"]
 	}
 }

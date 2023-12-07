@@ -152,11 +152,12 @@ export class Window {
 			// console.log({ activeWorkspace: this.activeWorkspace, workspaceIndex, });
 
 			if (!this.activeWorkspace.tabIds.length) {
-				if (workspaceIndex <= 0) {
-					await this.switchToNextWorkspace();
-				} else {
-					await this.switchWorkspace(targetWorkspace);
-				}
+				// if (workspaceIndex <= 0) {
+				// 	// await this.switchToNextWorkspace();
+				// 	await this.switchWorkspace(targetWorkspace);
+				// } else {
+				await this.switchWorkspace(targetWorkspace);
+				// }
 			} else {
 				await Browser.tabs.hide(tabIds);
 			}
@@ -193,15 +194,28 @@ export class Window {
 		return this.#workspaces;
 	}
 
-	addWorkspace(): Promise<Ext.Workspace> {
+	addWorkspaceAndSwitch(): Promise<boolean> {
+		return new Promise(async (resolve) => {
+			const newWorkspace = await this.addWorkspace();
+			await this.switchWorkspace(newWorkspace);
+			return resolve(true);
+		});
+	}
+
+	addWorkspace(
+		tabIds: number[] | undefined = undefined
+	): Promise<Ext.Workspace> {
 		return new Promise(async (resolve) => {
 			this.#addingWorkspace = true;
 			const newWorkspace = await this.#getNewWorkspace();
 
-			const tabId: number = (await Browser.tabs.create({ active: false })).id!;
-			newWorkspace.tabIds = [tabId!];
-
-			await this.switchWorkspace(newWorkspace);
+			if (tabIds) {
+				newWorkspace.tabIds = tabIds;
+			} else {
+				const tabId: number = (await Browser.tabs.create({ active: false }))
+					.id!;
+				newWorkspace.tabIds = [tabId!];
+			}
 
 			this.#workspaces = [...this.#workspaces, newWorkspace];
 			this.#persist();
@@ -236,7 +250,7 @@ export class Window {
 		});
 	}
 
-	switchWorkspace(workspace: Ext.Workspace) {
+	switchWorkspace(workspace: Ext.Workspace): Promise<boolean> {
 		return new Promise(async (resolve) => {
 			this.#switchingWorkspace = true;
 

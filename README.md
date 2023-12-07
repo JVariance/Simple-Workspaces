@@ -12,10 +12,12 @@ A Browser Extension for Firefox which lets you organize your tabs into workspace
     - New Workspace: Ctrl+Alt+D
     - Switch to next Workspace: Ctrl+Alt+X
     - Switch to previuos Workspace: Ctrl+Alt+Y
+ - Send multiple (selected) tabs to new/other workspace
 
- - NYI: Send multiple (selected) tabs to new/ other workspace
- - NYI: Notification informs which workspace is active when switching (can be unchecked in extension's settings)
+### Potential implementation in future releases
 
+ - History per window/workspace
+ - Notification of active switched workspace
 _______________________________________
 
 ## Development

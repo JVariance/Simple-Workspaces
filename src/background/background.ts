@@ -66,9 +66,12 @@ function informPorts(message = "updated") {
 }
 
 browser.menus.onShown.addListener((info, tab) => {
+	console.info("browser.menus.onShown");
 	const workspaces = workspaceStorage.windows
 		.get(tab.windowId!)!
-		.workspaces.filter((workspace) => workspace.windowId === tab!.windowId!);
+		.workspaces.filter(
+			({ windowId, active }) => windowId === tab!.windowId! && !active
+		);
 
 	tabMenu.update({
 		workspaces,
@@ -78,10 +81,11 @@ browser.menus.onShown.addListener((info, tab) => {
 browser.menus.onClicked.addListener(async (info, tab) => {
 	const { menuItemId: _menuItemId } = info;
 	const menuItemId = _menuItemId.toString();
-	if (menuItemId.toString().startsWith("workspace-menu")) {
-		const targetWorkspaceId = menuItemId.split("_").at(1)!;
-
-		// const activeTab = await browser.tabs.getCurrent();
+	let targetWorkspaceId!: string;
+	if (
+		menuItemId.toString().startsWith("workspace") ||
+		menuItemId.toString() === "create-workspace-menu"
+	) {
 		const highlightedTabIds = (
 			await browser.tabs.query({
 				windowId: tab!.windowId!,
@@ -91,6 +95,14 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 
 		const tabIds =
 			highlightedTabIds.length > 1 ? highlightedTabIds : [tab!.id!];
+
+		if (menuItemId.toString().startsWith("workspace-menu")) {
+			targetWorkspaceId = menuItemId.split("_").at(1)!;
+		} else if (menuItemId.toString() === "create-workspace-menu") {
+			const newWorkspace = await workspaceStorage.activeWindow.addWorkspace([]);
+			newWorkspace.active = false;
+			targetWorkspaceId = newWorkspace.id;
+		}
 
 		await workspaceStorage.getWindow(tab!.windowId!).moveTabs({
 			tabIds,
@@ -181,7 +193,7 @@ browser.commands.onCommand.addListener((command) => {
 			break;
 		case "new-workspace":
 			(async () => {
-				await workspaceStorage.activeWindow.addWorkspace();
+				await workspaceStorage.activeWindow.addWorkspaceAndSwitch();
 				informPorts();
 			})();
 			break;
@@ -203,7 +215,7 @@ browser.runtime.onMessage.addListener((message) => {
 			break;
 		case "addWorkspace":
 			return new Promise((resolve) => {
-				return resolve(workspaceStorage.activeWindow.addWorkspace());
+				return resolve(workspaceStorage.activeWindow.addWorkspaceAndSwitch());
 			});
 		case "editWorkspace":
 			return new Promise((resolve) => {
@@ -262,7 +274,10 @@ browser.runtime.onMessage.addListener((message) => {
 
 			// console.log({workspaceId, nextWorkspace,windows: workspaceStorage.windows,});
 
-			workspaceStorage.activeWindow.switchWorkspace(nextWorkspace);
+			(async () => {
+				await workspaceStorage.activeWindow.switchWorkspace(nextWorkspace);
+				informPorts();
+			})();
 			break;
 		default:
 			break;

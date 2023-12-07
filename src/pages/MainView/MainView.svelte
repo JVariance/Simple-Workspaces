@@ -31,7 +31,7 @@
 				workspaceId: workspace.id,
 			});
 
-			workspaces = await getWorkspaces({ windowId });
+			// workspaces = await getWorkspaces({ windowId });
 
 			window.close();
 		})();
@@ -216,7 +216,7 @@
 <div class="w-[100dvw] p-2 box-border">
 	<h1 class="mb-4">Workspaces</h1>
 	{#if true}
-		<div class="flex gap-1 absolute top-0 right-0">
+		<div class="flex flex-wrap gap-1 absolute top-0 right-0">
 			<button
 				class="mb-2 border rounded-md p-1"
 				on:click={() => {
@@ -273,7 +273,7 @@
 			{/each}
 			<button
 				id="add-workspace"
-				on:pointerdown={addWorkspaceByPointer}
+				on:click={addWorkspaceByPointer}
 				on:keydown={addWorkspaceByKey}
 				bind:this={newWorkspaceButton}
 				class:selected={selectedWorkspaceIndex === workspaces.length}
