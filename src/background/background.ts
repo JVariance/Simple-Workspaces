@@ -179,6 +179,14 @@ function getCurrentWindow() {
 
 browser.commands.onCommand.addListener((command) => {
 	switch (command) {
+		case "open-popup":
+			browser.browserAction.openPopup({
+				windowId: workspaceStorage.activeWindow.id,
+			});
+			break;
+		case "toggle-sidebar":
+			browser.sidebarAction.toggle();
+			break;
 		case "next-workspace":
 			(async () => {
 				await workspaceStorage.activeWindow.switchToNextWorkspace();

@@ -13,9 +13,6 @@
 
 	$: viewWorkspaces = workspaces.filter(({ hidden }) => !hidden);
 	$: activeWorkspace = workspaces.find((workspace) => workspace.active)!;
-	$: console.log({ workspaces });
-
-	$: console.log({ viewWorkspaces });
 
 	function getWorkspaces({
 		windowId,

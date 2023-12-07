@@ -13,6 +13,18 @@
 		"tabs"
 	],
 	"commands": {
+		"open-popup": {
+			"suggested_key": {
+				"default": "Ctrl+Alt+W"
+			},
+			"description": "Opens the toolbar popup."
+		},
+		"toggle-sidebar": {
+			"suggested_key": {
+				"default": "Ctrl+Alt+S"
+			},
+			"description": "Toggles the sidebar."
+		},
 		"next-workspace": {
 			"suggested_key": {
 				"default": "Ctrl+Alt+X"
