@@ -11,8 +11,11 @@
 	let searchInput: HTMLInputElement;
 	let windowId: number;
 
+	$: viewWorkspaces = workspaces.filter(({ hidden }) => !hidden);
 	$: activeWorkspace = workspaces.find((workspace) => workspace.active)!;
 	$: console.log({ workspaces });
+
+	$: console.log({ viewWorkspaces });
 
 	function getWorkspaces({
 		windowId,
@@ -69,7 +72,6 @@
 			await Browser.runtime.sendMessage({
 				msg: "addWorkspace",
 			});
-			// workspaces = [...workspaces, newWorkspace];
 
 			workspaces = await getWorkspaces({ windowId });
 		})();
@@ -140,7 +142,7 @@
 		switch (key) {
 			case Key.ArrowDown:
 				e.preventDefault();
-				selectedIndex = Math.min(workspaces.length, selectedIndex + 1);
+				selectedIndex = Math.min(viewWorkspaces.length, selectedIndex + 1);
 				break;
 			case Key.ArrowUp:
 				e.preventDefault();
@@ -173,10 +175,7 @@
 
 		searchResults = [];
 		if (!value) {
-			workspaces = workspaces.map((workspace) => {
-				workspace.hidden = false;
-				return workspace;
-			});
+			viewWorkspaces = workspaces.filter(({ hidden }) => !hidden);
 			return;
 		}
 
@@ -188,14 +187,16 @@
 
 			console.log({ matchingTabs });
 
-			workspaces = workspaces.map((workspace) => {
-				const workspaceHasSearchedTab = workspace.tabIds.some((tabId) =>
-					matchingTabIds.includes(tabId)
-				);
+			viewWorkspaces = workspaces
+				.map((workspace) => {
+					const workspaceHasSearchedTab = workspace.tabIds.some((tabId) =>
+						matchingTabIds.includes(tabId)
+					);
 
-				workspace.hidden = !workspaceHasSearchedTab;
-				return workspace;
-			});
+					workspace.hidden = !workspaceHasSearchedTab;
+					return workspace;
+				})
+				.filter(({ hidden }) => !hidden);
 
 			// searchResults = [
 			// 	...searchResults,
@@ -259,14 +260,13 @@
 			<p>{result}</p>
 		{/each}
 	</div>
-	{#if workspaces.length && activeWorkspace}
+	{#if viewWorkspaces.length && activeWorkspace}
 		<div class="grid gap-4 w-full @container">
-			{#each workspaces as workspace, i}
+			{#each viewWorkspaces as workspace, i}
 				<WorkspaceComponent
 					{workspace}
 					active={workspace.active}
 					selected={i === selectedIndex}
-					class={workspace.hidden ? "hidden" : ""}
 					index={i}
 					on:editWorkspace={({ detail: { icon, name } }) => {
 						editWorkspace({ workspace, icon, name });
@@ -283,8 +283,8 @@
 				id="add-workspace"
 				on:click={addWorkspaceByPointer}
 				on:keydown={addWorkspaceByKey}
-				data-focusid={workspaces.length}
-				class:selected={selectedIndex === workspaces.length}
+				data-focusid={viewWorkspaces.length}
+				class:selected={selectedIndex === viewWorkspaces.length}
 				class="p-4 flex gap-2 rounded-md text-left bg-neutral-800 [&.selected]:bg-neutral-700"
 				><span><Icon icon="add" width={20} /></span>
 				<span>new workspace</span></button
