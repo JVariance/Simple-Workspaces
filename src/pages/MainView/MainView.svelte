@@ -241,8 +241,10 @@
 			>
 		</div>
 	{/if}
-	<search class="my-6 w-full flex gap-2 bg-neutral-800 rounded-md p-1">
-		<label for="search"><Icon icon="search" /></label>
+	<search
+		class="my-6 w-full flex gap-2 border dark:bg-neutral-800 rounded-md p-1"
+	>
+		<label for="search"><Icon icon="search" class="text-neutral-400" /></label>
 		<input
 			id="search"
 			type="search"
@@ -252,11 +254,11 @@
 			placeholder="Search..."
 		/>
 	</search>
-	<div id="search-results" class="mb-6 grid gap-2">
+	<!-- <div id="search-results" class="mb-6 grid gap-2">
 		{#each searchResults as result}
 			<p>{result}</p>
 		{/each}
-	</div>
+	</div> -->
 	{#if viewWorkspaces.length && activeWorkspace}
 		<div class="grid gap-4 w-full @container">
 			{#each viewWorkspaces as workspace, i}
@@ -282,7 +284,7 @@
 				on:keydown={addWorkspaceByKey}
 				data-focusid={viewWorkspaces.length}
 				class:selected={selectedIndex === viewWorkspaces.length}
-				class="p-4 flex gap-2 rounded-md text-left bg-neutral-800 [&.selected]:bg-neutral-700"
+				class="p-4 flex gap-2 rounded-md text-left border dark:bg-neutral-800 [&.selected]:dark:bg-neutral-700"
 				><span><Icon icon="add" width={20} /></span>
 				<span>new workspace</span></button
 			>

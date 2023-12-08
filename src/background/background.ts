@@ -123,6 +123,24 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 	2. browser.windows.onRemoved
  */
 
+function updateIcon(scheme: "dark" | "light") {
+	browser.sidebarAction.setIcon({
+		path: {
+			16: `icon/workspaces-${scheme}-filled.svg`,
+			32: `icon/workspaces-${scheme}-filled.svg`,
+			48: `icon/workspaces-${scheme}-filled.svg`,
+			96: `icon/workspaces-${scheme}-filled.svg`,
+		},
+	});
+}
+
+const darkThemeMq = window.matchMedia("(prefers-color-scheme: dark)");
+updateIcon(darkThemeMq.matches ? "dark" : "light");
+darkThemeMq.addEventListener("change", (e) => {
+	const theme = e.matches ? "dark" : "light";
+	updateIcon(theme);
+});
+
 browser.runtime.onInstalled.addListener(async (details) => {
 	if (!workspaceStorage) await initExtension();
 });

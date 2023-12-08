@@ -54,7 +54,7 @@
 		class:selected
 		class="workspace grid gap-2 p-4 {editMode
 			? 'grid-cols-[max-content_1fr_max-content_max-content]'
-			: 'grid-cols-[1fr_max-content]'} justify-items-start items-center p-1 rounded-md {classes} focus-within:bg-neutral-700 [&.active]:bg-[#5021ff]"
+			: 'grid-cols-[1fr_max-content]'} justify-items-start items-center p-1 rounded-md {classes} focus-within:bg-neutral-200 focus-within:dark:bg-neutral-700 [&.active]:bg-[#5021ff] [&.active]:text-white"
 	>
 		{#if editMode}
 			<input
