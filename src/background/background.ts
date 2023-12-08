@@ -257,6 +257,15 @@ browser.runtime.onMessage.addListener((message) => {
 						.removeWorkspace(message.workspaceId)
 				);
 			});
+		case "reorderedWorkspaces":
+			(() => {
+				const { workspaces: newWorkspaces, windowId } = message as {
+					workspaces: Ext.Workspace[];
+					windowId: Ext.Window["id"];
+				};
+				workspaceStorage.getWindow(windowId).updateWorkspaces(newWorkspaces);
+			})();
+			break;
 		case "reloadAllTabs":
 			(async () => {
 				const tabIds = (

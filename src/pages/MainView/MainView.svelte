@@ -227,7 +227,11 @@
 
 	function handleDndFinalize(e) {
 		viewWorkspaces = e.detail.items;
-		Browser.runtime.sendMessage({ msg: "reorderedWorkspaces", viewWorkspaces });
+		Browser.runtime.sendMessage({
+			msg: "reorderedWorkspaces",
+			workspaces: viewWorkspaces,
+			windowId,
+		});
 	}
 
 	onMount(() => {
@@ -268,7 +272,7 @@
 		</div>
 	{/if}
 	<search
-		class="my-6 w-full flex items-center gap-2 border dark:bg-neutral-800 rounded-md px-4 py-2"
+		class="my-6 w-full flex items-center gap-2 border dark:border-neutral-700 dark:bg-neutral-800 rounded-md px-4 py-2"
 	>
 		<label for="search"
 			><Icon icon="search" width={20} class="text-neutral-400" /></label
@@ -284,6 +288,7 @@
 			placeholder="Search..."
 		/>
 	</search>
+	<hr class="mb-8 border-neutral-800" />
 	<!-- <div id="search-results" class="mb-6 grid gap-2">
 		{#each searchResults as result}
 			<p>{result}</p>
@@ -295,7 +300,8 @@
 			use:dndzone={{
 				items: viewWorkspaces,
 				dropTargetStyle: {},
-				dragDisabled: viewWorkspaces.length !== workspaces.length,
+				dragDisabled:
+					viewWorkspaces.length !== workspaces.length || workspaces.length < 2,
 			}}
 			on:consider={handleDndConsider}
 			on:finalize={handleDndFinalize}
@@ -317,17 +323,17 @@
 					}}
 				></WorkspaceComponent>
 			{/each}
-			<button
-				id="add-workspace"
-				on:click={addWorkspaceByPointer}
-				on:keydown={addWorkspaceByKey}
-				data-focusid={viewWorkspaces.length}
-				class:selected={selectedIndex === viewWorkspaces.length}
-				class="p-4 items-center flex gap-2 rounded-md text-left border dark:bg-neutral-800 [&.selected]:dark:bg-neutral-700"
-				><span><Icon icon="add" width={16} /></span>
-				<span class="leading-none -mt-[0.5ch]">new workspace</span></button
-			>
 		</div>
+		<button
+			id="add-workspace"
+			on:click={addWorkspaceByPointer}
+			on:keydown={addWorkspaceByKey}
+			data-focusid={viewWorkspaces.length}
+			class:selected={selectedIndex === viewWorkspaces.length}
+			class="p-4 items-center flex gap-2 rounded-md text-left border dark:border-neutral-700 dark:bg-neutral-800 [&.selected]:dark:bg-neutral-700 mt-4 w-full"
+			><span><Icon icon="add" width={16} /></span>
+			<span class="leading-none -mt-[0.5ch]">new workspace</span></button
+		>
 	{/if}
 </div>
 

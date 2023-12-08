@@ -345,6 +345,11 @@ export class Window {
 		});
 	}
 
+	updateWorkspaces(newWorkspaces: Ext.Workspace[]) {
+		this.#workspaces = newWorkspaces;
+		this.#persist();
+	}
+
 	#persist = promisedDebounceFunc<void>(this.#_persist, 500);
 
 	#_persist() {
