@@ -126,10 +126,10 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 function updateIcon(scheme: "dark" | "light") {
 	browser.sidebarAction.setIcon({
 		path: {
-			16: `icon/workspaces-${scheme}-filled.svg`,
-			32: `icon/workspaces-${scheme}-filled.svg`,
-			48: `icon/workspaces-${scheme}-filled.svg`,
-			96: `icon/workspaces-${scheme}-filled.svg`,
+			16: `icon/icon-${scheme}.svg`,
+			32: `icon/icon-${scheme}.svg`,
+			48: `icon/icon-${scheme}.svg`,
+			96: `icon/icon-${scheme}.svg`,
 		},
 	});
 }

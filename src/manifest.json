@@ -1,12 +1,12 @@
 {
 	"manifest_version": 2,
 	"icons": {
-		"16": "icon/workspaces-dark-filled.svg",
-		"32": "icon/workspaces-dark-filled.svg",
-		"48": "icon/workspaces-dark-filled.svg",
-		"96": "icon/workspaces-dark-filled.svg",
-		"128": "icon/workspaces-dark-filled.svg",
-		"256": "icon/workspaces-dark-filled.svg"
+		"16": "icon/icon-dark.svg",
+		"32": "icon/icon-dark.svg",
+		"48": "icon/icon-dark.svg",
+		"96": "icon/icon-dark.svg",
+		"128": "icon/icon-dark.svg",
+		"256": "icon/icon-dark.svg"
 	},
 	"{{firefox}}.permissions": [
 		"activeTab",
@@ -53,12 +53,12 @@
 		"default_title": "Workspaces",
 		"open_at_install": true,
 		"default_icon": {
-			"16": "icon/workspaces-dark-filled.svg",
-			"32": "icon/workspaces-dark-filled.svg",
-			"48": "icon/workspaces-dark-filled.svg",
-			"96": "icon/workspaces-dark-filled.svg",
-			"128": "icon/workspaces-dark-filled.svg",
-			"256": "icon/workspaces-dark-filled.svg"
+			"16": "icon/icon-dark.svg",
+			"32": "icon/icon-dark.svg",
+			"48": "icon/icon-dark.svg",
+			"96": "icon/icon-dark.svg",
+			"128": "icon/icon-dark.svg",
+			"256": "icon/icon-dark.svg"
 		}
 	},
 	"{{firefox}}.browser_action": {
@@ -66,33 +66,33 @@
 		"default_title": "Workspaces",
 		"theme_icons": [
 			{
-				"light": "icon/workspaces-dark-filled.svg",
-				"dark": "icon/workspaces-light-filled.svg",
+				"light": "icon/icon-dark.svg",
+				"dark": "icon/icon-light.svg",
 				"size": 16
 			},
 			{
-				"light": "icon/workspaces-dark-filled.svg",
-				"dark": "icon/workspaces-light-filled.svg",
+				"light": "icon/icon-dark.svg",
+				"dark": "icon/icon-light.svg",
 				"size": 32
 			},
 			{
-				"light": "icon/workspaces-dark-filled.svg",
-				"dark": "icon/workspaces-light-filled.svg",
+				"light": "icon/icon-dark.svg",
+				"dark": "icon/icon-light.svg",
 				"size": 48
 			},
 			{
-				"light": "icon/workspaces-dark-filled.svg",
-				"dark": "icon/workspaces-light-filled.svg",
+				"light": "icon/icon-dark.svg",
+				"dark": "icon/icon-light.svg",
 				"size": 96
 			},
 			{
-				"light": "icon/workspaces-dark-filled.svg",
-				"dark": "icon/workspaces-light-filled.svg",
+				"light": "icon/icon-dark.svg",
+				"dark": "icon/icon-light.svg",
 				"size": 128
 			},
 			{
-				"light": "icon/workspaces-dark-filled.svg",
-				"dark": "icon/workspaces-light-filled.svg",
+				"light": "icon/icon-dark.svg",
+				"dark": "icon/icon-light.svg",
 				"size": 256
 			}
 		]
