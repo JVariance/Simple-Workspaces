@@ -248,8 +248,8 @@
 <svelte:body on:keydown={onKeyDown} />
 
 <div class="w-[100dvw] p-2 box-border">
-	<h1 class="mb-4">Workspaces</h1>
-	{#if true}
+	<!-- <h1 class="mb-4">Workspaces</h1> -->
+	{#if false}
 		<div class="flex flex-wrap gap-1 absolute top-0 right-0">
 			<button
 				class="mb-2 border rounded-md p-1"
@@ -272,7 +272,12 @@
 		</div>
 	{/if}
 	<search
-		class="my-6 w-full flex items-center gap-2 border dark:border-neutral-700 dark:bg-neutral-800 rounded-md px-4 py-2"
+		class="
+			mt-4 mb-6 w-full flex items-center gap-2 border
+			focus-within:bg-neutral-50 focus-within:shadow-xl
+			dark:focus-within:bg-neutral-700
+			dark:border-neutral-700 dark:bg-neutral-800 rounded-md px-4 py-2
+		"
 	>
 		<label for="search"
 			><Icon icon="search" width={20} class="text-neutral-400" /></label
@@ -288,7 +293,7 @@
 			placeholder="Search..."
 		/>
 	</search>
-	<hr class="mb-8 border-neutral-800" />
+	<hr class="border-neutral-800" />
 	<!-- <div id="search-results" class="mb-6 grid gap-2">
 		{#each searchResults as result}
 			<p>{result}</p>
@@ -330,9 +335,16 @@
 			on:keydown={addWorkspaceByKey}
 			data-focusid={viewWorkspaces.length}
 			class:selected={selectedIndex === viewWorkspaces.length}
-			class="p-4 items-center flex gap-2 rounded-md text-left border dark:border-neutral-700 dark:bg-neutral-800 [&.selected]:dark:bg-neutral-700 mt-4 w-full"
-			><span><Icon icon="add" width={16} /></span>
-			<span class="leading-none -mt-[0.5ch]">new workspace</span></button
+			class="
+				p-4 items-center flex gap-4 rounded-md text-left border mt-4 w-full
+				outline-none
+				dark:border-neutral-700 dark:bg-neutral-800 [&.selected]:dark:bg-neutral-700
+			"
+			><span class="w-[2ch] text-2xl text-center"
+				><Icon icon="add" width={18} /></span
+			>
+			<span class="leading-none -mt-[0.5ch] text-lg">new workspace</span
+			></button
 		>
 	{/if}
 </div>

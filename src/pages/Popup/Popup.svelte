@@ -5,6 +5,10 @@
 <MainView />
 
 <style lang="postcss">
+	:global(html) {
+		@apply text-[12px];
+	}
+
 	:global(body) {
 		@apply w-[40rem];
 	}

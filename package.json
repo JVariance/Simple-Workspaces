@@ -27,6 +27,7 @@
 	},
 	"dependencies": {
 		"@tailwindcss/container-queries": "^0.1.1",
+		"emoji-picker-element": "^1.20.1",
 		"ts-key-enum": "^2.0.12"
 	}
 }
