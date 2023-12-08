@@ -10,7 +10,9 @@
 
 	const icons = {
 		add: "ph:plus-bold",
+		bin: "fluent:bin-recycle-24-filled",
 		check: "tabler:check",
+		cross: "iconoir:cancel",
 		edit: "fluent:edit-24-filled",
 		remove: "ic:round-remove-circle",
 		search: "tabler:search",
