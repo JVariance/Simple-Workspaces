@@ -191,10 +191,6 @@ browser.tabs.onActivated.addListener((activeInfo) => {
 	}
 });
 
-function getCurrentWindow() {
-	return browser.windows.getCurrent();
-}
-
 browser.commands.onCommand.addListener((command) => {
 	switch (command) {
 		case "open-popup":

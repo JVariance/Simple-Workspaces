@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { onMount, tick } from "svelte";
+	import { onMount } from "svelte";
+	import { dndzone } from "svelte-dnd-action";
 	import { Key } from "ts-key-enum";
 	import "@root/app.postcss";
 	import WorkspaceComponent from "@components/Workspace.svelte";
@@ -133,6 +134,18 @@
 
 	$: selectedIndex, focusButton();
 
+	function searchKeydown(e: KeyboardEvent) {
+		const { key } = e;
+
+		switch (key) {
+			case Key.Enter:
+				e.stopPropagation();
+				break;
+			default:
+				break;
+		}
+	}
+
 	function onKeyDown(e: KeyboardEvent) {
 		const { key } = e;
 
@@ -143,7 +156,7 @@
 				break;
 			case Key.ArrowUp:
 				e.preventDefault();
-				selectedIndex = Math.max(0, selectedIndex - 1);
+				selectedIndex = Math.max(-1, selectedIndex - 1);
 				break;
 			case Key.Enter:
 				e.preventDefault();
@@ -165,14 +178,18 @@
 		});
 	}
 
-	let searchResults: string[] = [];
+	// let searchResults: string[] = [];
 
 	function search(e: InputEvent & { target: HTMLInputElement }) {
 		const { value } = e.target;
 
-		searchResults = [];
+		// searchResults = [];
 		if (!value) {
-			viewWorkspaces = workspaces.filter(({ hidden }) => !hidden);
+			// viewWorkspaces = workspaces.filter(({ hidden }) => !hidden);
+			viewWorkspaces = workspaces.map((workspace) => {
+				workspace.hidden = false;
+				return workspace;
+			});
 			return;
 		}
 
@@ -203,6 +220,15 @@
 	}
 
 	const debouncedSearch = debounceFunc(search, 500);
+
+	function handleDndConsider(e) {
+		viewWorkspaces = e.detail.items;
+	}
+
+	function handleDndFinalize(e) {
+		viewWorkspaces = e.detail.items;
+		Browser.runtime.sendMessage({ msg: "reorderedWorkspaces", viewWorkspaces });
+	}
 
 	onMount(() => {
 		(async () => {
@@ -242,15 +268,19 @@
 		</div>
 	{/if}
 	<search
-		class="my-6 w-full flex gap-2 border dark:bg-neutral-800 rounded-md p-1"
+		class="my-6 w-full flex items-center gap-2 border dark:bg-neutral-800 rounded-md px-4 py-2"
 	>
-		<label for="search"><Icon icon="search" class="text-neutral-400" /></label>
+		<label for="search"
+			><Icon icon="search" width={20} class="text-neutral-400" /></label
+		>
 		<input
 			id="search"
 			type="search"
 			class="w-full bg-transparent p-1 !outline-none !outline-0"
+			data-focusid={-1}
 			bind:this={searchInput}
 			on:input={debouncedSearch}
+			on:keydown={searchKeydown}
 			placeholder="Search..."
 		/>
 	</search>
@@ -260,8 +290,17 @@
 		{/each}
 	</div> -->
 	{#if viewWorkspaces.length && activeWorkspace}
-		<div class="grid gap-4 w-full @container">
-			{#each viewWorkspaces as workspace, i}
+		<div
+			class="grid gap-4 w-full @container"
+			use:dndzone={{
+				items: viewWorkspaces,
+				dropTargetStyle: {},
+				dragDisabled: viewWorkspaces.length !== workspaces.length,
+			}}
+			on:consider={handleDndConsider}
+			on:finalize={handleDndFinalize}
+		>
+			{#each viewWorkspaces as workspace, i (workspace.id)}
 				<WorkspaceComponent
 					{workspace}
 					active={workspace.active}
@@ -284,9 +323,9 @@
 				on:keydown={addWorkspaceByKey}
 				data-focusid={viewWorkspaces.length}
 				class:selected={selectedIndex === viewWorkspaces.length}
-				class="p-4 flex gap-2 rounded-md text-left border dark:bg-neutral-800 [&.selected]:dark:bg-neutral-700"
-				><span><Icon icon="add" width={20} /></span>
-				<span>new workspace</span></button
+				class="p-4 items-center flex gap-2 rounded-md text-left border dark:bg-neutral-800 [&.selected]:dark:bg-neutral-700"
+				><span><Icon icon="add" width={16} /></span>
+				<span class="leading-none -mt-[0.5ch]">new workspace</span></button
 			>
 		</div>
 	{/if}

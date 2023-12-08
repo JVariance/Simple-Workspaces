@@ -1,4 +1,7 @@
+import { debounceFunc, promisedDebounceFunc } from "@root/utils";
 import Browser from "webextension-polyfill";
+
+// TODO: Svelte 5: define workspaces as state and persist on changes
 
 export class Window {
 	#activeWorkspace!: Ext.Workspace;
@@ -51,12 +54,13 @@ export class Window {
 
 				this.#workspaces = [newWorkspace];
 
-				await this.#persist();
+				// await this.#persist();
 			}
 
 			this.#activeWorkspace =
 				this.#workspaces.find(({ active }) => active) || this.#workspaces[0];
 
+			await this.#persist();
 			return resolve(true);
 		});
 	}
@@ -73,6 +77,8 @@ export class Window {
 		if (!this.#activeWorkspace || this.#switchingWorkspace) return;
 
 		this.#activeWorkspace.activeTabId = tabId;
+
+		this.#persist();
 	}
 
 	addTab(tabId: number) {
@@ -86,6 +92,8 @@ export class Window {
 
 		this.activeWorkspace.activeTabId = tabId;
 		this.activeWorkspace.tabIds.push(tabId);
+
+		this.#persist();
 	}
 
 	removeTab(tabId: number) {
@@ -110,6 +118,8 @@ export class Window {
 				this.#activeWorkspace.activeTabId = undefined;
 				await this.switchToPreviousWorkspace();
 			}
+
+			this.#persist();
 		})();
 	}
 
@@ -171,7 +181,8 @@ export class Window {
 
 	remove(): Promise<boolean> {
 		return new Promise(async (resolve) => {
-			this.#removeFromStorage();
+			await this.#removeFromStorage();
+			this.#persist();
 			return resolve(true);
 		});
 	}
@@ -334,13 +345,12 @@ export class Window {
 		});
 	}
 
-	#persist() {
+	#persist = promisedDebounceFunc<void>(this.#_persist, 500);
+
+	#_persist() {
 		// console.info("persist window", { storageKey: this.#storageKey, workspaces: this.#workspaces, });
-		return new Promise(async (resolve) => {
-			await Browser.storage.local.set({
-				[this.#storageKey]: { id: this.#id, workspaces: this.#workspaces },
-			});
-			return resolve(true);
+		return Browser.storage.local.set({
+			[this.#storageKey]: { id: this.#id, workspaces: this.#workspaces },
 		});
 	}
 

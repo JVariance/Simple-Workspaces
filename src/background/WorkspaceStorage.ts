@@ -1,3 +1,4 @@
+import { promisedDebounceFunc } from "@root/utils";
 import Browser from "webextension-polyfill";
 import { Window } from "./Window";
 
@@ -15,7 +16,6 @@ export class WorkspaceStorage {
 	constructor() {}
 
 	init() {
-		
 		// this.clearDB();
 		return new Promise(async (resolve) => {
 			let { [StorageKeys.windowIds]: localWindowIds } =
@@ -26,21 +26,17 @@ export class WorkspaceStorage {
 			const currentWindows = await Browser.windows.getAll();
 			const focusedWindow = (currentWindows.find(({ focused }) => focused) ||
 				currentWindows.at(0))!;
-			
+
 			this.#focusedWindowId = focusedWindow.id!;
 
 			if (!localWindowIds) {
-				
 				for (let window of currentWindows) {
-					
 					const newWindowInstance = new Window(window.id!);
 					await newWindowInstance.init();
-					
+
 					this.windows.set(newWindowInstance.id, newWindowInstance);
-					
 				}
 			} else {
-				
 				for (let winId of localWindowIds) {
 					const windowInstance = new Window(winId);
 					await windowInstance.init();
@@ -48,11 +44,9 @@ export class WorkspaceStorage {
 				}
 			}
 
-			
-
 			for (let window of this.#windows.values()) {
 				const workspaces = window.workspaces;
-				
+
 				await Browser.tabs.hide(
 					workspaces
 						.filter(({ active }) => !active)
@@ -60,7 +54,6 @@ export class WorkspaceStorage {
 				);
 
 				for (let workspace of workspaces.filter(({ active }) => active)) {
-					
 					await Browser.tabs.update(
 						workspace.activeTabId || workspace.tabIds[0],
 						{ active: true }
@@ -89,7 +82,9 @@ export class WorkspaceStorage {
 		return this.#windows.get(this.focusedWindowId)!;
 	}
 
-	#persistWindows() {
+	#persistWindows = promisedDebounceFunc<void>(this.#_persistWindows, 500);
+
+	#_persistWindows() {
 		return Browser.storage.local.set({
 			[StorageKeys.windowIds]: Array.from(this.#windows).flatMap(
 				([key, val]) => key
@@ -108,8 +103,6 @@ export class WorkspaceStorage {
 	}
 
 	getWindow(windowId: number): Window {
-		
-		
 		return this.#windows.get(windowId)!;
 	}
 
@@ -123,7 +116,6 @@ export class WorkspaceStorage {
 	}
 
 	addWindow(windowId: number) {
-		
 		return new Promise(async (resolve) => {
 			this.#focusedWindowId = windowId;
 			const newWindow = new Window(windowId);
@@ -131,7 +123,7 @@ export class WorkspaceStorage {
 			this.#windows.set(windowId, newWindow);
 
 			this.#persistWindows();
-			
+
 			resolve(true);
 		});
 	}
