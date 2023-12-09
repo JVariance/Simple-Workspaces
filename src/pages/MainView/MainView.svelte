@@ -235,6 +235,10 @@
 		});
 	}
 
+	function openOptionsPage() {
+		Browser.runtime.openOptionsPage();
+	}
+
 	onMount(() => {
 		(async () => {
 			if (
@@ -272,28 +276,33 @@
 			>
 		</div>
 	{/if}
-	<search
-		class="
-			mt-4 mb-6 w-full flex items-center gap-2 border
+	<section class="flex gap-2 items-center mt-4 mb-6 w-full">
+		<search
+			class="
+			w-full flex items-center gap-2 border
 			focus-within:bg-neutral-50 focus-within:shadow-xl
 			dark:focus-within:bg-neutral-700
 			dark:border-neutral-700 dark:bg-neutral-800 rounded-md px-4 py-2
-		"
-	>
-		<label for="search"
-			><Icon icon="search" width={20} class="text-neutral-400" /></label
+			"
 		>
-		<input
-			id="search"
-			type="search"
-			class="w-full bg-transparent p-1 !outline-none !outline-0"
-			data-focusid={-1}
-			bind:this={searchInput}
-			on:input={debouncedSearch}
-			on:keydown={searchKeydown}
-			placeholder="Search..."
-		/>
-	</search>
+			<label for="search"
+				><Icon icon="search" width={20} class="text-neutral-400" /></label
+			>
+			<input
+				id="search"
+				type="search"
+				class="w-full bg-transparent p-1 !outline-none !outline-0"
+				data-focusid={-1}
+				bind:this={searchInput}
+				on:input={debouncedSearch}
+				on:keydown={searchKeydown}
+				placeholder="Search..."
+			/>
+		</search>
+		<button on:click={openOptionsPage}
+			><Icon icon="settings" width={18} /></button
+		>
+	</section>
 	<hr class="border-neutral-800" />
 	<!-- <div id="search-results" class="mb-6 grid gap-2">
 		{#each searchResults as result}

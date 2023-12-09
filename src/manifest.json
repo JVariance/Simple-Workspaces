@@ -97,6 +97,10 @@
 			}
 		]
 	},
+	"{{firefox}}.options_ui": {
+		"page": "src/pages/Options/options.html",
+		"open_in_tab": true
+	},
 	"background": {
 		"{{firefox}}.scripts": ["src/background/background.ts"]
 	}
