@@ -170,7 +170,6 @@ browser.windows.onRemoved.addListener((windowId) => {
 		await workspaceStorage.removeWindow(windowId);
 		removingWindow = false;
 	})();
-	// workspaceStorage.removeWorkspaces({ windowId });
 });
 
 browser.tabs.onCreated.addListener((tab) => {
@@ -261,20 +260,23 @@ browser.runtime.onMessage.addListener((message) => {
 				return resolve(workspaceStorage.getWindow(message.windowId).workspaces);
 			});
 		case "removeWorkspace":
-			return new Promise((resolve) => {
-				return resolve(
-					workspaceStorage
-						.getWindow(message.windowId)
-						.removeWorkspace(message.workspaceId)
-				);
-			});
+			return workspaceStorage
+				.getWindow(message.windowId)
+				.removeWorkspace(message.workspaceId);
 		case "reorderedWorkspaces":
 			(() => {
-				const { workspaces: newWorkspaces, windowId } = message as {
-					workspaces: Ext.Workspace[];
+				const { sortedWorkspacesIds, windowId } = message as {
+					sortedWorkspacesIds: Ext.Workspace["id"][];
 					windowId: Ext.Window["id"];
 				};
-				workspaceStorage.getWindow(windowId).updateWorkspaces(newWorkspaces);
+
+				console.log({ sortedWorkspacesIds });
+
+				workspaceStorage
+					.getWindow(windowId)
+					.reorderWorkspaces(sortedWorkspacesIds);
+
+				// workspaceStorage.getWindow(windowId).updateWorkspaces(newWorkspaces);
 			})();
 			break;
 		case "reloadAllTabs":

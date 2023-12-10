@@ -346,6 +346,14 @@ export class Window {
 		this.#persist();
 	}
 
+	reorderWorkspaces(orderedIds: Ext.Workspace["id"][]) {
+		this.workspaces.sort(
+			(a, b) => orderedIds.indexOf(a.id) - orderedIds.indexOf(b.id)
+		);
+
+		this.#persist();
+	}
+
 	#persist = promisedDebounceFunc<void>(this.#_persist, 500);
 
 	#_persist() {

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+	import { onMount, untrack, unstate } from "svelte";
 	import { dndzone } from "svelte-dnd-action";
 	import { Key } from "ts-key-enum";
 	import "@root/app.postcss";
@@ -147,7 +147,8 @@
 		e.stopPropagation();
 
 		if (e.key === Key.Enter) {
-			// addWorkspace();
+			e.preventDefault();
+			addWorkspace();
 		} else {
 			onKeyDown(e as KeyboardEvent);
 		}
@@ -155,13 +156,13 @@
 
 	function removeWorkspace(workspace: Ext.Workspace) {
 		(async () => {
+			workspaces = workspaces.filter(({ id }) => id !== workspace.id);
+
 			await Browser.runtime.sendMessage({
 				msg: "removeWorkspace",
 				workspaceId: workspace.id,
 				windowId,
 			});
-
-			workspaces = await getWorkspaces({ windowId });
 		})();
 	}
 
@@ -224,6 +225,7 @@
 				selectedIndex = Math.max(-1, selectedIndex - 1);
 				break;
 			case Key.Enter:
+				if (!e.target.closest(".workspace")) return;
 				e.preventDefault();
 				activeWorkspace = workspaces.at(selectedIndex)!;
 				switchWorkspace(activeWorkspace);
@@ -287,28 +289,23 @@
 	const debouncedSearch = debounceFunc(search, 500);
 
 	function handleDndConsider(e) {
-		viewWorkspaces = e.detail.items;
+		const items = (e.detail.items as Ext.Workspace[]).map((it) => {
+			return { ...it };
+		});
+
+		viewWorkspaces = items;
 	}
 
 	function handleDndFinalize(e) {
-		const sortedWorkspacesIds = e.detail.items.map(({ id }) => id);
-		viewWorkspaces.sort((a, b) => {
-			return (
-				sortedWorkspacesIds.indexOf(a.id) - sortedWorkspacesIds.indexOf(b.id)
-			);
+		console.log({ detail: e.detail, viewWorkspaces });
+		const items = (e.detail.items as Ext.Workspace[]).map((it) => {
+			return { ...it };
 		});
-
-		let dingsi = viewWorkspaces
-			.map((vw) => {
-				return { ...vw };
-			})
-			.slice();
-
-		console.log({ dingsi });
+		viewWorkspaces = items;
 
 		Browser.runtime.sendMessage({
 			msg: "reorderedWorkspaces",
-			workspaces: dingsi,
+			sortedWorkspacesIds: items.map(({ id }) => id),
 			windowId,
 		});
 	}
@@ -388,7 +385,7 @@
 		{/each}
 	</div> -->
 	<!-- {#if viewWorkspaces.length && activeWorkspace} -->
-	<div
+	<ul
 		class="grid gap-4 w-full @container"
 		use:dndzone={{
 			items: viewWorkspaces,
@@ -396,27 +393,29 @@
 			dragDisabled:
 				viewWorkspaces.length !== workspaces.length || workspaces.length < 2,
 		}}
-		on:consider={handleDndConsider}
-		on:finalize={handleDndFinalize}
+		onconsider={handleDndConsider}
+		onfinalize={handleDndFinalize}
 	>
 		{#each viewWorkspaces as workspace, i (workspace.id)}
-			<Workspace
-				{workspace}
-				active={workspace.active}
-				selected={i === selectedIndex}
-				index={i}
-				editWorkspace={({ icon, name }) => {
-					editWorkspace({ workspace, icon, name });
-				}}
-				switchWorkspace={() => {
-					switchWorkspace(workspace);
-				}}
-				removeWorkspace={() => {
-					removeWorkspace(workspace);
-				}}
-			></Workspace>
+			<li class="item">
+				<Workspace
+					{workspace}
+					active={workspace.active}
+					selected={i === selectedIndex}
+					index={i}
+					editWorkspace={({ icon, name }) => {
+						editWorkspace({ workspace, icon, name });
+					}}
+					switchWorkspace={() => {
+						switchWorkspace(workspace);
+					}}
+					removeWorkspace={() => {
+						removeWorkspace(workspace);
+					}}
+				></Workspace>
+			</li>
 		{/each}
-	</div>
+	</ul>
 	<button
 		id="add-workspace"
 		onclick={addWorkspaceByPointer}
