@@ -95,8 +95,7 @@
 	}
 
 	$effect(() => {
-		console.log("workspace update");
-
+		// console.log("workspace update");
 		if (selected) {
 			(async () => {
 				await tick();

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, untrack, unstate } from "svelte";
+	import { onMount } from "svelte";
 	import { dndzone } from "svelte-dnd-action";
 	import { Key } from "ts-key-enum";
 	import "@root/app.postcss";
@@ -10,17 +10,12 @@
 
 	let workspaces: Ext.Workspace[] = $state([]);
 	let viewWorkspaces: Ext.Workspace[] = $state([]);
-	let activeWorkspace: Ext.Workspace = $state(undefined);
+	let activeWorkspace: Ext.Workspace = $state();
 	let searchInput: HTMLInputElement;
 	let windowId: number;
 
 	$effect(() => {
-		console.info("effect viewWorkspaces = workspaces");
-		viewWorkspaces = workspaces.map((w) => w);
-	});
-
-	$effect(() => {
-		console.info("update activeWorkspace");
+		viewWorkspaces = workspaces;
 		activeWorkspace = workspaces.find((workspace) => workspace.active)!;
 	});
 
@@ -91,17 +86,6 @@
 		updatedActiveWorkspace({ id: workspace.id });
 	}
 
-	// function editedWorkspace({
-	// 	workspaceId,
-	// 	props = {},
-	// }: {
-	// 	workspaceId: Ext.Workspace["id"];
-	// 	props: Record<string | Symbol, any>;
-	// }) {
-	// 	const workspace = workspaces.find(({ id }) => id === workspaceId);
-	// 	Object.assign(workspace, ...props);
-	// }
-
 	const port = Browser.runtime.connect();
 
 	port.onMessage.addListener((message) => {
@@ -116,9 +100,6 @@
 			case "updatedActiveWorkspace":
 				updatedActiveWorkspace(message);
 				break;
-			// case "editedWorkspace":
-			// 	editedWorkspace(message);
-			// 	break;
 			case "movedTabs":
 				movedTabs(message);
 				break;
@@ -145,13 +126,6 @@
 
 	function addWorkspaceByKey(e: KeyboardEvent) {
 		e.stopPropagation();
-
-		if (e.key === Key.Enter) {
-			e.preventDefault();
-			addWorkspace();
-		} else {
-			onKeyDown(e as KeyboardEvent);
-		}
 	}
 
 	function removeWorkspace(workspace: Ext.Workspace) {
@@ -225,10 +199,6 @@
 				selectedIndex = Math.max(-1, selectedIndex - 1);
 				break;
 			case Key.Enter:
-				if (!e.target.closest(".workspace")) return;
-				e.preventDefault();
-				activeWorkspace = workspaces.at(selectedIndex)!;
-				switchWorkspace(activeWorkspace);
 				break;
 			default:
 				break;
@@ -289,23 +259,16 @@
 	const debouncedSearch = debounceFunc(search, 500);
 
 	function handleDndConsider(e) {
-		const items = (e.detail.items as Ext.Workspace[]).map((it) => {
-			return { ...it };
-		});
-
-		viewWorkspaces = items;
+		viewWorkspaces = e.detail.items;
 	}
 
 	function handleDndFinalize(e) {
 		console.log({ detail: e.detail, viewWorkspaces });
-		const items = (e.detail.items as Ext.Workspace[]).map((it) => {
-			return { ...it };
-		});
-		viewWorkspaces = items;
+		viewWorkspaces = e.detail.items;
 
 		Browser.runtime.sendMessage({
 			msg: "reorderedWorkspaces",
-			sortedWorkspacesIds: items.map(({ id }) => id),
+			sortedWorkspacesIds: e.detail.items.map(({ id }) => id),
 			windowId,
 		});
 	}
@@ -378,7 +341,7 @@
 			><Icon icon="settings" width={18} /></button
 		>
 	</section>
-	<hr class="border-neutral-800" />
+	<!-- <hr class="border-neutral-800" /> -->
 	<!-- <div id="search-results" class="mb-6 grid gap-2">
 		{#each searchResults as result}
 			<p>{result}</p>
@@ -388,7 +351,9 @@
 	<ul
 		class="grid gap-4 w-full @container"
 		use:dndzone={{
-			items: viewWorkspaces,
+			items: viewWorkspaces.map((it) => {
+				return { ...it };
+			}),
 			dropTargetStyle: {},
 			dragDisabled:
 				viewWorkspaces.length !== workspaces.length || workspaces.length < 2,
@@ -437,8 +402,12 @@
 
 <style lang="postcss">
 	@media screen and (width < 260px) {
+		ul {
+			@apply justify-center;
+		}
+
 		button#add-workspace {
-			@apply h-12 p-0 aspect-square justify-self-center justify-center items-center;
+			@apply w-12 h-12 p-0 aspect-square mx-auto justify-center items-center;
 			span:nth-of-type(n + 2) {
 				@apply hidden;
 			}

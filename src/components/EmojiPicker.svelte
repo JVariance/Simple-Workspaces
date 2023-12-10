@@ -10,8 +10,9 @@
 
 	let { x = 0, y = 0, remove, picked } = $props<Props>();
 
-	function outsideClick() {
-		remove();
+	function outsideClick(e) {
+		console.info("outsideClick", e);
+		if (e.srcElement.tagName !== "EMOJI-PICKER") remove();
 	}
 
 	function emojiClick({ detail: { unicode } }) {
