@@ -205,11 +205,11 @@ export class Window {
 		return this.#workspaces;
 	}
 
-	addWorkspaceAndSwitch(): Promise<boolean> {
+	addWorkspaceAndSwitch(): Promise<Ext.Workspace> {
 		return new Promise(async (resolve) => {
 			const newWorkspace = await this.addWorkspace();
 			await this.switchWorkspace(newWorkspace);
-			return resolve(true);
+			return resolve(newWorkspace);
 		});
 	}
 
@@ -294,7 +294,7 @@ export class Window {
 		});
 	}
 
-	switchToNextWorkspace() {
+	switchToNextWorkspace(): Promise<Ext.Workspace> {
 		return new Promise(async (resolve) => {
 			const index =
 				this.workspaces.findIndex(({ id }) => id === this.#activeWorkspace.id) +
@@ -305,11 +305,11 @@ export class Window {
 			const nextWorkspace = this.#workspaces.at(index)!;
 
 			await this.switchWorkspace(nextWorkspace);
-			resolve(true);
+			resolve(nextWorkspace);
 		});
 	}
 
-	switchToPreviousWorkspace() {
+	switchToPreviousWorkspace(): Promise<Ext.Workspace> {
 		return new Promise(async (resolve) => {
 			const index =
 				this.workspaces.findIndex(({ id }) => id === this.#activeWorkspace.id) -
@@ -318,7 +318,7 @@ export class Window {
 
 			const previousWorkspace = this.#workspaces.at(index)!;
 			await this.switchWorkspace(previousWorkspace);
-			resolve(true);
+			resolve(previousWorkspace);
 		});
 	}
 

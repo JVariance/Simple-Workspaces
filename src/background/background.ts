@@ -32,7 +32,6 @@ function initWorkspaceStorage() {
 		await workspaceStorage.init();
 		return resolve(true);
 	});
-	// console.log({ workspaceStorage, workspaces: workspaceStorage.workspaces, activeWorkspace: workspaceStorage.activeWorkspace, });
 }
 
 browser.runtime.onStartup.addListener(async () => {
@@ -57,10 +56,13 @@ browser.runtime.onConnect.addListener(async (port) => {
 	});
 });
 
-function informPorts(message = "updated") {
+function informPorts(
+	message: string,
+	props: Record<string | symbol, any> = {}
+) {
 	backgroundListenerPorts.forEach(({ port, windowId }) => {
 		if (windowId === workspaceStorage.focusedWindowId) {
-			port.postMessage({ msg: message });
+			port.postMessage({ msg: message, ...props });
 		}
 	});
 }
@@ -102,6 +104,9 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 			const newWorkspace = await workspaceStorage.activeWindow.addWorkspace([]);
 			newWorkspace.active = false;
 			targetWorkspaceId = newWorkspace.id;
+			informPorts("addedWorkspace", {
+				workspace: newWorkspace,
+			});
 		}
 
 		await workspaceStorage.getWindow(tab!.windowId!).moveTabs({
@@ -109,7 +114,7 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 			targetWorkspaceId,
 		});
 
-		informPorts();
+		informPorts("movedTabs", { targetWorkspaceId, tabIds });
 	}
 });
 
@@ -175,12 +180,12 @@ browser.tabs.onCreated.addListener((tab) => {
 	} else {
 		workspaceStorage.addWindow(tab.windowId!);
 	}
-	informPorts();
+	informPorts("createdTab", { tabId: tab.id });
 });
 
 browser.tabs.onRemoved.addListener((tabId, info) => {
 	workspaceStorage.getWindow(info.windowId).removeTab(tabId);
-	informPorts();
+	informPorts("removedTab", { tabId });
 });
 
 browser.tabs.onActivated.addListener((activeInfo) => {
@@ -203,20 +208,24 @@ browser.commands.onCommand.addListener((command) => {
 			break;
 		case "next-workspace":
 			(async () => {
-				await workspaceStorage.activeWindow.switchToNextWorkspace();
-				informPorts();
+				informPorts("updatedActiveWorkspace", {
+					id: (await workspaceStorage.activeWindow.switchToNextWorkspace()).id,
+				});
 			})();
 			break;
 		case "previous-workspace":
 			(async () => {
-				await workspaceStorage.activeWindow.switchToPreviousWorkspace();
-				informPorts();
+				informPorts("updatedActiveWorkspace", {
+					id: (await workspaceStorage.activeWindow.switchToPreviousWorkspace())
+						.id,
+				});
 			})();
 			break;
 		case "new-workspace":
 			(async () => {
-				await workspaceStorage.activeWindow.addWorkspaceAndSwitch();
-				informPorts();
+				const newWorkspace =
+					await workspaceStorage.activeWindow.addWorkspaceAndSwitch();
+				informPorts("addedWorkspace", { workspace: newWorkspace });
 			})();
 			break;
 		default:
@@ -236,15 +245,17 @@ browser.runtime.onMessage.addListener((message) => {
 			workspaceStorage.clearDB();
 			break;
 		case "addWorkspace":
-			return new Promise((resolve) => {
-				return resolve(workspaceStorage.activeWindow.addWorkspaceAndSwitch());
-			});
+			(async () => {
+				informPorts("addedWorkspace", {
+					workspace:
+						await workspaceStorage.activeWindow.addWorkspaceAndSwitch(),
+				});
+			})();
+
+			break;
 		case "editWorkspace":
-			return new Promise((resolve) => {
-				return resolve(
-					workspaceStorage.getWindow(message.windowId).editWorkspace(message)
-				);
-			});
+			workspaceStorage.getWindow(message.windowId).editWorkspace(message);
+			break;
 		case "getWorkspaces":
 			return new Promise((resolve) => {
 				return resolve(workspaceStorage.getWindow(message.windowId).workspaces);
@@ -303,11 +314,9 @@ browser.runtime.onMessage.addListener((message) => {
 				.get(workspaceStorage.focusedWindowId)!
 				.workspaces.find(({ id }) => id === workspaceId)!;
 
-			// console.log({workspaceId, nextWorkspace,windows: workspaceStorage.windows,});
-
 			(async () => {
 				await workspaceStorage.activeWindow.switchWorkspace(nextWorkspace);
-				informPorts();
+				informPorts("updatedActiveWorkspace", { id: nextWorkspace.id });
 			})();
 			break;
 		default:

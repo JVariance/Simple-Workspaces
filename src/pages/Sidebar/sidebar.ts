@@ -1,3 +1,4 @@
+import { createRoot } from "svelte";
 import Sidebar from "./Sidebar.svelte";
 
-new Sidebar({ target: document.body });
+createRoot(Sidebar, { target: document.body });

@@ -3,17 +3,26 @@
 	import { dndzone } from "svelte-dnd-action";
 	import { Key } from "ts-key-enum";
 	import "@root/app.postcss";
-	import WorkspaceComponent from "@components/Workspace.svelte";
+	import Workspace from "@components/Workspace.svelte";
 	import Browser from "webextension-polyfill";
 	import Icon from "@root/components/Icon.svelte";
 	import { debounceFunc } from "@root/utils";
 
-	let workspaces: Ext.Workspace[] = [];
+	let workspaces: Ext.Workspace[] = $state([]);
+	let viewWorkspaces: Ext.Workspace[] = $state([]);
+	let activeWorkspace: Ext.Workspace = $state(undefined);
 	let searchInput: HTMLInputElement;
 	let windowId: number;
 
-	$: viewWorkspaces = workspaces.filter(({ hidden }) => !hidden);
-	$: activeWorkspace = workspaces.find((workspace) => workspace.active)!;
+	$effect(() => {
+		console.info("effect viewWorkspaces = workspaces");
+		viewWorkspaces = workspaces.map((w) => w);
+	});
+
+	$effect(() => {
+		console.info("update activeWorkspace");
+		activeWorkspace = workspaces.find((workspace) => workspace.active)!;
+	});
 
 	function getWorkspaces({
 		windowId,
@@ -21,6 +30,16 @@
 		windowId: number;
 	}): Promise<Ext.Workspace[]> {
 		return Browser.runtime.sendMessage({ msg: "getWorkspaces", windowId });
+	}
+
+	function updatedActiveWorkspace({
+		id: workspaceId,
+	}: {
+		id: Ext.Workspace["id"];
+	}) {
+		activeWorkspace.active = false;
+		const workspace = workspaces.find(({ id }) => id === workspaceId);
+		workspace.active = true;
 	}
 
 	function switchWorkspace(workspace: Ext.Workspace) {
@@ -35,6 +54,50 @@
 		})();
 	}
 
+	function movedTabs({
+		targetWorkspaceId,
+		tabIds,
+	}: {
+		targetWorkspaceId: string;
+		tabIds: number[];
+	}) {
+		const targetWorkspace = workspaces.find(
+			({ id }) => id === targetWorkspaceId
+		);
+
+		activeWorkspace.tabIds = activeWorkspace.tabIds.filter(
+			(tabId) => !tabIds.includes(tabId)
+		);
+
+		targetWorkspace.push(...tabIds);
+	}
+
+	function createdTab({ tabId }: { tabId: number }) {
+		activeWorkspace.tabIds.push(tabId);
+	}
+
+	function removedTab({ tabId }: { tabId: number }) {
+		activeWorkspace.tabIds = activeWorkspace.tabIds.filter(
+			(id) => id !== tabId
+		);
+	}
+
+	function addedWorkspace({ workspace }: { workspace: Ext.Workspace }) {
+		workspaces.push(workspace);
+		updatedActiveWorkspace({ id: workspace.id });
+	}
+
+	// function editedWorkspace({
+	// 	workspaceId,
+	// 	props = {},
+	// }: {
+	// 	workspaceId: Ext.Workspace["id"];
+	// 	props: Record<string | Symbol, any>;
+	// }) {
+	// 	const workspace = workspaces.find(({ id }) => id === workspaceId);
+	// 	Object.assign(workspace, ...props);
+	// }
+
 	const port = Browser.runtime.connect();
 
 	port.onMessage.addListener((message) => {
@@ -43,22 +106,23 @@
 			case "initialized":
 				initView();
 				break;
-			case "updated":
-				(async () => {
-					workspaces = await getWorkspaces({ windowId });
-				})();
+			case "addedWorkspace":
+				addedWorkspace(message);
 				break;
-			default:
+			case "updatedActiveWorkspace":
+				updatedActiveWorkspace(message);
 				break;
-		}
-	});
-
-	Browser.runtime.onMessage.addListener((message) => {
-		const { msg } = message;
-		switch (msg) {
-			case "tabCreated":
-				const { tabId } = message;
-				activeWorkspace.tabIds.push(tabId);
+			// case "editedWorkspace":
+			// 	editedWorkspace(message);
+			// 	break;
+			case "movedTabs":
+				movedTabs(message);
+				break;
+			case "createdTab":
+				createdTab(message);
+				break;
+			case "removedTab":
+				removedTab(message);
 				break;
 			default:
 				break;
@@ -66,13 +130,9 @@
 	});
 
 	function addWorkspace() {
-		(async () => {
-			await Browser.runtime.sendMessage({
-				msg: "addWorkspace",
-			});
-
-			workspaces = await getWorkspaces({ windowId });
-		})();
+		Browser.runtime.sendMessage({
+			msg: "addWorkspace",
+		});
 	}
 
 	function addWorkspaceByPointer() {
@@ -110,17 +170,15 @@
 		icon: string;
 		name: string;
 	}) {
-		(async () => {
-			await Browser.runtime.sendMessage({
-				msg: "editWorkspace",
-				windowId,
-				workspace,
-				icon,
-				name,
-			});
-
-			workspaces = await getWorkspaces({ windowId });
-		})();
+		workspace.icon = icon;
+		workspace.name = name;
+		Browser.runtime.sendMessage({
+			msg: "editWorkspace",
+			windowId,
+			workspaceId: workspace.id,
+			icon,
+			name,
+		});
 	}
 
 	function focusButton() {
@@ -133,7 +191,9 @@
 
 	let selectedIndex = 0;
 
-	$: selectedIndex, focusButton();
+	$effect(() => {
+		focusButton(selectedIndex);
+	});
 
 	function searchKeydown(e: KeyboardEvent) {
 		const { key } = e;
@@ -174,7 +234,7 @@
 			windowId = (await Browser.windows.getCurrent()).id!;
 			let localWorkspaces = await getWorkspaces({ windowId });
 
-			workspaces = localWorkspaces;
+			workspaces.push(...localWorkspaces);
 			return resolve();
 		});
 	}
@@ -227,6 +287,7 @@
 	}
 
 	function handleDndFinalize(e) {
+		console.log({ e });
 		viewWorkspaces = e.detail.items;
 		Browser.runtime.sendMessage({
 			msg: "reorderedWorkspaces",
@@ -250,7 +311,7 @@
 	});
 </script>
 
-<svelte:body on:keydown={onKeyDown} />
+<svelte:body onkeydown={onKeyDown} />
 
 <div class="w-[100dvw] p-2 box-border">
 	<!-- <h1 class="mb-4">Workspaces</h1> -->
@@ -258,19 +319,19 @@
 		<div class="flex flex-wrap gap-1 absolute top-0 right-0">
 			<button
 				class="mb-2 border rounded-md p-1"
-				on:click={() => {
+				onclick={() => {
 					Browser.runtime.sendMessage({ msg: "showAllTabs" });
 				}}>show all tabs</button
 			>
 			<button
 				class="mb-2 border rounded-md p-1"
-				on:click={() => {
+				onclick={() => {
 					Browser.runtime.sendMessage({ msg: "reloadAllTabs" });
 				}}>reload all tabs</button
 			>
 			<button
 				class="mb-2 border rounded-md p-1"
-				on:click={() => {
+				onclick={() => {
 					Browser.storage.local.clear();
 				}}>clear DB</button
 			>
@@ -294,8 +355,8 @@
 				class="w-full bg-transparent p-1 !outline-none !outline-0"
 				data-focusid={-1}
 				bind:this={searchInput}
-				on:input={debouncedSearch}
-				on:keydown={searchKeydown}
+				oninput={debouncedSearch}
+				onkeydown={searchKeydown}
 				placeholder="Search..."
 			/>
 		</search>
@@ -309,54 +370,53 @@
 			<p>{result}</p>
 		{/each}
 	</div> -->
-	{#if viewWorkspaces.length && activeWorkspace}
-		<div
-			class="grid gap-4 w-full @container"
-			use:dndzone={{
-				items: viewWorkspaces,
-				dropTargetStyle: {},
-				dragDisabled:
-					viewWorkspaces.length !== workspaces.length || workspaces.length < 2,
-			}}
-			on:consider={handleDndConsider}
-			on:finalize={handleDndFinalize}
-		>
-			{#each viewWorkspaces as workspace, i (workspace.id)}
-				<WorkspaceComponent
-					{workspace}
-					active={workspace.active}
-					selected={i === selectedIndex}
-					index={i}
-					on:editWorkspace={({ detail: { icon, name } }) => {
-						editWorkspace({ workspace, icon, name });
-					}}
-					on:switchWorkspace={() => {
-						switchWorkspace(workspace);
-					}}
-					on:removeWorkspace={() => {
-						removeWorkspace(workspace);
-					}}
-				></WorkspaceComponent>
-			{/each}
-		</div>
-		<button
-			id="add-workspace"
-			on:click={addWorkspaceByPointer}
-			on:keydown={addWorkspaceByKey}
-			data-focusid={viewWorkspaces.length}
-			class:selected={selectedIndex === viewWorkspaces.length}
-			class="
+	<!-- {#if viewWorkspaces.length && activeWorkspace} -->
+	<div
+		class="grid gap-4 w-full @container"
+		use:dndzone={{
+			items: viewWorkspaces,
+			dropTargetStyle: {},
+			dragDisabled:
+				viewWorkspaces.length !== workspaces.length || workspaces.length < 2,
+		}}
+		on:consider={handleDndConsider}
+		on:finalize={handleDndFinalize}
+	>
+		{#each viewWorkspaces as workspace, i (workspace.id)}
+			<Workspace
+				{workspace}
+				active={workspace.active}
+				selected={i === selectedIndex}
+				index={i}
+				editWorkspace={({ icon, name }) => {
+					editWorkspace({ workspace, icon, name });
+				}}
+				switchWorkspace={() => {
+					switchWorkspace(workspace);
+				}}
+				removeWorkspace={() => {
+					removeWorkspace(workspace);
+				}}
+			></Workspace>
+		{/each}
+	</div>
+	<button
+		id="add-workspace"
+		onclick={addWorkspaceByPointer}
+		onkeydown={addWorkspaceByKey}
+		data-focusid={viewWorkspaces.length}
+		class:selected={selectedIndex === viewWorkspaces.length}
+		class="
 				p-4 items-center flex gap-4 rounded-md text-left border mt-4 w-full
 				outline-none
 				dark:border-neutral-700 dark:bg-neutral-800 [&.selected]:dark:bg-neutral-700
 			"
-			><span class="w-[2ch] text-2xl text-center"
-				><Icon icon="add" width={18} /></span
-			>
-			<span class="leading-none -mt-[0.5ch] text-lg">new workspace</span
-			></button
+		><span class="w-[2ch] text-2xl text-center"
+			><Icon icon="add" width={18} /></span
 		>
-	{/if}
+		<span class="leading-none -mt-[0.5ch] text-lg">new workspace</span></button
+	>
+	<!-- {/if} -->
 </div>
 
 <style lang="postcss">

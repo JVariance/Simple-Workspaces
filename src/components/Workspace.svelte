@@ -1,24 +1,36 @@
 <script lang="ts">
-	import { createEventDispatcher, tick } from "svelte";
+	import { createRoot, tick } from "svelte";
 	import Icon from "./Icon.svelte";
 	import EmojiPicker from "./EmojiPicker.svelte";
 	import { Key } from "ts-key-enum";
 
-	export let workspace: Ext.Workspace;
-	export let active = false;
-	export let selected = false;
-	export let index: number;
+	type Props = {
+		workspace: Ext.Workspace;
+		index: number;
+		active?: boolean;
+		selected?: boolean;
+		class?: string;
+		switchWorkspace: Function;
+		editWorkspace: Function;
+		removeWorkspace: Function;
+	};
+
+	let {
+		workspace,
+		index,
+		active,
+		selected = false,
+		class: classes = "",
+		switchWorkspace,
+		editWorkspace,
+		removeWorkspace,
+	} = $props<Props>();
 
 	let { name: nameValue, icon: iconValue } = workspace;
 
-	let editMode = false;
-	let classes = "";
+	let editMode = $state(false);
 	let workspaceButton: HTMLButtonElement;
 	let nameInput: HTMLInputElement;
-
-	const dispatch = createEventDispatcher();
-
-	export { classes as class };
 
 	function onKeyDown(e: KeyboardEvent) {
 		const { key } = e;
@@ -40,21 +52,21 @@
 		})();
 	}
 
-	function editWorkspace() {
+	function _editWorkspace() {
 		editMode = false;
-		dispatch("editWorkspace", { workspace, icon: iconValue, name: nameValue });
+		editWorkspace({ workspace, icon: iconValue, name: nameValue });
 	}
 
-	function removeWorkspace() {
+	function _removeWorkspace() {
 		const removalConfirmed = confirm(
 			"This workspace will be removed. Continue?"
 		);
 
-		if (removalConfirmed) dispatch("removeWorkspace");
+		if (removalConfirmed) removeWorkspace();
 	}
 
-	function switchWorkspace() {
-		dispatch("switchWorkspace");
+	function _switchWorkspace() {
+		switchWorkspace();
 	}
 
 	function cancelEditing() {
@@ -65,23 +77,32 @@
 		const { target } = e;
 
 		const { x, y } = target.getBoundingClientRect();
-		const picker = new EmojiPicker({ target: document.body, props: { x, y } });
-		picker.$on("remove", () => {
-			picker.$destroy();
-		});
-
-		picker.$on("picked", ({ detail: { unicode } }) => {
-			iconValue = unicode;
-			picker.$destroy();
+		const picker = createRoot(EmojiPicker, {
+			target: document.body,
+			props: {
+				x,
+				y,
+				remove: () => {
+					picker.$destroy();
+				},
+				picked: ({ unicode }) => {
+					iconValue = unicode;
+					picker.$destroy();
+				},
+			},
 		});
 	}
 
-	$: if (selected) {
-		(async () => {
-			await tick();
-			workspaceButton?.focus();
-		})();
-	}
+	$effect(() => {
+		console.log("workspace update");
+
+		if (selected) {
+			(async () => {
+				await tick();
+				workspaceButton?.focus();
+			})();
+		}
+	});
 </script>
 
 {#if workspace}
@@ -96,7 +117,7 @@
 		{#if editMode}
 			<button
 				title="pick emoji"
-				on:click={openEmojiPicker}
+				onclick={openEmojiPicker}
 				class="text-2xl rounded-full">{iconValue}</button
 			>
 			<input
@@ -104,27 +125,27 @@
 				{id}
 				type="text"
 				disabled={!editMode}
-				on:keydown={onKeyDown}
+				onkeydown={onKeyDown}
 				bind:this={nameInput}
 				bind:value={nameValue}
 			/>
 			<div class="flex gap-2">
 				<button
 					title="remove"
-					on:click={removeWorkspace}
+					onclick={_removeWorkspace}
 					class="rounded-full outline-none focus:bg-white/25"
 					><Icon icon="bin" width={16} /></button
 				>
 				<button
 					title="apply"
-					on:click={editWorkspace}
+					onclick={_editWorkspace}
 					class="rounded-full outline-none focus:bg-white/25"
 				>
 					<Icon icon="check" width={18} />
 				</button>
 				<button
 					title="cancel"
-					on:click={cancelEditing}
+					onclick={cancelEditing}
 					class="rounded-full outline-none focus:bg-white/25"
 				>
 					<Icon icon="cross" width={18} />
@@ -132,8 +153,8 @@
 			</div>
 		{:else}
 			<button
-				on:click={switchWorkspace}
-				class="outline-transparent outline-none flex items-center gap-4"
+				onclick={_switchWorkspace}
+				class="w-full outline-transparent outline-none flex items-center gap-4"
 				data-focusid={index}
 				bind:this={workspaceButton}
 			>
@@ -141,7 +162,7 @@
 				<span class="{active ? 'font-bold' : ''} text-lg">{name}</span>
 				<!-- <span>({tabIds.join(",")})</span> -->
 			</button>
-			<button title="edit" on:click={toggleEditMode}>
+			<button title="edit" onclick={toggleEditMode}>
 				<Icon icon="edit" width={14} />
 			</button>
 		{/if}

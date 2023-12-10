@@ -1,12 +1,19 @@
 <script lang="ts">
 	import Icon from "@iconify/svelte";
-	export let icon: keyof typeof icons;
-	export let width = 24;
-	export let height = width;
 
-	let classes = "";
+	type Props = {
+		icon: keyof typeof icons;
+		width?: number;
+		height?: number;
+		class?: string;
+	};
 
-	export { classes as class };
+	let {
+		icon,
+		width = 24,
+		height = width,
+		class: classes = "",
+	} = $props<Props>();
 
 	const icons = {
 		add: "ph:plus-bold",

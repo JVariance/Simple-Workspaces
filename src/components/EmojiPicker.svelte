@@ -2,21 +2,20 @@
 	import { clickOutside } from "@root/utils";
 	import "emoji-picker-element";
 	import type { Picker } from "emoji-picker-element";
-	import { createEventDispatcher, onMount } from "svelte";
+	import { onMount } from "svelte";
 
-	const dispatch = createEventDispatcher();
+	type Props = { x: number; y: number; remove: Function; picked: Function };
 
 	let picker: Picker;
 
-	export let x = 0,
-		y = 0;
+	let { x = 0, y = 0, remove, picked } = $props<Props>();
 
 	function outsideClick() {
-		dispatch("remove");
+		remove();
 	}
 
 	function emojiClick({ detail: { unicode } }) {
-		dispatch("picked", { unicode });
+		picked({ unicode });
 	}
 
 	onMount(() => {

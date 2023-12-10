@@ -1,3 +1,4 @@
+import { createRoot } from "svelte";
 import Popup from "./Popup.svelte";
 
-new Popup({ target: document.body });
+createRoot(Popup, { target: document.body });
