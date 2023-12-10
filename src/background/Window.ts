@@ -323,24 +323,20 @@ export class Window {
 	}
 
 	editWorkspace({
-		workspace,
+		workspaceId,
 		name,
 		icon,
 	}: {
-		workspace: Ext.Workspace;
+		workspaceId: Ext.Workspace["id"];
 		name: string;
 		icon: string;
 	}): Promise<boolean> {
 		return new Promise(async (resolve) => {
-			let _workspace = this.#workspaces.find(
-				(worksp) => worksp.id === workspace.id
-			)!;
-
-			_workspace.name = name;
-			_workspace.icon = icon;
+			const workspace = this.#workspaces.find(({ id }) => id === workspaceId)!;
+			workspace.name = name;
+			workspace.icon = icon;
 
 			await this.#persist();
-
 			resolve(true);
 		});
 	}

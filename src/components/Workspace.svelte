@@ -26,7 +26,8 @@
 		removeWorkspace,
 	} = $props<Props>();
 
-	let { name: nameValue, icon: iconValue } = workspace;
+	let nameValue = $state(workspace.name);
+	let iconValue = $state(workspace.icon);
 
 	let editMode = $state(false);
 	let workspaceButton: HTMLButtonElement;

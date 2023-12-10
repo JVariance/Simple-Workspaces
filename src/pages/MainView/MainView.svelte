@@ -69,7 +69,11 @@
 			(tabId) => !tabIds.includes(tabId)
 		);
 
-		targetWorkspace.push(...tabIds);
+		if (!activeWorkspace.tabIds.length) {
+			updatedActiveWorkspace({ id: targetWorkspace.id });
+		}
+
+		targetWorkspace.tabIds.push(...tabIds);
 	}
 
 	function createdTab({ tabId }: { tabId: number }) {
@@ -189,7 +193,7 @@
 		)?.focus();
 	}
 
-	let selectedIndex = 0;
+	let selectedIndex = $state(0);
 
 	$effect(() => {
 		focusButton(selectedIndex);
@@ -287,11 +291,24 @@
 	}
 
 	function handleDndFinalize(e) {
-		console.log({ e });
-		viewWorkspaces = e.detail.items;
+		const sortedWorkspacesIds = e.detail.items.map(({ id }) => id);
+		viewWorkspaces.sort((a, b) => {
+			return (
+				sortedWorkspacesIds.indexOf(a.id) - sortedWorkspacesIds.indexOf(b.id)
+			);
+		});
+
+		let dingsi = viewWorkspaces
+			.map((vw) => {
+				return { ...vw };
+			})
+			.slice();
+
+		console.log({ dingsi });
+
 		Browser.runtime.sendMessage({
 			msg: "reorderedWorkspaces",
-			workspaces: viewWorkspaces,
+			workspaces: dingsi,
 			windowId,
 		});
 	}
