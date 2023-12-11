@@ -321,6 +321,18 @@ browser.runtime.onMessage.addListener((message) => {
 				informPorts("updatedActiveWorkspace", { id: nextWorkspace.id });
 			})();
 			break;
+		case "setDefaultWorkspaces":
+			browser.storage.local.set({
+				tw_defaultWorkspaces: message.defaultWorkspaces,
+			});
+			break;
+		case "getDefaultWorkspaces":
+			return new Promise(async (resolve) => {
+				const { tw_defaultWorkspaces } = await browser.storage.local.get(
+					"tw_defaultWorkspaces"
+				);
+				return resolve(tw_defaultWorkspaces);
+			});
 		default:
 			break;
 	}

@@ -38,9 +38,32 @@ export class Window {
 						windowId: this.#id,
 					})
 				).map((tab) => tab.id!);
-				const newWorkspace = await this.#getNewWorkspace();
-				newWorkspace.tabIds = currentTabIds || [];
-				newWorkspace.activeTabId = currentTabIds?.at(0);
+
+				const { tw_defaultWorkspaces: defaultWorkspaces } =
+					(await Browser.storage.local.get("tw_defaultWorkspaces")) as {
+						tw_defaultWorkspaces: Ext.Workspace[];
+					};
+
+				let activeWorkspace: Ext.Workspace;
+
+				if (defaultWorkspaces) {
+					for (let [i, defaultWorkspace] of defaultWorkspaces.entries()) {
+						const newWorkspace = await this.#getNewWorkspace();
+						this.workspaces.push({
+							...newWorkspace,
+							...defaultWorkspace,
+							active: i === 0,
+						});
+					}
+
+					activeWorkspace = defaultWorkspaces.at(0)!;
+				} else {
+					const newWorkspace = await this.#getNewWorkspace();
+					newWorkspace.tabIds = currentTabIds || [];
+					newWorkspace.activeTabId = currentTabIds?.at(0);
+					this.workspaces.push(newWorkspace);
+					activeWorkspace = newWorkspace;
+				}
 
 				if (!currentTabIds.length) {
 					const newTab = await Browser.tabs.create({
@@ -49,11 +72,11 @@ export class Window {
 					});
 					await Browser.tabs.remove(currentTabIds[0]);
 
-					newWorkspace.tabIds.push(newTab.id!);
-					newWorkspace.activeTabId = newTab.id!;
+					activeWorkspace.tabIds.push(newTab.id!);
+					activeWorkspace.activeTabId = newTab.id!;
 				}
 
-				this.#workspaces = [newWorkspace];
+				// this.#workspaces = [activeWorkspace];
 
 				// await this.#persist();
 			}
