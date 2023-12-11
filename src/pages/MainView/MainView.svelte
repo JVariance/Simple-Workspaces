@@ -9,13 +9,17 @@
 	import { debounceFunc } from "@root/utils";
 
 	let workspaces: Ext.Workspace[] = $state([]);
-	let viewWorkspaces: Ext.Workspace[] = $state([]);
+	let viewWorkspaces: Ext.Workspace[] = $derived(
+		workspaces.filter(({ id }) => !searchFilteredWorkspaceIds.includes(id))
+	);
 	let activeWorkspace: Ext.Workspace = $state();
 	let searchInput: HTMLInputElement;
 	let windowId: number;
+	let searchFilteredWorkspaceIds: string[] = $state([]);
+
+	$inspect(searchFilteredWorkspaceIds);
 
 	$effect(() => {
-		viewWorkspaces = workspaces;
 		activeWorkspace = workspaces.find((workspace) => workspace.active)!;
 	});
 
@@ -130,6 +134,19 @@
 
 	function removeWorkspace(workspace: Ext.Workspace) {
 		(async () => {
+			if (workspace === activeWorkspace) {
+				const currentActiveWorkspaceIndex = workspaces.findIndex(
+					({ id }) => id === activeWorkspace.id
+				);
+
+				const newActiveWorkspaceIndex = Math.max(
+					0,
+					currentActiveWorkspaceIndex - 1
+				);
+
+				workspaces.at(newActiveWorkspaceIndex)!.active = true;
+			}
+
 			workspaces = workspaces.filter(({ id }) => id !== workspace.id);
 
 			await Browser.runtime.sendMessage({
@@ -220,51 +237,42 @@
 	function search(e: InputEvent & { target: HTMLInputElement }) {
 		const { value } = e.target;
 
-		// searchResults = [];
+		// // searchResults = [];
 		if (!value) {
-			// viewWorkspaces = workspaces.filter(({ hidden }) => !hidden);
-			viewWorkspaces = workspaces.map((workspace) => {
-				workspace.hidden = false;
-				return workspace;
-			});
-			return;
+			searchFilteredWorkspaceIds = [];
 		}
 
 		(async () => {
 			console.log({ value });
 			const tabs = await Browser.tabs.query({ windowId });
 			const matchingTabs = tabs.filter((tab) => tab.url?.includes(value));
-			const matchingTabIds = matchingTabs.map(({ id }) => id);
+			const matchingTabIds = matchingTabs.map(({ id }) => id!);
 
-			console.log({ matchingTabs });
+			searchFilteredWorkspaceIds = workspaces.reduce((acc, workspace) => {
+				const workspaceHasSomeMatchingTab = workspace.tabIds.some((tabId) =>
+					matchingTabIds.includes(tabId)
+				);
+				if (!workspaceHasSomeMatchingTab) {
+					acc.push(workspace.id);
+				}
+				return acc;
+			}, [] as string[]);
 
-			viewWorkspaces = workspaces
-				.map((workspace) => {
-					const workspaceHasSearchedTab = workspace.tabIds.some((tabId) =>
-						matchingTabIds.includes(tabId)
-					);
-
-					workspace.hidden = !workspaceHasSearchedTab;
-					return workspace;
-				})
-				.filter(({ hidden }) => !hidden);
-
-			// searchResults = [
-			// 	...searchResults,
-			// 	...matchingTabs.map((tab) => tab.url!),
-			// ];
+			console.log({ searchFilteredWorkspaceIds });
 		})();
 	}
 
 	const debouncedSearch = debounceFunc(search, 500);
 
 	function handleDndConsider(e) {
-		viewWorkspaces = e.detail.items;
+		workspaces = e.detail.items;
 	}
 
 	function handleDndFinalize(e) {
-		console.log({ detail: e.detail, viewWorkspaces });
-		viewWorkspaces = e.detail.items;
+		console.log({ detail: e.detail });
+		// workspaces = e.detail.items;
+		workspaces = e.detail.items;
+		console.log(workspaces);
 
 		Browser.runtime.sendMessage({
 			msg: "reorderedWorkspaces",
@@ -351,9 +359,7 @@
 	<ul
 		class="grid gap-4 w-full @container"
 		use:dndzone={{
-			items: viewWorkspaces.map((it) => {
-				return { ...it };
-			}),
+			items: workspaces,
 			dropTargetStyle: {},
 			dragDisabled:
 				viewWorkspaces.length !== workspaces.length || workspaces.length < 2,
@@ -362,7 +368,7 @@
 		onfinalize={handleDndFinalize}
 	>
 		{#each viewWorkspaces as workspace, i (workspace.id)}
-			<li class="item">
+			<li class="item relative">
 				<Workspace
 					{workspace}
 					active={workspace.active}
@@ -381,6 +387,7 @@
 			</li>
 		{/each}
 	</ul>
+
 	<button
 		id="add-workspace"
 		onclick={addWorkspaceByPointer}

@@ -33,6 +33,10 @@
 	let workspaceButton: HTMLButtonElement;
 	let nameInput: HTMLInputElement;
 
+	let removalDialog: HTMLDialogElement;
+	let confirmRemovalButton: HTMLButtonElement;
+	let removalDialogVisible = $state(false);
+
 	function onKeyDown(e: KeyboardEvent) {
 		const { key } = e;
 
@@ -58,12 +62,16 @@
 		editWorkspace({ workspace, icon: iconValue, name: nameValue });
 	}
 
-	function _removeWorkspace() {
-		const removalConfirmed = confirm(
-			"This workspace will be removed. Continue?"
-		);
+	function showRemovalDialog() {
+		removalDialogVisible = true;
+		(async () => {
+			await tick();
+			confirmRemovalButton.focus();
+		})();
+	}
 
-		if (removalConfirmed) removeWorkspace();
+	function _removeWorkspace() {
+		removeWorkspace();
 	}
 
 	function _switchWorkspace() {
@@ -105,6 +113,23 @@
 	});
 </script>
 
+<dialog
+	bind:this={removalDialog}
+	class="p-4 rounded-md shadow-lg w-max h-max border absolute top-0 right-0 gap-2 items-center {removalDialogVisible
+		? 'flex'
+		: 'hidden'}"
+>
+	<button
+		bind:this={confirmRemovalButton}
+		class="focus:bg-red-400"
+		onclick={_removeWorkspace}>Confirm removal</button
+	>
+	<button
+		onclick={() => {
+			removalDialogVisible = false;
+		}}>Cancel removal</button
+	>
+</dialog>
 {#if workspace}
 	{@const { id, name, icon, tabIds, windowId } = workspace}
 	<div
@@ -132,7 +157,7 @@
 			<div class="flex gap-2">
 				<button
 					title="remove"
-					onclick={_removeWorkspace}
+					onclick={showRemovalDialog}
 					class="rounded-full outline-none focus:bg-white/25"
 					><Icon icon="bin" width={16} /></button
 				>
