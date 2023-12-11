@@ -46,9 +46,6 @@
 					x,
 					y,
 					visible: true,
-					remove: () => {
-						console.info("remove picker");
-					},
 					picked: ({ unicode }: { unicode: string }) => {
 						workspace.icon = unicode;
 					},
@@ -63,9 +60,6 @@
 				x,
 				y,
 				visible: true,
-				remove: () => {
-					console.info("remove picker");
-				},
 				picked: ({ unicode }: { unicode: string }) => {
 					workspace.icon = unicode;
 				},

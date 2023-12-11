@@ -91,6 +91,7 @@
 			props: {
 				x,
 				y,
+				visible: false,
 				remove: () => {
 					picker.$destroy();
 				},
@@ -100,6 +101,7 @@
 				},
 			},
 		});
+		picker.$set({ visible: true });
 	}
 
 	$effect(() => {

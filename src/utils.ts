@@ -31,8 +31,13 @@ export function clickOutside(node: HTMLElement) {
 	window.addEventListener("click", handleClick);
 
 	function handleClick(e: PointerEvent) {
+		const { target, currentTarget, relatedTarget } = e;
 		if (!node.contains(e.target)) {
-			node.dispatchEvent(new CustomEvent("outsideclick"));
+			node.dispatchEvent(
+				new CustomEvent("outsideclick", {
+					detail: { target, currentTarget, relatedTarget },
+				})
+			);
 		}
 	}
 
