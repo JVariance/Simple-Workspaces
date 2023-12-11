@@ -9,13 +9,15 @@
 	import { debounceFunc } from "@root/utils";
 
 	let workspaces: Ext.Workspace[] = $state([]);
+	let activeWorkspace: Ext.Workspace = $state()!;
+	let searchFilteredWorkspaceIds: string[] = $state([]);
 	let viewWorkspaces: Ext.Workspace[] = $derived(
 		workspaces.filter(({ id }) => !searchFilteredWorkspaceIds.includes(id))
 	);
-	let activeWorkspace: Ext.Workspace = $state();
+	let selectedIndex = $state(0);
+
 	let searchInput: HTMLInputElement;
 	let windowId: number;
-	let searchFilteredWorkspaceIds: string[] = $state([]);
 
 	$effect(() => {
 		activeWorkspace = workspaces.find((workspace) => workspace.active)!;
@@ -35,7 +37,7 @@
 		id: Ext.Workspace["id"];
 	}) {
 		activeWorkspace.active = false;
-		const workspace = workspaces.find(({ id }) => id === workspaceId);
+		const workspace = workspaces.find(({ id }) => id === workspaceId)!;
 		workspace.active = true;
 	}
 
@@ -60,7 +62,7 @@
 	}) {
 		const targetWorkspace = workspaces.find(
 			({ id }) => id === targetWorkspaceId
-		);
+		)!;
 
 		activeWorkspace.tabIds = activeWorkspace.tabIds.filter(
 			(tabId) => !tabIds.includes(tabId)
@@ -183,10 +185,8 @@
 		)?.focus();
 	}
 
-	let selectedIndex = $state(0);
-
 	$effect(() => {
-		focusButton(selectedIndex);
+		focusButton();
 	});
 
 	function searchKeydown(e: KeyboardEvent) {
@@ -261,16 +261,16 @@
 
 	const debouncedSearch = debounceFunc(search, 500);
 
-	function handleDndConsider(e) {
+	function handleDndConsider(e: CustomEvent<DndEvent<Ext.Workspace>>) {
 		workspaces = e.detail.items;
 	}
 
-	function handleDndFinalize(e) {
+	function handleDndFinalize(e: CustomEvent<DndEvent<Ext.Workspace>>) {
 		workspaces = e.detail.items;
 
 		Browser.runtime.sendMessage({
 			msg: "reorderedWorkspaces",
-			sortedWorkspacesIds: e.detail.items.map(({ id }) => id),
+			sortedWorkspacesIds: workspaces.map(({ id }) => id),
 			windowId,
 		});
 	}
@@ -361,8 +361,8 @@
 			dragDisabled:
 				viewWorkspaces.length !== workspaces.length || workspaces.length < 2,
 		}}
-		onconsider={handleDndConsider}
-		onfinalize={handleDndFinalize}
+		on:consider={handleDndConsider}
+		on:finalize={handleDndFinalize}
 	>
 		{#each viewWorkspaces as workspace, i (workspace.id)}
 			<li class="item relative">
@@ -371,7 +371,7 @@
 					active={workspace.active}
 					selected={i === selectedIndex}
 					index={i}
-					editWorkspace={({ icon, name }) => {
+					editWorkspace={({ icon, name }: {icon: string; name: string;}) => {
 						editWorkspace({ workspace, icon, name });
 					}}
 					switchWorkspace={() => {

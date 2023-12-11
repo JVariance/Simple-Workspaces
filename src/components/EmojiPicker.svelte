@@ -2,35 +2,74 @@
 	import { clickOutside } from "@root/utils";
 	import "emoji-picker-element";
 	import type { Picker } from "emoji-picker-element";
-	import { onMount } from "svelte";
+	import { onDestroy, onMount, untrack } from "svelte";
 
-	type Props = { x: number; y: number; remove: Function; picked: Function };
+	type Props = {
+		x: number;
+		y: number;
+		visible: boolean;
+		remove: Function;
+		picked: Function;
+	};
 
-	let picker: Picker;
+	let emojiPicker: Picker;
+	let picker: HTMLDivElement;
+	let searchInput: HTMLInputElement;
 
-	let { x = 0, y = 0, remove, picked } = $props<Props>();
+	let { x = 0, y = 0, remove, picked, visible } = $props<Props>();
 
 	function outsideClick(e) {
-		console.info("outsideClick", e);
-		if (e.srcElement.tagName !== "EMOJI-PICKER") remove();
+		console.info("outsideClick");
+		const { explicitOriginalTarget } = e;
+		const closestPicker = explicitOriginalTarget.closest(".picker");
+		const clickedInsidePicker =
+			closestPicker || explicitOriginalTarget === emojiPicker;
+
+		// if (!clickedInsidePicker) remove();
+		if (!clickedInsidePicker) visible = false;
 	}
 
+	$effect(() => {
+		console.log("updated", { visible });
+		if (visible) {
+			emojiPicker.addEventListener("outsideclick", outsideClick);
+		} else {
+			emojiPicker.removeEventListener("outsideclick", outsideClick);
+		}
+	});
+
 	function emojiClick({ detail: { unicode } }) {
+		console.info("emojiClick");
 		picked({ unicode });
+		visible = false;
 	}
 
 	onMount(() => {
-		setTimeout(() => {
-			picker.addEventListener("outsideclick", outsideClick);
-		}, 500);
+		picker = emojiPicker.shadowRoot.children[1];
+		searchInput = picker.querySelector("#search");
+		searchInput.focus();
+		// setTimeout(() => {
+		// 	emojiPicker.addEventListener("outsideclick", outsideClick);
+		// }, 500);
 	});
 </script>
 
 <emoji-picker
 	class="absolute"
+	class:visible
 	use:clickOutside
 	on:emoji-click={emojiClick}
-	bind:this={picker}
-	style:top={y}
-	style:left={x}
+	bind:this={emojiPicker}
+	style:top="{y}px"
+	style:left="{x}px"
 />
+
+<style lang="postcss">
+	:global(emoji-picker) {
+		@apply absolute hidden;
+	}
+
+	:global(emoji-picker.visible) {
+		@apply flex;
+	}
+</style>

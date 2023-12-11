@@ -20,6 +20,7 @@
 		bin: "fluent:bin-recycle-24-filled",
 		check: "tabler:check",
 		cross: "iconoir:cancel",
+		"drag-handle": "radix-icons:drag-handle-dots-2",
 		edit: "fluent:edit-24-filled",
 		remove: "ic:round-remove-circle",
 		search: "tabler:search",

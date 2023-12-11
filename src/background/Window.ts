@@ -23,6 +23,7 @@ export class Window {
 	init({ lookInStorage = true } = {}) {
 		return new Promise(async (resolve) => {
 			// Browser.storage.local.remove(this.#storageKey);
+			// @ts-ignore
 			const { [this.#storageKey]: localWindow } = lookInStorage
 				? ((await Browser.storage.local.get(this.#storageKey)) as Ext.Window)
 				: {};
