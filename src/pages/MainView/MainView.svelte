@@ -17,8 +17,6 @@
 	let windowId: number;
 	let searchFilteredWorkspaceIds: string[] = $state([]);
 
-	$inspect(searchFilteredWorkspaceIds);
-
 	$effect(() => {
 		activeWorkspace = workspaces.find((workspace) => workspace.active)!;
 	});
@@ -243,9 +241,10 @@
 		}
 
 		(async () => {
-			console.log({ value });
 			const tabs = await Browser.tabs.query({ windowId });
-			const matchingTabs = tabs.filter((tab) => tab.url?.includes(value));
+			const matchingTabs = tabs.filter((tab) =>
+				tab.url?.toLocaleLowerCase()?.includes(value.toLocaleLowerCase())
+			);
 			const matchingTabIds = matchingTabs.map(({ id }) => id!);
 
 			searchFilteredWorkspaceIds = workspaces.reduce((acc, workspace) => {
@@ -257,8 +256,6 @@
 				}
 				return acc;
 			}, [] as string[]);
-
-			console.log({ searchFilteredWorkspaceIds });
 		})();
 	}
 
@@ -269,10 +266,7 @@
 	}
 
 	function handleDndFinalize(e) {
-		console.log({ detail: e.detail });
-		// workspaces = e.detail.items;
 		workspaces = e.detail.items;
-		console.log(workspaces);
 
 		Browser.runtime.sendMessage({
 			msg: "reorderedWorkspaces",
@@ -300,26 +294,29 @@
 
 <div class="w-[100dvw] p-2 box-border">
 	<!-- <h1 class="mb-4">Workspaces</h1> -->
-	{#if true}
+	{#if import.meta.env.DEV}
 		<div class="flex flex-wrap gap-1 absolute top-0 right-0">
-			<button
-				class="mb-2 border rounded-md p-1"
-				onclick={() => {
-					Browser.runtime.sendMessage({ msg: "showAllTabs" });
-				}}>show all tabs</button
-			>
-			<button
-				class="mb-2 border rounded-md p-1"
-				onclick={() => {
-					Browser.runtime.sendMessage({ msg: "reloadAllTabs" });
-				}}>reload all tabs</button
-			>
-			<button
-				class="mb-2 border rounded-md p-1"
-				onclick={() => {
-					Browser.storage.local.clear();
-				}}>clear DB</button
-			>
+			<details class="bg-neutral-950 p-1 rounded-md">
+				<summary></summary>
+				<button
+					class="mb-2 border rounded-md p-1"
+					onclick={() => {
+						Browser.runtime.sendMessage({ msg: "showAllTabs" });
+					}}>show all tabs</button
+				>
+				<button
+					class="mb-2 border rounded-md p-1"
+					onclick={() => {
+						Browser.runtime.sendMessage({ msg: "reloadAllTabs" });
+					}}>reload all tabs</button
+				>
+				<button
+					class="mb-2 border rounded-md p-1"
+					onclick={() => {
+						Browser.storage.local.clear();
+					}}>clear DB</button
+				>
+			</details>
 		</div>
 	{/if}
 	<section class="flex gap-2 items-center mt-4 mb-6 w-full">

@@ -192,7 +192,7 @@ export class Window {
 			return resolve({
 				id: crypto.randomUUID(),
 				icon: "🐠",
-				name: `Workspace ${this.#workspaces.length + 1}`,
+				name: `Workspace`,
 				tabIds: [],
 				active: true,
 				windowId: this.#id,
