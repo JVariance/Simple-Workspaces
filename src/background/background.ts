@@ -1,3 +1,4 @@
+import { DeferredPromise } from "@root/utils";
 import browser from "webextension-polyfill";
 import { TabMenu } from "./TabMenu";
 import { WorkspaceStorage } from "./WorkspaceStorage";
@@ -44,10 +45,13 @@ let backgroundListenerPorts: {
 }[] = [];
 
 browser.runtime.onConnect.addListener(async (port) => {
+	console.info("port connected");
 	backgroundListenerPorts.push({
 		port,
 		windowId: workspaceStorage.focusedWindowId,
 	});
+
+	port.postMessage({ msg: "connected" });
 
 	port.onDisconnect.addListener((port) => {
 		backgroundListenerPorts = backgroundListenerPorts.filter(
@@ -150,12 +154,14 @@ browser.runtime.onInstalled.addListener(async (details) => {
 	if (!workspaceStorage) await initExtension();
 });
 
-browser.windows.onCreated.addListener((window) => {
-	(async () => {
-		if (!workspaceStorage.windows.has(window.id!)) {
-			await workspaceStorage.addWindow(window.id!);
-		}
-	})();
+let windowAddedToStorage = new DeferredPromise<string>();
+windowAddedToStorage.resolve("");
+
+browser.windows.onCreated.addListener(async (window) => {
+	windowAddedToStorage = new DeferredPromise();
+	if (!workspaceStorage.windows.has(window.id!))
+		await workspaceStorage.addWindow(window.id!);
+	windowAddedToStorage.resolve("created window");
 });
 
 browser.windows.onFocusChanged.addListener((windowId) => {
@@ -256,8 +262,13 @@ browser.runtime.onMessage.addListener((message) => {
 			workspaceStorage.getWindow(message.windowId).editWorkspace(message);
 			break;
 		case "getWorkspaces":
-			return new Promise((resolve) => {
-				return resolve(workspaceStorage.getWindow(message.windowId).workspaces);
+			return new Promise(async (resolve) => {
+				await windowAddedToStorage;
+				console.info("bg - getWorkspaces", { message });
+				const workspaces = workspaceStorage.getWindow(
+					message.windowId
+				).workspaces;
+				return resolve(workspaces);
 			});
 		case "removeWorkspace":
 			return workspaceStorage

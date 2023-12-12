@@ -96,7 +96,12 @@
 		const { msg } = message;
 		switch (msg) {
 			case "initialized":
-				initView();
+				console.info("background initialized");
+				// initView();
+				break;
+				case "connected":
+					console.info("connected");
+					initView();
 				break;
 			case "addedWorkspace":
 				addedWorkspace(message);
@@ -220,14 +225,15 @@
 		}
 	}
 
-	function initView(): Promise<void> {
-		return new Promise(async (resolve) => {
+	async function initView(): Promise<void> {
+			console.info("initView()");
+		// return new Promise(async (resolve) => {
 			windowId = (await Browser.windows.getCurrent()).id!;
-			let localWorkspaces = await getWorkspaces({ windowId });
-
+			console.info({windowId});
+			const localWorkspaces = await getWorkspaces({ windowId });
+			console.info({localWorkspaces});
 			workspaces.push(...localWorkspaces);
-			return resolve();
-		});
+		// });
 	}
 
 	// let searchResults: string[] = [];
@@ -279,15 +285,10 @@
 		Browser.runtime.openOptionsPage();
 	}
 
-	onMount(() => {
-		(async () => {
-			if (
-				await Browser.runtime.sendMessage({ msg: "checkBackgroundInitialized" })
-			) {
-				await initView();
-			}
-		})();
-	});
+	// onMount(() => {
+	// // Browser.runtime.sendMessage({ msg: "checkBackgroundInitialized" })
+	// 	initView();
+	// });
 </script>
 
 <svelte:body onkeydown={onKeyDown} />
