@@ -7,6 +7,7 @@
 	import Browser from "webextension-polyfill";
 	import Icon from "@root/components/Icon.svelte";
 	import { debounceFunc } from "@root/utils";
+	import Skeleton from "@root/components/Skeleton.svelte";
 
 	let workspaces: Ext.Workspace[] = $state([]);
 	let activeWorkspace: Ext.Workspace = $state()!;
@@ -383,6 +384,10 @@
 					}}
 				></Workspace>
 			</li>
+			{:else}
+				{#each [,,,] as _}
+					<Skeleton class="w-full h-16 rounded-md"/>
+				{/each}
 		{/each}
 	</ul>
 
