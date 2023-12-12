@@ -106,6 +106,10 @@ export class WorkspaceStorage {
 		return this.#windows.get(windowId)!;
 	}
 
+	async getOrCreateWindow(windowId: number): Promise<Window> {
+		return this.getWindow(windowId) || (await this.addWindow(windowId));
+	}
+
 	removeWindow(windowId: number) {
 		return new Promise(async (resolve) => {
 			await this.getWindow(windowId).remove();
@@ -115,7 +119,7 @@ export class WorkspaceStorage {
 		});
 	}
 
-	addWindow(windowId: number) {
+	addWindow(windowId: number): Promise<Window> {
 		return new Promise(async (resolve) => {
 			this.#focusedWindowId = windowId;
 			const newWindow = new Window(windowId);
@@ -124,7 +128,7 @@ export class WorkspaceStorage {
 
 			this.#persistWindows();
 
-			resolve(true);
+			resolve(newWindow);
 		});
 	}
 }

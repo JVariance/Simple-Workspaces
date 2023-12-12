@@ -74,7 +74,7 @@
 	function persistDefaultWorkspaces() {
 		Browser.runtime.sendMessage({
 			msg: "setDefaultWorkspaces",
-			defaultWorkspaces: defaultWorkspaces.map((workspace) => {return {...workspace}}),
+			defaultWorkspaces: defaultWorkspaces.map((workspace) => (({name, icon}) => ({name, icon}))(workspace)),
 		});
 	}
 

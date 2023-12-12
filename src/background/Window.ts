@@ -56,7 +56,7 @@ export class Window {
 						});
 					}
 
-					activeWorkspace = defaultWorkspaces.at(0)!;
+					activeWorkspace = this.workspaces.at(0)!;
 				} else {
 					const newWorkspace = await this.#getNewWorkspace();
 					newWorkspace.tabIds = currentTabIds || [];
@@ -120,31 +120,29 @@ export class Window {
 		this.#persist();
 	}
 
-	removeTab(tabId: number) {
-		(async () => {
-			if (!this.activeWorkspace || this.#removingWorkspace) return;
+	async removeTab(tabId: number) {
+		if (!this.activeWorkspace || this.#removingWorkspace) return;
 
-			this.activeWorkspace.tabIds = this.activeWorkspace.tabIds.filter(
-				(id) => id !== tabId
-			);
+		this.activeWorkspace.tabIds = this.activeWorkspace.tabIds.filter(
+			(id) => id !== tabId
+		);
 
-			// console.log({ activeWorkspace: structuredClone(this.activeWorkspace), workspaces: structuredClone(this.workspaces),});
+		// console.log({ activeWorkspace: structuredClone(this.activeWorkspace), workspaces: structuredClone(this.workspaces),});
 
-			if (this.activeWorkspace.tabIds.length) {
-				this.#activeWorkspace.activeTabId = this.activeWorkspace.tabIds.at(-1);
-				// this.#activeWorkspace.activeTabId = (
-				// 	await Browser.tabs.query({
-				// 		windowId: this.id,
-				// 		active: true,
-				// 	})
-				// ).at(0)!.id!;
-			} else {
-				this.#activeWorkspace.activeTabId = undefined;
-				await this.switchToPreviousWorkspace();
-			}
+		if (this.activeWorkspace.tabIds.length) {
+			this.#activeWorkspace.activeTabId = this.activeWorkspace.tabIds.at(-1);
+			// this.#activeWorkspace.activeTabId = (
+			// 	await Browser.tabs.query({
+			// 		windowId: this.id,
+			// 		active: true,
+			// 	})
+			// ).at(0)!.id!;
+		} else {
+			this.#activeWorkspace.activeTabId = undefined;
+			await this.switchToPreviousWorkspace();
+		}
 
-			this.#persist();
-		})();
+		this.#persist();
 	}
 
 	moveTabs({
@@ -161,9 +159,9 @@ export class Window {
 				(workspace) => workspace.id === targetWorkspaceId
 			)!;
 
-			const workspaceIndex = this.#workspaces.findIndex(
-				({ id }) => id === this.activeWorkspace.id
-			);
+			// const workspaceIndex = this.#workspaces.findIndex(
+			// 	({ id }) => id === this.activeWorkspace.id
+			// );
 
 			targetWorkspace.tabIds.push(...tabIds);
 
@@ -183,15 +181,15 @@ export class Window {
 				}
 			}
 
-			// console.log({ activeWorkspace: this.activeWorkspace, workspaceIndex, });
-
 			if (!this.activeWorkspace.tabIds.length) {
-				// if (workspaceIndex <= 0) {
-				// 	// await this.switchToNextWorkspace();
-				// 	await this.switchWorkspace(targetWorkspace);
-				// } else {
+				const newTab = await Browser.tabs.create({
+					windowId: this.id,
+					active: false,
+				});
+				this.activeWorkspace.tabIds.push(newTab.id!);
+				this.activeWorkspace.activeTabId = newTab.id!;
+
 				await this.switchWorkspace(targetWorkspace);
-				// }
 			} else {
 				await Browser.tabs.hide(tabIds);
 			}
@@ -291,17 +289,6 @@ export class Window {
 
 			const currentTabIds = this.#activeWorkspace.tabIds;
 			const nextTabIds = workspace.tabIds;
-
-			if (!nextTabIds.length) {
-				const newTab = await Browser.tabs.create({
-					active: false,
-					windowId: workspace.windowId,
-				});
-
-				workspace.tabIds.push(newTab.id!);
-				workspace.activeTabId = newTab.id!;
-				await this.#persist();
-			}
 
 			this.#activeWorkspace.active = false;
 			workspace.active = true;

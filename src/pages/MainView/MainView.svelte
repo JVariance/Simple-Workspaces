@@ -70,6 +70,7 @@
 		);
 
 		if (!activeWorkspace.tabIds.length) {
+			console.info("habe keine Tabs mehr :(", {activeWorkspace});
 			updatedActiveWorkspace({ id: targetWorkspace.id });
 		}
 
@@ -230,7 +231,7 @@
 			console.info("initView()");
 		// return new Promise(async (resolve) => {
 			windowId = (await Browser.windows.getCurrent()).id!;
-			console.info({windowId});
+			// console.info({windowId});
 			const localWorkspaces = await getWorkspaces({ windowId });
 			console.info({localWorkspaces});
 			workspaces.push(...localWorkspaces);
@@ -288,7 +289,7 @@
 
 	// onMount(() => {
 	// // Browser.runtime.sendMessage({ msg: "checkBackgroundInitialized" })
-	// 	initView();
+		// initView();
 	// });
 </script>
 

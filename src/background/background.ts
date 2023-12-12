@@ -113,12 +113,20 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 			});
 		}
 
+		if (!tab?.windowId) return;
+
 		await workspaceStorage.getWindow(tab!.windowId!).moveTabs({
 			tabIds,
 			targetWorkspaceId,
 		});
 
 		informPorts("movedTabs", { targetWorkspaceId, tabIds });
+
+		if (
+			targetWorkspaceId === workspaceStorage.activeWindow.activeWorkspace.id
+		) {
+			informPorts("updatedActiveWorkspace", { id: targetWorkspaceId });
+		}
 	}
 });
 
@@ -126,6 +134,8 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 	Creation:
 	1. browser.tabs.onCreated
 	2. browser.windows.onCreated
+
+	=> create new workspaceStorage-window inside tabs.onCreated
 
 	Removal:
 	1. browser.tabs.onRemoved
@@ -157,13 +167,6 @@ browser.runtime.onInstalled.addListener(async (details) => {
 let windowAddedToStorage = new DeferredPromise<string>();
 windowAddedToStorage.resolve("");
 
-browser.windows.onCreated.addListener(async (window) => {
-	windowAddedToStorage = new DeferredPromise();
-	if (!workspaceStorage.windows.has(window.id!))
-		await workspaceStorage.addWindow(window.id!);
-	windowAddedToStorage.resolve("created window");
-});
-
 browser.windows.onFocusChanged.addListener((windowId) => {
 	if (windowId !== browser.windows.WINDOW_ID_NONE) {
 		workspaceStorage.focusedWindowId = windowId;
@@ -178,14 +181,11 @@ browser.windows.onRemoved.addListener((windowId) => {
 	})();
 });
 
-browser.tabs.onCreated.addListener((tab) => {
-	const window = workspaceStorage.getWindow(tab.windowId!);
-	if (window) {
-		window.addTab(tab.id!);
-	} else {
-		workspaceStorage.addWindow(tab.windowId!);
-	}
+browser.tabs.onCreated.addListener(async (tab) => {
+	windowAddedToStorage = new DeferredPromise();
+	(await workspaceStorage.getOrCreateWindow(tab.windowId!)).addTab(tab.id!);
 	informPorts("createdTab", { tabId: tab.id });
+	windowAddedToStorage.resolve("");
 });
 
 browser.tabs.onRemoved.addListener((tabId, info) => {
@@ -264,7 +264,7 @@ browser.runtime.onMessage.addListener((message) => {
 		case "getWorkspaces":
 			return new Promise(async (resolve) => {
 				await windowAddedToStorage;
-				console.info("bg - getWorkspaces", { message });
+				// console.info("bg - getWorkspaces", { message });
 				const workspaces = workspaceStorage.getWindow(
 					message.windowId
 				).workspaces;
