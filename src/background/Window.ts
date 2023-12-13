@@ -106,6 +106,10 @@ export class Window {
 	}
 
 	addTab(tabId: number) {
+		this.addTabs([tabId]);
+	}
+
+	async addTabs(tabIds: number[]) {
 		if (
 			!this.activeWorkspace ||
 			this.#addingWorkspace ||
@@ -114,17 +118,21 @@ export class Window {
 		)
 			return;
 
-		this.activeWorkspace.activeTabId = tabId;
-		this.activeWorkspace.tabIds.push(tabId);
+		this.activeWorkspace.activeTabId = tabIds.at(-1);
+		this.activeWorkspace.tabIds.push(...tabIds);
 
 		this.#persist();
 	}
 
 	async removeTab(tabId: number) {
+		this.removeTabs([tabId]);
+	}
+
+	async removeTabs(tabIds: number[]) {
 		if (!this.activeWorkspace || this.#removingWorkspace) return;
 
 		this.activeWorkspace.tabIds = this.activeWorkspace.tabIds.filter(
-			(id) => id !== tabId
+			(id) => !tabIds.includes(id)
 		);
 
 		// console.log({ activeWorkspace: structuredClone(this.activeWorkspace), workspaces: structuredClone(this.workspaces),});

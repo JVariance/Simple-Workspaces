@@ -1,3 +1,8 @@
+/**
+ * - source: https://dev.to/aishanipach/debouncing-in-javascript-2k9b
+ * - license: ?
+ * - modified by adding TypeScript support
+ */
 export const debounceFunc = (func: Function, delay: number) => {
 	let timer: ReturnType<typeof setTimeout>;
 	return function (...args: any) {
@@ -20,6 +25,28 @@ export const promisedDebounceFunc = <T>(
 			clearTimeout(timer);
 			timer = setTimeout(() => {
 				return resolve(func.apply(context, args));
+			}, delay);
+		});
+	};
+};
+
+export const promisedDebounceFuncWithCollectedArgs = <T>(
+	func: Function,
+	delay: number,
+	options: { flatArgsList?: boolean } = {}
+): ((...args: any) => Promise<T[]>) => {
+	let _options = { flatArgsList: false, ...options };
+
+	let timer: ReturnType<typeof setTimeout>;
+	let argsList: any[] = [];
+	return function (...args: any) {
+		return new Promise((resolve) => {
+			const context = this;
+			_options.flatArgsList ? argsList.push(...args) : argsList.push(args);
+			clearTimeout(timer);
+			timer = setTimeout(() => {
+				resolve(func.apply(context, [argsList]));
+				argsList = [];
 			}, delay);
 		});
 	};

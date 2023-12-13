@@ -102,7 +102,6 @@
 				// initView();
 				break;
 				case "connected":
-					console.info("connected");
 					initView();
 				break;
 			case "addedWorkspace":
@@ -228,13 +227,13 @@
 	}
 
 	async function initView(): Promise<void> {
-			console.info("initView()");
+		console.info("initView");
 		// return new Promise(async (resolve) => {
-			windowId = (await Browser.windows.getCurrent()).id!;
-			// console.info({windowId});
-			const localWorkspaces = await getWorkspaces({ windowId });
-			console.info({localWorkspaces});
-			workspaces.push(...localWorkspaces);
+		windowId = (await Browser.windows.getCurrent()).id!;
+		// console.info({windowId});
+		const localWorkspaces = await getWorkspaces({ windowId });
+		console.info({localWorkspaces});
+		workspaces.push(...localWorkspaces);
 		// });
 	}
 
@@ -286,11 +285,6 @@
 	function openOptionsPage() {
 		Browser.runtime.openOptionsPage();
 	}
-
-	// onMount(() => {
-	// // Browser.runtime.sendMessage({ msg: "checkBackgroundInitialized" })
-		// initView();
-	// });
 </script>
 
 <svelte:body onkeydown={onKeyDown} />

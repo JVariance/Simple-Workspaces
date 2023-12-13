@@ -15,55 +15,55 @@ export class WorkspaceStorage {
 
 	constructor() {}
 
-	init() {
+	async init() {
 		// this.clearDB();
-		return new Promise(async (resolve) => {
-			let { [StorageKeys.windowIds]: localWindowIds } =
-				(await Browser.storage.local.get(StorageKeys.windowIds)) as {
-					[StorageKeys.windowIds]: Ext.Window["id"][];
-				};
+		// return new Promise(async (resolve) => {
+		let { [StorageKeys.windowIds]: localWindowIds } =
+			(await Browser.storage.local.get(StorageKeys.windowIds)) as {
+				[StorageKeys.windowIds]: Ext.Window["id"][];
+			};
 
-			const currentWindows = await Browser.windows.getAll();
-			const focusedWindow = (currentWindows.find(({ focused }) => focused) ||
-				currentWindows.at(0))!;
+		const currentWindows = await Browser.windows.getAll();
+		const focusedWindow = (currentWindows.find(({ focused }) => focused) ||
+			currentWindows.at(0))!;
 
-			this.#focusedWindowId = focusedWindow.id!;
+		this.#focusedWindowId = focusedWindow.id!;
 
-			if (!localWindowIds) {
-				for (let window of currentWindows) {
-					const newWindowInstance = new Window(window.id!);
-					await newWindowInstance.init();
+		if (!localWindowIds) {
+			for (let window of currentWindows) {
+				const newWindowInstance = new Window(window.id!);
+				await newWindowInstance.init();
 
-					this.windows.set(newWindowInstance.id, newWindowInstance);
-				}
-			} else {
-				for (let winId of localWindowIds) {
-					const windowInstance = new Window(winId);
-					await windowInstance.init();
-					this.windows.set(winId, windowInstance);
-				}
+				this.windows.set(newWindowInstance.id, newWindowInstance);
 			}
+		} else {
+			for (let winId of localWindowIds) {
+				const windowInstance = new Window(winId);
+				await windowInstance.init();
+				this.windows.set(winId, windowInstance);
+			}
+		}
 
-			for (let window of this.#windows.values()) {
-				const workspaces = window.workspaces;
+		for (let window of this.#windows.values()) {
+			const workspaces = window.workspaces;
 
-				await Browser.tabs.hide(
-					workspaces
-						.filter(({ active }) => !active)
-						.flatMap(({ tabIds }) => tabIds)
+			await Browser.tabs.hide(
+				workspaces
+					.filter(({ active }) => !active)
+					.flatMap(({ tabIds }) => tabIds)
+			);
+
+			for (let workspace of workspaces.filter(({ active }) => active)) {
+				await Browser.tabs.update(
+					workspace.activeTabId || workspace.tabIds[0],
+					{ active: true }
 				);
-
-				for (let workspace of workspaces.filter(({ active }) => active)) {
-					await Browser.tabs.update(
-						workspace.activeTabId || workspace.tabIds[0],
-						{ active: true }
-					);
-				}
 			}
+		}
 
-			this.#persistWindows();
-			resolve(true);
-		});
+		this.#persistWindows();
+		// resolve(true);
+		// });
 	}
 
 	get windows(): Map<Ext.Window["id"], Window> {
@@ -110,25 +110,54 @@ export class WorkspaceStorage {
 		return this.getWindow(windowId) || (await this.addWindow(windowId));
 	}
 
-	removeWindow(windowId: number) {
-		return new Promise(async (resolve) => {
-			await this.getWindow(windowId).remove();
-			this.#windows.delete(windowId);
-			this.#persistWindows();
-			return resolve(true);
-		});
+	async moveAttachedTabs({
+		tabIds,
+		targetWindowId,
+	}: {
+		tabIds: number[];
+		targetWindowId: number;
+	}) {
+		// return new Promise(async (resolve) => {
+		console.info("moveAttachedTabs");
+		(await this.getOrCreateWindow(targetWindowId)).addTabs(tabIds);
+		// return resolve(true);
+		// });
 	}
 
-	addWindow(windowId: number): Promise<Window> {
-		return new Promise(async (resolve) => {
-			this.#focusedWindowId = windowId;
-			const newWindow = new Window(windowId);
-			await newWindow.init({ lookInStorage: false });
-			this.#windows.set(windowId, newWindow);
+	async moveDetachedTabs({
+		tabIds,
+		currentWindowId,
+	}: {
+		tabIds: number[];
+		currentWindowId: number;
+	}) {
+		// return new Promise(async (resolve) => {
+		console.info("moveDetachedTabs");
+		await this.getWindow(currentWindowId).removeTabs(tabIds);
+		// return resolve(true);
+		// });
+	}
 
-			this.#persistWindows();
+	async removeWindow(windowId: number) {
+		// return new Promise(async (resolve) => {
+		console.info("Workspace Storage - window to be removed");
+		await this.getWindow(windowId).remove();
+		this.#windows.delete(windowId);
+		this.#persistWindows();
+		// 	return resolve(true);
+		// });
+	}
 
-			resolve(newWindow);
-		});
+	async addWindow(windowId: number): Promise<Window> {
+		// return new Promise(async (resolve) => {
+		this.#focusedWindowId = windowId;
+		const newWindow = new Window(windowId);
+		await newWindow.init({ lookInStorage: false });
+		this.#windows.set(windowId, newWindow);
+
+		this.#persistWindows();
+
+		return newWindow;
+		// });
 	}
 }

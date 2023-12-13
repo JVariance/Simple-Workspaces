@@ -1,20 +1,31 @@
-import { DeferredPromise } from "@root/utils";
+import {
+	DeferredPromise,
+	promisedDebounceFunc,
+	promisedDebounceFuncWithCollectedArgs,
+} from "@root/utils";
 import browser from "webextension-polyfill";
 import { TabMenu } from "./TabMenu";
 import { WorkspaceStorage } from "./WorkspaceStorage";
 
 let workspaceStorage: WorkspaceStorage;
 let tabMenu: TabMenu;
-let removingWindow = false;
 
-function initExtension() {
-	return new Promise(async (resolve) => {
-		// await browser.storage.local.clear();
-		await initWorkspaceStorage();
-		await initTabMenu();
-		informPorts("initialized");
-		return resolve(true);
-	});
+let extensionInitializationProcess = new DeferredPromise<void>();
+extensionInitializationProcess.resolve();
+let tabCreationProcess = new DeferredPromise<void>();
+tabCreationProcess.resolve();
+let tabAttachmentProcess = new DeferredPromise<void>();
+tabAttachmentProcess.resolve();
+let tabDetachmentProcess = new DeferredPromise<void>();
+tabDetachmentProcess.resolve();
+
+async function initExtension() {
+	extensionInitializationProcess = new DeferredPromise();
+	// await browser.storage.local.clear();
+	await initWorkspaceStorage();
+	await initTabMenu();
+	// informPorts("initialized");
+	extensionInitializationProcess.resolve();
 }
 
 function initTabMenu() {
@@ -164,33 +175,67 @@ browser.runtime.onInstalled.addListener(async (details) => {
 	if (!workspaceStorage) await initExtension();
 });
 
-let windowAddedToStorage = new DeferredPromise<string>();
-windowAddedToStorage.resolve("");
-
 browser.windows.onFocusChanged.addListener((windowId) => {
 	if (windowId !== browser.windows.WINDOW_ID_NONE) {
 		workspaceStorage.focusedWindowId = windowId;
 	}
 });
 
-browser.windows.onRemoved.addListener((windowId) => {
-	(async () => {
-		removingWindow = true;
-		await workspaceStorage.removeWindow(windowId);
-		removingWindow = false;
-	})();
+browser.windows.onRemoved.addListener(async (windowId) => {
+	await workspaceStorage.removeWindow(windowId);
 });
 
 browser.tabs.onCreated.addListener(async (tab) => {
-	windowAddedToStorage = new DeferredPromise();
+	tabCreationProcess = new DeferredPromise();
 	(await workspaceStorage.getOrCreateWindow(tab.windowId!)).addTab(tab.id!);
 	informPorts("createdTab", { tabId: tab.id });
-	windowAddedToStorage.resolve("");
+	tabCreationProcess.resolve();
 });
 
 browser.tabs.onRemoved.addListener((tabId, info) => {
 	workspaceStorage.getWindow(info.windowId).removeTab(tabId);
 	informPorts("removedTab", { tabId });
+});
+
+// browser.tabs.onMoved.addListener((tabId, moveInfo) => {
+// 	tabId;
+// 	moveInfo.windowId;
+// });
+
+let collectedAttachedTabs: number[] = [],
+	collectedDetachedTabs: number[] = [];
+
+async function _handleAttachedTabs(tabIds: number[], targetWindowId: number) {
+	console.info("handleAttachedTabs", { tabIds, targetWindowId });
+
+	tabAttachmentProcess = new DeferredPromise();
+	await workspaceStorage.moveAttachedTabs({ tabIds, targetWindowId });
+	collectedAttachedTabs = [];
+	tabAttachmentProcess.resolve();
+}
+
+async function _handleDetachedTabs(tabIds: number[], currentWindowId: number) {
+	console.info("handleDetachedTabs", { tabIds, currentWindowId });
+
+	tabDetachmentProcess = new DeferredPromise();
+	await workspaceStorage.moveDetachedTabs({ tabIds, currentWindowId });
+	collectedDetachedTabs = [];
+	tabDetachmentProcess.resolve();
+}
+
+const handleAttachedTabs = promisedDebounceFunc(_handleAttachedTabs, 200);
+const handleDetachedTabs = promisedDebounceFunc(_handleDetachedTabs, 200);
+
+browser.tabs.onAttached.addListener((tabId, attachInfo) => {
+	const { newWindowId } = attachInfo;
+	collectedAttachedTabs.push(tabId);
+	handleAttachedTabs(collectedAttachedTabs, newWindowId);
+});
+
+browser.tabs.onDetached.addListener((tabId, detachInfo) => {
+	const { oldWindowId } = detachInfo;
+	collectedDetachedTabs.push(tabId);
+	handleDetachedTabs(collectedDetachedTabs, oldWindowId);
 });
 
 browser.tabs.onActivated.addListener((activeInfo) => {
@@ -242,10 +287,6 @@ browser.runtime.onMessage.addListener((message) => {
 	const { msg } = message;
 
 	switch (msg) {
-		case "checkBackgroundInitialized":
-			return new Promise(async (resolve) => {
-				return resolve(workspaceStorage ? true : false);
-			});
 		case "clearDB":
 			workspaceStorage.clearDB();
 			break;
@@ -263,7 +304,12 @@ browser.runtime.onMessage.addListener((message) => {
 			break;
 		case "getWorkspaces":
 			return new Promise(async (resolve) => {
-				await windowAddedToStorage;
+				await Promise.all([
+					extensionInitializationProcess,
+					tabCreationProcess,
+					tabDetachmentProcess,
+					tabAttachmentProcess,
+				]);
 				// console.info("bg - getWorkspaces", { message });
 				const workspaces = workspaceStorage.getWindow(
 					message.windowId
