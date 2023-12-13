@@ -119,7 +119,9 @@ export class WorkspaceStorage {
 	}) {
 		// return new Promise(async (resolve) => {
 		console.info("moveAttachedTabs");
-		(await this.getOrCreateWindow(targetWindowId)).addTabs(tabIds);
+		// (await this.getOrCreateWindow(targetWindowId)).addTabs(tabIds);
+		await this.getWindow(targetWindowId)?.addTabs(tabIds);
+		console.info("End of moveAttachedTabs func");
 		// return resolve(true);
 		// });
 	}
@@ -133,7 +135,7 @@ export class WorkspaceStorage {
 	}) {
 		// return new Promise(async (resolve) => {
 		console.info("moveDetachedTabs");
-		await this.getWindow(currentWindowId).removeTabs(tabIds);
+		await this.getWindow(currentWindowId)?.removeTabs(tabIds);
 		// return resolve(true);
 		// });
 	}
@@ -159,5 +161,9 @@ export class WorkspaceStorage {
 
 		return newWindow;
 		// });
+	}
+
+	async initFreshWindow(windowId: number) {
+		await this.getWindow(windowId).freshInit();
 	}
 }

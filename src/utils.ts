@@ -84,7 +84,7 @@ export function clickOutside(node: HTMLElement) {
 	adapted for TypeScript support
 */
 export class DeferredPromise<T> {
-	#_promise: Promise<T>;
+	promise: Promise<T>;
 	resolve!: (value: T | PromiseLike<T>) => void;
 	reject!: (reason?: any) => void;
 	then: (typeof Promise)["prototype"]["then"];
@@ -93,16 +93,16 @@ export class DeferredPromise<T> {
 	[Symbol.toStringTag]!: string;
 
 	constructor() {
-		this.#_promise = new Promise((resolve, reject) => {
+		this.promise = new Promise((resolve, reject) => {
 			// assign the resolve and reject functions to `this`
 			// making them usable on the class instance
 			this.resolve = resolve;
 			this.reject = reject;
 		});
 		// bind `then` and `catch` to implement the same interface as Promise
-		this.then = this.#_promise.then.bind(this.#_promise);
-		this.catch = this.#_promise.catch.bind(this.#_promise);
-		this.finally = this.#_promise.finally.bind(this.#_promise);
+		this.then = this.promise.then.bind(this.promise);
+		this.catch = this.promise.catch.bind(this.promise);
+		this.finally = this.promise.finally.bind(this.promise);
 		this[Symbol.toStringTag] = "Promise";
 	}
 }

@@ -10,8 +10,12 @@ import { WorkspaceStorage } from "./WorkspaceStorage";
 let workspaceStorage: WorkspaceStorage;
 let tabMenu: TabMenu;
 
+let extensionIsInitialized = false;
+
 let extensionInitializationProcess = new DeferredPromise<void>();
 extensionInitializationProcess.resolve();
+let windowCreationProcess = new DeferredPromise<void>();
+windowCreationProcess.resolve();
 let tabCreationProcess = new DeferredPromise<void>();
 tabCreationProcess.resolve();
 let tabAttachmentProcess = new DeferredPromise<void>();
@@ -25,6 +29,7 @@ async function initExtension() {
 	await initWorkspaceStorage();
 	await initTabMenu();
 	// informPorts("initialized");
+	extensionIsInitialized = true;
 	extensionInitializationProcess.resolve();
 }
 
@@ -56,6 +61,10 @@ let backgroundListenerPorts: {
 }[] = [];
 
 browser.runtime.onConnect.addListener(async (port) => {
+	if (!extensionIsInitialized) {
+		await initExtension();
+	}
+
 	console.info("port connected");
 	backgroundListenerPorts.push({
 		port,
@@ -71,10 +80,12 @@ browser.runtime.onConnect.addListener(async (port) => {
 	});
 });
 
-function informPorts(
+async function informPorts(
 	message: string,
 	props: Record<string | symbol, any> = {}
 ) {
+	// await Promise.all([windowCreationProcess, tabCreationProcess]);
+	console.info("bg - informPorts");
 	backgroundListenerPorts.forEach(({ port, windowId }) => {
 		if (windowId === workspaceStorage.focusedWindowId) {
 			port.postMessage({ msg: message, ...props });
@@ -185,14 +196,35 @@ browser.windows.onRemoved.addListener(async (windowId) => {
 	await workspaceStorage.removeWindow(windowId);
 });
 
+browser.windows.onCreated.addListener(async (window) => {
+	await tabCreationProcess;
+	windowCreationProcess = new DeferredPromise();
+	console.info("windows.onCreated");
+
+	const windowId = (await workspaceStorage.getOrCreateWindow(window.id!)).id;
+	//workspaceStorage.addWindow(window.id!);
+	await workspaceStorage.initFreshWindow(windowId);
+
+	windowCreationProcess.resolve();
+});
+
 browser.tabs.onCreated.addListener(async (tab) => {
+	await windowCreationProcess;
 	tabCreationProcess = new DeferredPromise();
+	const windowIsNew = !workspaceStorage.windows.has(tab.windowId!);
+
 	(await workspaceStorage.getOrCreateWindow(tab.windowId!)).addTab(tab.id!);
-	informPorts("createdTab", { tabId: tab.id });
+
+	if (!windowIsNew) informPorts("createdTab", { tabId: tab.id });
 	tabCreationProcess.resolve();
 });
 
-browser.tabs.onRemoved.addListener((tabId, info) => {
+browser.tabs.onRemoved.addListener(async (tabId, info) => {
+	await Promise.all([
+		tabCreationProcess,
+		tabAttachmentProcess,
+		tabDetachmentProcess,
+	]);
 	workspaceStorage.getWindow(info.windowId).removeTab(tabId);
 	informPorts("removedTab", { tabId });
 });
@@ -206,6 +238,7 @@ let collectedAttachedTabs: number[] = [],
 	collectedDetachedTabs: number[] = [];
 
 async function _handleAttachedTabs(tabIds: number[], targetWindowId: number) {
+	await windowCreationProcess;
 	console.info("handleAttachedTabs", { tabIds, targetWindowId });
 
 	tabAttachmentProcess = new DeferredPromise();
@@ -215,6 +248,7 @@ async function _handleAttachedTabs(tabIds: number[], targetWindowId: number) {
 }
 
 async function _handleDetachedTabs(tabIds: number[], currentWindowId: number) {
+	await windowCreationProcess;
 	console.info("handleDetachedTabs", { tabIds, currentWindowId });
 
 	tabDetachmentProcess = new DeferredPromise();
@@ -303,9 +337,18 @@ browser.runtime.onMessage.addListener((message) => {
 			workspaceStorage.getWindow(message.windowId).editWorkspace(message);
 			break;
 		case "getWorkspaces":
+			console.info("bg - getWorkspaces");
 			return new Promise(async (resolve) => {
+				console.info(
+					extensionInitializationProcess,
+					windowCreationProcess,
+					tabCreationProcess,
+					tabDetachmentProcess,
+					tabAttachmentProcess
+				);
 				await Promise.all([
 					extensionInitializationProcess,
+					windowCreationProcess,
 					tabCreationProcess,
 					tabDetachmentProcess,
 					tabAttachmentProcess,

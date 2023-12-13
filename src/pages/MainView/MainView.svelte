@@ -78,6 +78,7 @@
 	}
 
 	function createdTab({ tabId }: { tabId: number }) {
+		console.info("MV - createdTab");
 		activeWorkspace.tabIds.push(tabId);
 	}
 
@@ -231,6 +232,7 @@
 		// return new Promise(async (resolve) => {
 		windowId = (await Browser.windows.getCurrent()).id!;
 		// console.info({windowId});
+		console.info({windowId});
 		const localWorkspaces = await getWorkspaces({ windowId });
 		console.info({localWorkspaces});
 		workspaces.push(...localWorkspaces);
