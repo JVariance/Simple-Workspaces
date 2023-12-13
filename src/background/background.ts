@@ -33,22 +33,16 @@ async function initExtension() {
 	extensionInitializationProcess.resolve();
 }
 
-function initTabMenu() {
-	return new Promise(async (resolve) => {
-		tabMenu = new TabMenu();
-		await tabMenu.init(
-			workspaceStorage.windows.get(workspaceStorage.focusedWindowId)!.workspaces
-		);
-		return resolve(true);
-	});
+async function initTabMenu() {
+	tabMenu = new TabMenu();
+	await tabMenu.init(
+		workspaceStorage.windows.get(workspaceStorage.focusedWindowId)!.workspaces
+	);
 }
 
-function initWorkspaceStorage() {
-	return new Promise(async (resolve) => {
-		workspaceStorage = new WorkspaceStorage();
-		await workspaceStorage.init();
-		return resolve(true);
-	});
+async function initWorkspaceStorage() {
+	workspaceStorage = new WorkspaceStorage();
+	await workspaceStorage.init();
 }
 
 browser.runtime.onStartup.addListener(async () => {
@@ -339,13 +333,6 @@ browser.runtime.onMessage.addListener((message) => {
 		case "getWorkspaces":
 			console.info("bg - getWorkspaces");
 			return new Promise(async (resolve) => {
-				console.info(
-					extensionInitializationProcess,
-					windowCreationProcess,
-					tabCreationProcess,
-					tabDetachmentProcess,
-					tabAttachmentProcess
-				);
 				await Promise.all([
 					extensionInitializationProcess,
 					windowCreationProcess,
@@ -353,7 +340,7 @@ browser.runtime.onMessage.addListener((message) => {
 					tabDetachmentProcess,
 					tabAttachmentProcess,
 				]);
-				// console.info("bg - getWorkspaces", { message });
+
 				const workspaces = workspaceStorage.getWindow(
 					message.windowId
 				).workspaces;

@@ -18,41 +18,38 @@ export class TabMenu {
 		}) as string;
 	}
 
-	update({
+	async update({
 		// windowId,
 		workspaces,
 	}: {
 		// windowId: number;
 		workspaces: Ext.Workspace[];
-	}): Promise<boolean> {
-		return new Promise(async (resolve) => {
-			await Browser.menus.removeAll();
-			this.#createParentMenu();
+	}) {
+		await Browser.menus.removeAll();
+		this.#createParentMenu();
 
-			console.log("update tabmenu", { workspaces });
+		console.log("update tabmenu", { workspaces });
 
-			workspaces
-				.filter(({ active }) => !active)
-				.forEach((workspace) => {
-					Browser.menus.create({
-						id: `workspace-menu_${workspace.id}`,
-						title: `${workspace.icon} ${workspace.name}`,
-						contexts: ["tab"],
-						type: "normal",
-						parentId: this.#parentId,
-					});
+		workspaces
+			.filter(({ active }) => !active)
+			.forEach((workspace) => {
+				Browser.menus.create({
+					id: `workspace-menu_${workspace.id}`,
+					title: `${workspace.icon} ${workspace.name}`,
+					contexts: ["tab"],
+					type: "normal",
+					parentId: this.#parentId,
 				});
-
-			Browser.menus.create({
-				id: `create-workspace-menu`,
-				title: "create new workspace",
-				contexts: ["tab"],
-				type: "normal",
-				parentId: this.#parentId,
 			});
 
-			Browser.menus.refresh();
-			return resolve(true);
+		Browser.menus.create({
+			id: `create-workspace-menu`,
+			title: "create new workspace",
+			contexts: ["tab"],
+			type: "normal",
+			parentId: this.#parentId,
 		});
+
+		Browser.menus.refresh();
 	}
 }

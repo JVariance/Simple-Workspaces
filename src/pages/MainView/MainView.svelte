@@ -227,16 +227,14 @@
 		}
 	}
 
-	async function initView(): Promise<void> {
+	async function initView() {
 		console.info("initView");
-		// return new Promise(async (resolve) => {
 		windowId = (await Browser.windows.getCurrent()).id!;
 		// console.info({windowId});
 		console.info({windowId});
 		const localWorkspaces = await getWorkspaces({ windowId });
 		console.info({localWorkspaces});
 		workspaces.push(...localWorkspaces);
-		// });
 	}
 
 	// let searchResults: string[] = [];
