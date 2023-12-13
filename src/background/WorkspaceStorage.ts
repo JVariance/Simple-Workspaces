@@ -127,7 +127,48 @@ export class WorkspaceStorage {
 		currentWindowId: number;
 	}) {
 		console.info("moveDetachedTabs");
-		await this.getWindow(currentWindowId)?.removeTabs(tabIds);
+		const window = this.getWindow(currentWindowId);
+		await window?.removeTabs(tabIds);
+		const currentTabIds = window?.activeWorkspace.tabIds;
+
+		if (window && !currentTabIds?.length) {
+			console.info("keine tabs mehr");
+			const activeTab = (
+				await Browser.tabs.query({
+					active: true,
+					windowId: window.id,
+				})
+			)?.at(0);
+
+			if (activeTab) {
+				// console.info({ activeTab });
+				// console.info(window);
+				// console.info(window.workspaces);
+				const currentWorkspace = window.workspaces.find((workspace) =>
+					workspace.tabIds.includes(activeTab.id!)
+				);
+
+				// console.info({ currentWorkspace });
+
+				const newTab = await Browser.tabs.create({
+					active: false,
+					windowId: window.id,
+				});
+				window.addTab(newTab.id!);
+				if (currentWorkspace) await window.switchWorkspace(currentWorkspace);
+				// window. = currentWorkspace;
+				// window.setActiveTab(activeTab.id!);
+
+				console.log({
+					activeTab: structuredClone(activeTab),
+					workspaces: structuredClone(window.workspaces),
+					activeWorkspace: structuredClone(window.activeWorkspace),
+					currentWorkspace: structuredClone(currentWorkspace),
+				});
+			}
+		}
+
+		return window.activeWorkspace;
 	}
 
 	async removeWindow(windowId: number) {

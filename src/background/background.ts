@@ -246,8 +246,21 @@ async function _handleDetachedTabs(tabIds: number[], currentWindowId: number) {
 	console.info("handleDetachedTabs", { tabIds, currentWindowId });
 
 	tabDetachmentProcess = new DeferredPromise();
-	await workspaceStorage.moveDetachedTabs({ tabIds, currentWindowId });
+	const activeWorkspace = await workspaceStorage.moveDetachedTabs({
+		tabIds,
+		currentWindowId,
+	});
 	collectedDetachedTabs = [];
+
+	backgroundListenerPorts
+		.filter(({ windowId }) => windowId === currentWindowId)
+		.forEach(({ port }) => {
+			port.postMessage({
+				msg: "updatedActiveWorkspace",
+				id: activeWorkspace.id,
+			});
+		});
+
 	tabDetachmentProcess.resolve();
 }
 
@@ -286,16 +299,21 @@ browser.commands.onCommand.addListener((command) => {
 			break;
 		case "next-workspace":
 			(async () => {
+				const activeWorkspace =
+					await workspaceStorage.activeWindow.switchToNextWorkspace();
+				if (!activeWorkspace) return;
 				informPorts("updatedActiveWorkspace", {
-					id: (await workspaceStorage.activeWindow.switchToNextWorkspace()).id,
+					id: activeWorkspace.id,
 				});
 			})();
 			break;
 		case "previous-workspace":
 			(async () => {
+				const activeWorkspace =
+					await workspaceStorage.activeWindow.switchToPreviousWorkspace();
+				if (!activeWorkspace) return;
 				informPorts("updatedActiveWorkspace", {
-					id: (await workspaceStorage.activeWindow.switchToPreviousWorkspace())
-						.id,
+					id: activeWorkspace.id,
 				});
 			})();
 			break;

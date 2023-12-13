@@ -37,6 +37,7 @@
 	}: {
 		id: Ext.Workspace["id"];
 	}) {
+		console.info("UPDATEDACTIVEWORKSPACE", {windowId});
 		activeWorkspace.active = false;
 		const workspace = workspaces.find(({ id }) => id === workspaceId)!;
 		workspace.active = true;
