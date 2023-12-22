@@ -1,0 +1,54 @@
+{
+	"options": {
+		"message": "options",
+		"description": "options page title"
+	},
+	"language": {
+		"message": "language",
+		"description": ""
+	},
+	"search": {
+		"message": "search",
+		"description": "search field placeholder"
+	},
+	"reset_default_workspaces": {
+		"message": "reset default workspaces",
+		"description": ""
+	},
+	"default_workspace": {
+		"message": "default workspace",
+		"description": ""
+	},
+	"default_workspaces": {
+		"message": "default workspaces",
+		"description": ""
+	},
+	"apply_changes": {
+		"message": "apply changes",
+		"description": "apply changes on default workspaces button"
+	},
+	"clear": {
+		"message": "clear",
+		"description": "clear extension data"
+	},
+	"new_workspace": {
+		"message": "new workspace",
+		"description": ""
+	},
+	"workspace": {
+		"message": "workspace",
+		"description": ""
+	},
+	"workspaces": {
+		"message": "workspaces",
+		"description": ""
+	},
+	"send_to_workspace": {
+		"message": "send to workspace",
+		"description": ""
+	},
+	"create_new_workspace": {
+		"message": "create new workspace",
+		"description": ""
+	}
+}

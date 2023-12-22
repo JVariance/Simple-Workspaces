@@ -135,6 +135,9 @@ export class Window {
 		)
 			return;
 
+		console.info("addTabs - activeWorkspace v");
+		console.info(structuredClone(this.activeWorkspace));
+
 		this.activeWorkspace.activeTabId = tabIds.at(-1);
 		this.activeWorkspace.tabIds.push(...tabIds);
 
@@ -294,6 +297,7 @@ export class Window {
 	}
 
 	async switchWorkspace(workspace: Ext.Workspace) {
+		console.info("switchWorkspace()");
 		this.#switchingWorkspace = true;
 
 		const currentTabIds = this.#activeWorkspace.tabIds;

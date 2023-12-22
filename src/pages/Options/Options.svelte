@@ -3,7 +3,7 @@
 	import Icon from "@root/components/Icon.svelte";
 	import { createRoot, onMount, tick, unstate, untrack } from "svelte";
 	import { SOURCES, dndzone } from "svelte-dnd-action";
-	import Browser from "webextension-polyfill";
+	import Browser, { i18n } from "webextension-polyfill";
 
 	type SimpleWorkspace = Pick<Ext.Workspace, "icon" | "name"> & { id: number };
 
@@ -14,7 +14,7 @@
 		return {
 			id: defaultWorkspaces.length,
 			icon: "😀",
-			name: "Workspace",
+			name: i18n.getMessage('workspace'),
 		}
 	}
 

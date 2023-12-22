@@ -97,6 +97,7 @@
 			}
 		]
 	},
+	"{{firefox}}.default_locale": "en",
 	"{{firefox}}.options_ui": {
 		"page": "src/pages/Options/options.html",
 		"open_in_tab": true

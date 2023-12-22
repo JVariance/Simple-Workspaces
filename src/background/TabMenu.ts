@@ -1,4 +1,4 @@
-import Browser from "webextension-polyfill";
+import Browser, { i18n } from "webextension-polyfill";
 
 export class TabMenu {
 	#parentId!: string;
@@ -44,7 +44,7 @@ export class TabMenu {
 
 		Browser.menus.create({
 			id: `create-workspace-menu`,
-			title: "create new workspace",
+			title: i18n.getMessage("create_new_workspace"),
 			contexts: ["tab"],
 			type: "normal",
 			parentId: this.#parentId,

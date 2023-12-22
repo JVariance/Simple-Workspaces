@@ -21,3 +21,18 @@ Switch to workspace to which the auto-focused tab belongs and create new tab for
 No workspace/window is created in background
 ### Expected Behavior
 The new window is added and a workspace gets created for it
+
+---
+# Bugs
+
+- [] send to new workspace: tabs not updated
+
+
+---
+Actions:
+ - close window
+ - new window
+ - new tab
+ - move tabs to window
+ - send tabs to workspace
+ - switch workspace

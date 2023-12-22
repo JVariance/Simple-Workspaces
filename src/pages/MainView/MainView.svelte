@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { onMount } from "svelte";
 	import { dndzone } from "svelte-dnd-action";
 	import { Key } from "ts-key-enum";
 	import "@root/app.postcss";
 	import Workspace from "@components/Workspace.svelte";
-	import Browser from "webextension-polyfill";
+	import Browser, { i18n } from "webextension-polyfill";
 	import Icon from "@root/components/Icon.svelte";
 	import { debounceFunc } from "@root/utils";
 	import Skeleton from "@root/components/Skeleton.svelte";
@@ -64,18 +63,18 @@
 	}) {
 		const targetWorkspace = workspaces.find(
 			({ id }) => id === targetWorkspaceId
-		)!;
-
-		activeWorkspace.tabIds = activeWorkspace.tabIds.filter(
-			(tabId) => !tabIds.includes(tabId)
-		);
-
-		if (!activeWorkspace.tabIds.length) {
-			console.info("habe keine Tabs mehr :(", {activeWorkspace});
-			updatedActiveWorkspace({ id: targetWorkspace.id });
-		}
-
-		targetWorkspace.tabIds.push(...tabIds);
+			)!;
+			
+			activeWorkspace.tabIds = activeWorkspace.tabIds.filter(
+				(tabId) => !tabIds.includes(tabId)
+				);
+				
+				if (!activeWorkspace.tabIds.length) {
+					console.info("habe keine Tabs mehr :(", {activeWorkspace});
+					updatedActiveWorkspace({ id: targetWorkspace.id });
+				}
+				
+				targetWorkspace.tabIds.push(...tabIds);
 	}
 
 	function createdTab({ tabId }: { tabId: number }) {
@@ -92,6 +91,10 @@
 	function addedWorkspace({ workspace }: { workspace: Ext.Workspace }) {
 		workspaces.push(workspace);
 		updatedActiveWorkspace({ id: workspace.id });
+	}
+	
+	function movedTabsToNewWorkspace({workspace}: {workspace: Ext.Workspace}){
+		workspaces.push(workspace);
 	}
 
 	const port = Browser.runtime.connect();
@@ -111,6 +114,9 @@
 				break;
 			case "updatedActiveWorkspace":
 				updatedActiveWorkspace(message);
+				break;
+			case "movedTabsToNewWorkspace":
+				movedTabsToNewWorkspace(message);
 				break;
 			case "movedTabs":
 				movedTabs(message);
@@ -314,6 +320,9 @@
 						Browser.storage.local.clear();
 					}}>clear DB</button
 				>
+				<button class="mb-2 border rounded-md p-1" onclick={() => {Browser.runtime.sendMessage({msg: "logWindows"})}}>
+					log windows
+				</button>
 			</details>
 		</div>
 	{/if}
@@ -337,7 +346,7 @@
 				bind:this={searchInput}
 				oninput={debouncedSearch}
 				onkeydown={searchKeydown}
-				placeholder="Search..."
+				placeholder="{i18n.getMessage('search')}..."
 			/>
 		</search>
 		<button on:click={openOptionsPage}
@@ -401,7 +410,7 @@
 		><span class="w-[2ch] text-2xl text-center"
 			><Icon icon="add" width={18} /></span
 		>
-		<span class="leading-none -mt-[0.5ch] text-lg">new workspace</span></button
+		<span class="leading-none -mt-[0.5ch] text-lg">{i18n.getMessage('create_new_workspace')}</span></button
 	>
 	<!-- {/if} -->
 </div>

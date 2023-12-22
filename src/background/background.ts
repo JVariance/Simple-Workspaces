@@ -104,10 +104,11 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 	const { menuItemId: _menuItemId } = info;
 	const menuItemId = _menuItemId.toString();
 	let targetWorkspaceId!: string;
-	if (
-		menuItemId.toString().startsWith("workspace") ||
-		menuItemId.toString() === "create-workspace-menu"
-	) {
+
+	const newWorkspaceDemanded =
+		menuItemId.toString() === "create-workspace-menu";
+
+	if (menuItemId.toString().startsWith("workspace") || newWorkspaceDemanded) {
 		const highlightedTabIds = (
 			await browser.tabs.query({
 				windowId: tab!.windowId!,
@@ -115,18 +116,19 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 			})
 		).map((tab) => tab.id!);
 
+		let newWorkspace;
 		const tabIds =
 			highlightedTabIds.length > 1 ? highlightedTabIds : [tab!.id!];
 
 		if (menuItemId.toString().startsWith("workspace-menu")) {
 			targetWorkspaceId = menuItemId.split("_").at(1)!;
-		} else if (menuItemId.toString() === "create-workspace-menu") {
-			const newWorkspace = await workspaceStorage.activeWindow.addWorkspace([]);
+		} else if (newWorkspaceDemanded) {
+			newWorkspace = await workspaceStorage.activeWindow.addWorkspace([]);
 			newWorkspace.active = false;
 			targetWorkspaceId = newWorkspace.id;
-			informPorts("addedWorkspace", {
-				workspace: newWorkspace,
-			});
+			// informPorts("addedWorkspace", {
+			// 	workspace: newWorkspace,
+			// });
 		}
 
 		if (!tab?.windowId) return;
@@ -136,7 +138,12 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 			targetWorkspaceId,
 		});
 
-		informPorts("movedTabs", { targetWorkspaceId, tabIds });
+		if (newWorkspaceDemanded)
+			informPorts("movedTabsToNewWorkspace", {
+				workspace: newWorkspace,
+				tabIds,
+			});
+		else informPorts("movedTabs", { targetWorkspaceId, tabIds });
 
 		if (
 			targetWorkspaceId === workspaceStorage.activeWindow.activeWorkspace.id
@@ -232,7 +239,8 @@ let collectedAttachedTabs: number[] = [],
 	collectedDetachedTabs: number[] = [];
 
 async function _handleAttachedTabs(tabIds: number[], targetWindowId: number) {
-	await windowCreationProcess;
+	console.info("_handleAttachedTabs");
+	await Promise.all([windowCreationProcess, tabDetachmentProcess]);
 	console.info("handleAttachedTabs", { tabIds, targetWindowId });
 
 	tabAttachmentProcess = new DeferredPromise();
@@ -251,6 +259,11 @@ async function _handleDetachedTabs(tabIds: number[], currentWindowId: number) {
 		currentWindowId,
 	});
 	collectedDetachedTabs = [];
+
+	if (!activeWorkspace) {
+		tabDetachmentProcess.resolve();
+		return;
+	}
 
 	backgroundListenerPorts
 		.filter(({ windowId }) => windowId === currentWindowId)
@@ -336,6 +349,9 @@ browser.runtime.onMessage.addListener((message) => {
 		case "clearDB":
 			workspaceStorage.clearDB();
 			break;
+		case "logWindows":
+			console.info(workspaceStorage.windows);
+			break;
 		case "addWorkspace":
 			(async () => {
 				informPorts("addedWorkspace", {
@@ -343,7 +359,6 @@ browser.runtime.onMessage.addListener((message) => {
 						await workspaceStorage.activeWindow.addWorkspaceAndSwitch(),
 				});
 			})();
-
 			break;
 		case "editWorkspace":
 			workspaceStorage.getWindow(message.windowId).editWorkspace(message);

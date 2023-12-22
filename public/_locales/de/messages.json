@@ -1,0 +1,54 @@
+{
+	"options": {
+		"message": "Optionen",
+		"description": "options page title"
+	},
+	"language": {
+		"message": "Sprache",
+		"description": ""
+	},
+	"search": {
+		"message": "suchen",
+		"description": "search field placeholder"
+	},
+	"reset_default_workspaces": {
+		"message": "Standard-Arbeitsbereiche zurücksetzen",
+		"description": ""
+	},
+	"default_workspace": {
+		"message": "Standard-Arbeitsbereich",
+		"description": ""
+	},
+	"default_workspaces": {
+		"message": "Standard-Arbeitsbereiche",
+		"description": ""
+	},
+	"apply_changes": {
+		"message": "Änderungen übernehmen",
+		"description": "apply changes on default workspaces button"
+	},
+	"clear": {
+		"message": "Erweiterungsdaten löschen",
+		"description": "clear extension data"
+	},
+	"new_workspace": {
+		"message": "Neuer Arbeitsbereich",
+		"description": ""
+	},
+	"workspace": {
+		"message": "Arbeitsbereich",
+		"description": ""
+	},
+	"workspaces": {
+		"message": "Arbeitsbereiche",
+		"description": ""
+	},
+	"send_to_workspace": {
+		"message": "an Arbeitsbereich senden",
+		"description": ""
+	},
+	"create_new_workspace": {
+		"message": "neuen Arbeitsbereich erstellen",
+		"description": ""
+	}
+}
