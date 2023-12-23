@@ -97,6 +97,8 @@ export class Window {
 		});
 		const currentTabIds = currentTabs.map((tab) => tab.id!);
 
+		console.info({ currentTabIds });
+
 		if (currentTabs?.at(0)?.url === "about:blank") {
 			const newTab = await Browser.tabs.create({
 				active: true,
@@ -108,6 +110,9 @@ export class Window {
 			// console.log(structuredClone(this.activeWorkspace));
 			this.activeWorkspace.activeTabId = newTab.id!;
 		}
+		// else {
+		// 	this.activeWorkspace.activeTabId = currentTabs?.at(0)?.id;
+		// }
 
 		console.info("Win - freshInit End");
 	}
@@ -121,7 +126,9 @@ export class Window {
 	}
 
 	async addTab(tabId: number) {
+		console.info("addTab");
 		await this.addTabs([tabId]);
+		return;
 	}
 
 	async addTabs(tabIds: number[]) {
@@ -160,18 +167,18 @@ export class Window {
 
 		// console.log({ activeWorkspace: structuredClone(this.activeWorkspace), workspaces: structuredClone(this.workspaces),});
 
-		if (this.activeWorkspace.tabIds.length) {
-			this.#activeWorkspace.activeTabId = this.activeWorkspace.tabIds.at(-1);
-			// this.#activeWorkspace.activeTabId = (
-			// 	await Browser.tabs.query({
-			// 		windowId: this.id,
-			// 		active: true,
-			// 	})
-			// ).at(0)!.id!;
-		} else {
-			this.#activeWorkspace.activeTabId = undefined;
-			await this.switchToPreviousWorkspace();
-		}
+		// if (this.activeWorkspace.tabIds.length) {
+		// 	this.#activeWorkspace.activeTabId = this.activeWorkspace.tabIds.at(-1);
+		// 	// this.#activeWorkspace.activeTabId = (
+		// 	// 	await Browser.tabs.query({
+		// 	// 		windowId: this.id,
+		// 	// 		active: true,
+		// 	// 	})
+		// 	// ).at(0)!.id!;
+		// } else {
+		// 	this.#activeWorkspace.activeTabId = undefined;
+		// 	await this.switchToPreviousWorkspace();
+		// }
 
 		this.#persist();
 	}
@@ -193,6 +200,8 @@ export class Window {
 		// 	({ id }) => id === this.activeWorkspace.id
 		// );
 
+		if (!targetWorkspace.tabIds.length && tabIds.length)
+			targetWorkspace.activeTabId = tabIds.at(-1);
 		targetWorkspace.tabIds.push(...tabIds);
 
 		this.activeWorkspace.tabIds = this.activeWorkspace.tabIds.filter(
@@ -262,9 +271,11 @@ export class Window {
 
 		if (tabIds) {
 			newWorkspace.tabIds = tabIds;
+			newWorkspace.activeTabId = tabIds.at(-1);
 		} else {
 			const tabId: number = (await Browser.tabs.create({ active: false })).id!;
 			newWorkspace.tabIds = [tabId!];
+			newWorkspace.activeTabId = tabId;
 		}
 
 		this.#workspaces = [...this.#workspaces, newWorkspace];

@@ -11,6 +11,7 @@ let workspaceStorage: WorkspaceStorage;
 let tabMenu: TabMenu;
 
 let extensionIsInitialized = false;
+let manualTabCreationHandling = false;
 
 let extensionInitializationProcess = new DeferredPromise<void>();
 extensionInitializationProcess.resolve();
@@ -210,6 +211,7 @@ browser.windows.onCreated.addListener(async (window) => {
 });
 
 browser.tabs.onCreated.addListener(async (tab) => {
+	if (manualTabCreationHandling) return;
 	await windowCreationProcess;
 	tabCreationProcess = new DeferredPromise();
 	const windowIsNew = !workspaceStorage.windows.has(tab.windowId!);
@@ -226,7 +228,28 @@ browser.tabs.onRemoved.addListener(async (tabId, info) => {
 		tabAttachmentProcess,
 		tabDetachmentProcess,
 	]);
-	workspaceStorage.getWindow(info.windowId).removeTab(tabId);
+
+	const window = workspaceStorage.getWindow(info.windowId);
+	const prevActiveWorkspace = window.activeWorkspace;
+
+	await window.removeTab(tabId);
+
+	if (!window.activeWorkspace.tabIds.length) {
+		manualTabCreationHandling = true;
+		const newTab = await browser.tabs.create({
+			active: false,
+			windowId: window.id,
+		});
+		prevActiveWorkspace.tabIds.push(newTab.id!);
+		prevActiveWorkspace.activeTabId = newTab.id;
+		await window.switchToPreviousWorkspace();
+
+		informPorts("updatedActiveWorkspace", {
+			id: window.activeWorkspace.id,
+		});
+		manualTabCreationHandling = false;
+	}
+
 	informPorts("removedTab", { tabId });
 });
 

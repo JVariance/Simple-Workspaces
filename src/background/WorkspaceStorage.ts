@@ -132,7 +132,7 @@ export class WorkspaceStorage {
 		await window?.removeTabs(tabIds);
 		const currentTabIds = currentActiveWorkspace?.tabIds;
 
-		console.log({ currentTabIds, window });
+		console.log({ currentTabIds, currentActiveWorkspace, window });
 
 		if (window && !currentTabIds?.length) {
 			console.info("keine tabs mehr im workspace");
@@ -145,11 +145,11 @@ export class WorkspaceStorage {
 
 			if (activeTab) {
 				console.info({ activeTab, window, workspaces: window.workspaces });
-				const currentWorkspace = window.workspaces.find((workspace) =>
+				const workspaceOfActiveTab = window.workspaces.find((workspace) =>
 					workspace.tabIds.includes(activeTab.id!)
 				);
 
-				console.info({ currentWorkspace });
+				console.info({ workspaceOfActiveTab });
 
 				const newTab = await Browser.tabs.create({
 					active: false,
@@ -159,18 +159,20 @@ export class WorkspaceStorage {
 				await window.addTab(newTab.id!);
 				console.info("ADDED TAB");
 
-				if (currentWorkspace) {
-					currentWorkspace.activeTabId = undefined;
-					await window.switchWorkspace(currentWorkspace);
+				if (workspaceOfActiveTab) {
+					// workspaceOfActiveTab.activeTabId = undefined;
+					await window.switchWorkspace(workspaceOfActiveTab);
+					// window.setActiveTab(newTab.id!);
+					currentActiveWorkspace.activeTabId = newTab.id!;
 				}
-				// window. = currentWorkspace;
+				// window. = workspaceOfActiveTab;
 				// window.setActiveTab(activeTab.id!);
 
 				console.log({
 					activeTab: structuredClone(activeTab),
 					workspaces: structuredClone(window.workspaces),
 					activeWorkspace: structuredClone(window?.activeWorkspace),
-					currentWorkspace: structuredClone(currentWorkspace),
+					workspaceOfActiveTab: structuredClone(workspaceOfActiveTab),
 				});
 			}
 		}
