@@ -1,5 +1,8 @@
 {
 	"manifest_version": 2,
+	"name": "Simple Workspaces",
+	"version": "0.0.1",
+	"description": "Simple Workspaces is a Firefox extension that allows you to organize your tabs into workspaces.",
 	"icons": {
 		"16": "icon/icon-dark.svg",
 		"32": "icon/icon-dark.svg",
@@ -101,6 +104,11 @@
 	"{{firefox}}.options_ui": {
 		"page": "src/pages/Options/options.html",
 		"open_in_tab": true
+	},
+	"{{firefox}}.browser_specific_settings": {
+		"gecko": {
+			"id": "{83afc4df-70ca-45a2-a135-47360a1e2aaf0}"
+		}
 	},
 	"background": {
 		"{{firefox}}.scripts": ["src/background/background.ts"]

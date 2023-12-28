@@ -1,4 +1,4 @@
-# <img src="https://raw.githubusercontent.com/JVariance/Firefox-Workspaces/5ea333ff29c10c526ab9c1d96c2c66ed02253ec7/public/icon/workspaces.svg" width="64"/><br/> Firefox Workspaces
+# <img src="https://raw.githubusercontent.com/JVariance/Simple-Workspaces/5ea333ff29c10c526ab9c1d96c2c66ed02253ec7/public/icon/workspaces.svg" width="64"/><br/> Simple Workspaces
 
 > currently in development - not available via extension store
 
