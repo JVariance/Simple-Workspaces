@@ -11,14 +11,21 @@ export class Window {
 	#movingTabs = false;
 	#storageKey!: string;
 	#switchingWorkspace = false;
-	#id: Ext.Window["id"];
+	#id: string;
+	#windowId!: number;
 	#workspaces: Ext.Workspace[] = [];
 	// #self!: Ext.Window;
 
-	constructor(id: number) {
+	constructor(
+		id: string | undefined = undefined,
+		windowId: Browser.Windows.Window["id"] = undefined
+	) {
 		// this.#self = { id, workspaces: [] };
-		this.#id = id;
-		this.#storageKey = `tw-window_${this.#id}`;
+		// this.#windowId = windowId;
+		console.info("construct new window -> " + id);
+		this.#id = id || crypto.randomUUID();
+		if (windowId) this.#windowId = windowId;
+		this.#storageKey = `window_${this.#id}`;
 	}
 
 	async init({ lookInStorage = true } = {}) {
@@ -30,28 +37,50 @@ export class Window {
 			? ((await Browser.storage.local.get(this.#storageKey)) as Ext.Window)
 			: {};
 
+		// console.log({
+		// 	localWindow,
+		// 	storageKey: this.#storageKey,
+		// 	dings: await Browser.storage.local.get(this.#storageKey),
+		// });
+
 		if (localWindow) {
 			// {id ,this.#workspaces} = localWindow;
+			console.log("found local window", { localWindow });
 			this.#id = localWindow.id;
-			this.#workspaces = localWindow.workspaces;
+			const firstTabId = localWindow.workspaces?.at(0)?.tabIds?.at(0);
+			console.info(localWindow.workspaces.at(0));
+			console.info(localWindow.workspaces.at(0).tabIds);
+			console.info({ firstTabId });
+
+			try {
+				// const firstTab = await Browser.tabs.get(firstTabId);
+				const allTabs = await Browser.tabs.query({});
+				const firstTab = allTabs.find(({ id }) => id === firstTabId)!;
+				this.#windowId = firstTab.windowId!;
+				console.info("windowId" + this.#windowId);
+				this.#workspaces = localWindow.workspaces;
+			} catch (error) {
+				console.log({ error });
+			}
 		} else {
 			const currentTabs = await Browser.tabs.query({
-				windowId: this.#id,
+				windowId: this.#windowId,
 			});
 			const currentTabIds = currentTabs.map((tab) => tab.id!);
 
-			const { tw_defaultWorkspaces: defaultWorkspaces } =
-				(await Browser.storage.local.get("tw_defaultWorkspaces")) as {
-					tw_defaultWorkspaces: Ext.Workspace[];
-				};
+			const { defaultWorkspaces } = (await Browser.storage.local.get(
+				"defaultWorkspaces"
+			)) as {
+				defaultWorkspaces: Ext.Workspace[];
+			};
 
 			// let activeWorkspace: Ext.Workspace;
 
 			if (defaultWorkspaces) {
+				console.info("defaultWorkspaces found");
 				for (let [i, defaultWorkspace] of defaultWorkspaces.entries()) {
-					const newWorkspace = await this.#getNewWorkspace();
 					this.workspaces.push({
-						...newWorkspace,
+						...this.#getNewWorkspace(),
 						...defaultWorkspace,
 						active: i === 0,
 					});
@@ -59,10 +88,11 @@ export class Window {
 
 				// activeWorkspace = this.workspaces.at(0)!;
 			} else {
-				const newWorkspace = await this.#getNewWorkspace();
+				console.info("no defaultWorkspaces found");
+				const newWorkspace = this.#getNewWorkspace();
 				newWorkspace.tabIds = currentTabIds || [];
 				newWorkspace.activeTabId = currentTabIds?.at(0);
-				this.workspaces.push(newWorkspace);
+				this.#workspaces.push(newWorkspace);
 				// activeWorkspace = newWorkspace;
 			}
 
@@ -74,7 +104,14 @@ export class Window {
 		this.#activeWorkspace =
 			this.#workspaces.find(({ active }) => active) || this.#workspaces[0];
 
+		// if (localWindow) {
+		// 	Browser.tabs.update(this.#activeWorkspace.activeTabId, { active: true });
+		// 	Browser.tabs.hide();
+		// }
+
+		console.info("before persist");
 		await this.#persist();
+		console.info("after persist");
 
 		this.#initializing = false;
 		console.info("finished initializing window");
@@ -82,6 +119,10 @@ export class Window {
 
 	get id() {
 		return this.#id;
+	}
+
+	get windowId() {
+		return this.#windowId;
 	}
 
 	get activeWorkspace(): Ext.Workspace {
@@ -93,7 +134,7 @@ export class Window {
 		// 	currentTabIds.length === 1 && currentTabs?.at(0)?.url === "about:blank";
 		console.info("Win - freshInit Start");
 		const currentTabs = await Browser.tabs.query({
-			windowId: this.#id,
+			windowId: this.#windowId,
 		});
 		const currentTabIds = currentTabs.map((tab) => tab.id!);
 
@@ -102,7 +143,7 @@ export class Window {
 		if (currentTabs?.at(0)?.url === "about:blank") {
 			const newTab = await Browser.tabs.create({
 				active: true,
-				windowId: this.#id,
+				windowId: this.#windowId,
 			});
 
 			await Browser.tabs.remove(currentTabIds[0]);
@@ -222,7 +263,7 @@ export class Window {
 
 		if (!this.activeWorkspace.tabIds.length) {
 			const newTab = await Browser.tabs.create({
-				windowId: this.id,
+				windowId: this.#windowId,
 				active: false,
 			});
 			this.activeWorkspace.tabIds.push(newTab.id!);

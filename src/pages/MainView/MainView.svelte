@@ -20,7 +20,9 @@
 	let windowId: number;
 
 	$effect(() => {
+		console.info("effect", { activeWorkspace, workspaces });
 		activeWorkspace = workspaces.find((workspace) => workspace.active)!;
+		console.info({ activeWorkspace });
 	});
 
 	function getWorkspaces({
@@ -101,13 +103,22 @@
 
 	port.onMessage.addListener((message) => {
 		const { msg } = message;
+		switch(msg){
+			case "connected":
+					initView();
+				break;
+			default:
+				break;
+		}
+	});
+
+	window.addEventListener('message', ({data: message}) => {
+		console.info("browser runtime onmessage");
+		const { msg } = message;
 		switch (msg) {
 			case "initialized":
 				console.info("background initialized");
 				// initView();
-				break;
-				case "connected":
-					initView();
 				break;
 			case "addedWorkspace":
 				addedWorkspace(message);
@@ -240,7 +251,7 @@
 		// console.info({windowId});
 		console.info({windowId});
 		const localWorkspaces = await getWorkspaces({ windowId });
-		console.info({localWorkspaces});
+		console.info("localWorkspaces", { localWorkspaces });
 		workspaces.push(...localWorkspaces);
 	}
 
@@ -298,7 +309,7 @@
 
 <div class="w-[100dvw] p-2 box-border">
 	<!-- <h1 class="mb-4">Workspaces</h1> -->
-	{#if import.meta.env.DEV}
+	{#if !import.meta.env.DEV}
 		<div class="flex flex-wrap gap-1 absolute top-0 right-0">
 			<details class="bg-neutral-950 p-1 rounded-md">
 				<summary></summary>

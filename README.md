@@ -4,6 +4,8 @@
 
 A Browser Extension for Firefox which lets you organize your tabs into workspaces similar to Opera Ones workspaces. It's an alternative to Firefox' "Multi Account Containers"-Feature, which requires reauthentication on websites inside every single container.
 
+- [activate previous windows and tab opening on startup](about:preferences#browserRestoreSession)
+
 ## Features
 
  - Light/Dark Theme
@@ -18,6 +20,7 @@ A Browser Extension for Firefox which lets you organize your tabs into workspace
 
  - History per window/workspace
  - Notification of active switched workspace
+ - option to visually group workspaces
 _______________________________________
 
 ## Development

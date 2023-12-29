@@ -12,6 +12,7 @@
 		"256": "icon/icon-dark.svg"
 	},
 	"{{firefox}}.permissions": [
+		"<all_urls>",
 		"activeTab",
 		"menus",
 		"scripting",
@@ -107,7 +108,7 @@
 	},
 	"{{firefox}}.browser_specific_settings": {
 		"gecko": {
-			"id": "{83afc4df-70ca-45a2-a135-47360a1e2aaf0}"
+			"id": "{eb7c9a05-56f8-47bf-9c14-2c7da7529a02}"
 		}
 	},
 	"background": {

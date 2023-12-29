@@ -3,7 +3,7 @@ import {
 	promisedDebounceFunc,
 	promisedDebounceFuncWithCollectedArgs,
 } from "@root/utils";
-import browser from "webextension-polyfill";
+import browser, { extension } from "webextension-polyfill";
 import { TabMenu } from "./TabMenu";
 import { WorkspaceStorage } from "./WorkspaceStorage";
 
@@ -24,17 +24,32 @@ tabAttachmentProcess.resolve();
 let tabDetachmentProcess = new DeferredPromise<void>();
 tabDetachmentProcess.resolve();
 
+console.info("MOINSEN MOINSEN MOINSEN MOINSEN MOINSEN MOINSEN MOINSEN");
+
 async function initExtension() {
+	console.info("initExtension 0");
+	// await extensionInitializationProcess;
+	if (extensionInitializationProcess.state === "pending") return;
+	console.info("initExtension 1");
 	extensionInitializationProcess = new DeferredPromise();
+	console.info("initExtension 2");
 	// await browser.storage.local.clear();
-	await initWorkspaceStorage();
-	await initTabMenu();
+	if (!workspaceStorage && !tabMenu) {
+		console.info("initExtension 3");
+		await initWorkspaceStorage();
+		console.info("initExtension 4");
+		await initTabMenu();
+		console.info("initExtension 5");
+	}
 	// informPorts("initialized");
+	console.info("initExtension 6");
 	extensionIsInitialized = true;
+	console.info("initExtension 7");
 	extensionInitializationProcess.resolve();
 }
 
 async function initTabMenu() {
+	console.info("initTabMenu");
 	tabMenu = new TabMenu();
 	await tabMenu.init(
 		workspaceStorage.windows.get(workspaceStorage.focusedWindowId)!.workspaces
@@ -46,46 +61,76 @@ async function initWorkspaceStorage() {
 	await workspaceStorage.init();
 }
 
-browser.runtime.onStartup.addListener(async () => {
+browser.runtime.onInstalled.addListener(async (details) => {
+	console.info("onInstalled");
+	await browser.storage.local.clear();
 	if (!workspaceStorage) await initExtension();
 });
 
-let backgroundListenerPorts: {
-	port: browser.Runtime.Port;
-	windowId: number;
-}[] = [];
-
-browser.runtime.onConnect.addListener(async (port) => {
-	if (!extensionIsInitialized) {
-		await initExtension();
-	}
-
-	console.info("port connected");
-	backgroundListenerPorts.push({
-		port,
-		windowId: workspaceStorage.focusedWindowId,
-	});
-
-	port.postMessage({ msg: "connected" });
-
-	port.onDisconnect.addListener((port) => {
-		backgroundListenerPorts = backgroundListenerPorts.filter(
-			({ port: _port }) => port !== _port
-		);
-	});
+browser.runtime.onStartup.addListener(async () => {
+	console.info("onStartup");
+	if (!workspaceStorage) await initExtension();
 });
 
+// let backgroundListenerPorts: {
+// 	port: browser.Runtime.Port;
+// 	windowId: number;
+// }[] = [];
+
+browser.runtime.onConnect.addListener(async (port) => {
+	extensionInitializationProcess.then(() => {
+		port.postMessage({ msg: "connected" });
+	});
+});
+// browser.runtime.onConnect.addListener(async (port) => {
+// 	console.info("onConnect");
+// 	// if (!extensionIsInitialized) {
+// 	// 	await initExtension();
+// 	// }
+// 	// await extensionInitializationProcess;
+
+// 	// const windowId = port.sender?.tab?.windowId!;
+
+// 	console.info("port.sender.tab.windowId");
+// 	browser.extension.getViews({ type: "popup" });
+// 	// browser.extension.getViews({}).at(0)?.postMessage();
+// 	// port.sender.
+
+// 	extensionInitializationProcess.then(() => {
+// 		console.info("port connected");
+// 		backgroundListenerPorts.push({
+// 			port,
+// 			windowId,
+// 		});
+
+// 		port.postMessage({ msg: "connected" });
+
+// 		port.onDisconnect.addListener((port) => {
+// 			backgroundListenerPorts = backgroundListenerPorts.filter(
+// 				({ port: _port }) => port !== _port
+// 			);
+// 		});
+// 	});
+// });
+
 async function informPorts(
+	windowId: number,
 	message: string,
 	props: Record<string | symbol, any> = {}
 ) {
 	// await Promise.all([windowCreationProcess, tabCreationProcess]);
 	console.info("bg - informPorts");
-	backgroundListenerPorts.forEach(({ port, windowId }) => {
-		if (windowId === workspaceStorage.focusedWindowId) {
-			port.postMessage({ msg: message, ...props });
-		}
+	const popups = browser.extension.getViews({ type: "popup", windowId });
+	const sidebar = browser.extension.getViews({ type: "sidebar", windowId });
+
+	[...popups, ...sidebar].forEach((view) => {
+		view.postMessage({ msg: message, ...props });
 	});
+	// backgroundListenerPorts.forEach(({ port, windowId }) => {
+	// 	if (windowId === workspaceStorage.focusedWindowId) {
+	// 		port.postMessage({ msg: message, ...props });
+	// 	}
+	// });
 }
 
 browser.menus.onShown.addListener((info, tab) => {
@@ -93,7 +138,8 @@ browser.menus.onShown.addListener((info, tab) => {
 	const workspaces = workspaceStorage.windows
 		.get(tab.windowId!)!
 		.workspaces.filter(
-			({ windowId, active }) => windowId === tab!.windowId! && !active
+			// ({ windowId, active }) => windowId === tab!.windowId! && !active
+			({ active }) => !active
 		);
 
 	tabMenu.update({
@@ -140,16 +186,18 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 		});
 
 		if (newWorkspaceDemanded)
-			informPorts("movedTabsToNewWorkspace", {
+			informPorts(tab.windowId, "movedTabsToNewWorkspace", {
 				workspace: newWorkspace,
 				tabIds,
 			});
-		else informPorts("movedTabs", { targetWorkspaceId, tabIds });
+		else informPorts(tab.windowId!, "movedTabs", { targetWorkspaceId, tabIds });
 
 		if (
 			targetWorkspaceId === workspaceStorage.activeWindow.activeWorkspace.id
 		) {
-			informPorts("updatedActiveWorkspace", { id: targetWorkspaceId });
+			informPorts(tab.windowId!, "updatedActiveWorkspace", {
+				id: targetWorkspaceId,
+			});
 		}
 	}
 });
@@ -184,9 +232,10 @@ darkThemeMq.addEventListener("change", (e) => {
 	updateIcon(theme);
 });
 
-browser.runtime.onInstalled.addListener(async (details) => {
-	if (!workspaceStorage) await initExtension();
-});
+// browser.management.onEnabled.addListener(async () => {
+// 	await browser.storage.local.clear();
+// 	if (!workspaceStorage) await initExtension();
+// });
 
 browser.windows.onFocusChanged.addListener((windowId) => {
 	if (windowId !== browser.windows.WINDOW_ID_NONE) {
@@ -195,7 +244,9 @@ browser.windows.onFocusChanged.addListener((windowId) => {
 });
 
 browser.windows.onRemoved.addListener(async (windowId) => {
-	await workspaceStorage.removeWindow(windowId);
+	if (workspaceStorage.windows.size > 1) {
+		await workspaceStorage.removeWindow(windowId);
+	}
 });
 
 browser.windows.onCreated.addListener(async (window) => {
@@ -203,7 +254,8 @@ browser.windows.onCreated.addListener(async (window) => {
 	windowCreationProcess = new DeferredPromise();
 	console.info("windows.onCreated");
 
-	const windowId = (await workspaceStorage.getOrCreateWindow(window.id!)).id;
+	const windowId = (await workspaceStorage.getOrCreateWindow(window.id!))
+		.windowId;
 	//workspaceStorage.addWindow(window.id!);
 	await workspaceStorage.initFreshWindow(windowId);
 
@@ -218,7 +270,7 @@ browser.tabs.onCreated.addListener(async (tab) => {
 
 	(await workspaceStorage.getOrCreateWindow(tab.windowId!)).addTab(tab.id!);
 
-	if (!windowIsNew) informPorts("createdTab", { tabId: tab.id });
+	if (!windowIsNew) informPorts(tab.windowId!, "createdTab", { tabId: tab.id });
 	tabCreationProcess.resolve();
 });
 
@@ -238,19 +290,19 @@ browser.tabs.onRemoved.addListener(async (tabId, info) => {
 		manualTabCreationHandling = true;
 		const newTab = await browser.tabs.create({
 			active: false,
-			windowId: window.id,
+			windowId: window.windowId,
 		});
 		prevActiveWorkspace.tabIds.push(newTab.id!);
 		prevActiveWorkspace.activeTabId = newTab.id;
 		await window.switchToPreviousWorkspace();
 
-		informPorts("updatedActiveWorkspace", {
+		informPorts(window.windowId, "updatedActiveWorkspace", {
 			id: window.activeWorkspace.id,
 		});
 		manualTabCreationHandling = false;
 	}
 
-	informPorts("removedTab", { tabId });
+	informPorts(window.windowId, "removedTab", { tabId });
 });
 
 // browser.tabs.onMoved.addListener((tabId, moveInfo) => {
@@ -288,14 +340,17 @@ async function _handleDetachedTabs(tabIds: number[], currentWindowId: number) {
 		return;
 	}
 
-	backgroundListenerPorts
-		.filter(({ windowId }) => windowId === currentWindowId)
-		.forEach(({ port }) => {
-			port.postMessage({
-				msg: "updatedActiveWorkspace",
-				id: activeWorkspace.id,
-			});
-		});
+	// backgroundListenerPorts
+	// 	.filter(({ windowId }) => windowId === currentWindowId)
+	// 	.forEach(({ port }) => {
+	// 		port.postMessage({
+	// 			msg: "updatedActiveWorkspace",
+	// 			id: activeWorkspace.id,
+	// 		});
+	// 	});
+	informPorts(currentWindowId, "updatedActiveWorkspace", {
+		id: activeWorkspace.id,
+	});
 
 	tabDetachmentProcess.resolve();
 }
@@ -327,7 +382,7 @@ browser.commands.onCommand.addListener((command) => {
 	switch (command) {
 		case "open-popup":
 			browser.browserAction.openPopup({
-				windowId: workspaceStorage.activeWindow.id,
+				windowId: workspaceStorage.activeWindow.windowId,
 			});
 			break;
 		case "toggle-sidebar":
@@ -338,9 +393,13 @@ browser.commands.onCommand.addListener((command) => {
 				const activeWorkspace =
 					await workspaceStorage.activeWindow.switchToNextWorkspace();
 				if (!activeWorkspace) return;
-				informPorts("updatedActiveWorkspace", {
-					id: activeWorkspace.id,
-				});
+				informPorts(
+					workspaceStorage.activeWindow.windowId,
+					"updatedActiveWorkspace",
+					{
+						id: activeWorkspace.id,
+					}
+				);
 			})();
 			break;
 		case "previous-workspace":
@@ -348,16 +407,22 @@ browser.commands.onCommand.addListener((command) => {
 				const activeWorkspace =
 					await workspaceStorage.activeWindow.switchToPreviousWorkspace();
 				if (!activeWorkspace) return;
-				informPorts("updatedActiveWorkspace", {
-					id: activeWorkspace.id,
-				});
+				informPorts(
+					workspaceStorage.activeWindow.windowId,
+					"updatedActiveWorkspace",
+					{
+						id: activeWorkspace.id,
+					}
+				);
 			})();
 			break;
 		case "new-workspace":
 			(async () => {
 				const newWorkspace =
 					await workspaceStorage.activeWindow.addWorkspaceAndSwitch();
-				informPorts("addedWorkspace", { workspace: newWorkspace });
+				informPorts(workspaceStorage.activeWindow.windowId, "addedWorkspace", {
+					workspace: newWorkspace,
+				});
 			})();
 			break;
 		default:
@@ -377,7 +442,7 @@ browser.runtime.onMessage.addListener((message) => {
 			break;
 		case "addWorkspace":
 			(async () => {
-				informPorts("addedWorkspace", {
+				informPorts(workspaceStorage.activeWindow.windowId, "addedWorkspace", {
 					workspace:
 						await workspaceStorage.activeWindow.addWorkspaceAndSwitch(),
 				});
@@ -461,20 +526,24 @@ browser.runtime.onMessage.addListener((message) => {
 
 			(async () => {
 				await workspaceStorage.activeWindow.switchWorkspace(nextWorkspace);
-				informPorts("updatedActiveWorkspace", { id: nextWorkspace.id });
+				informPorts(
+					workspaceStorage.activeWindow.windowId,
+					"updatedActiveWorkspace",
+					{ id: nextWorkspace.id }
+				);
 			})();
 			break;
 		case "setDefaultWorkspaces":
 			browser.storage.local.set({
-				tw_defaultWorkspaces: message.defaultWorkspaces,
+				defaultWorkspaces: message.defaultWorkspaces,
 			});
 			break;
 		case "getDefaultWorkspaces":
 			return new Promise(async (resolve) => {
-				const { tw_defaultWorkspaces } = await browser.storage.local.get(
-					"tw_defaultWorkspaces"
+				const { defaultWorkspaces } = await browser.storage.local.get(
+					"defaultWorkspaces"
 				);
-				return resolve(tw_defaultWorkspaces);
+				return resolve(defaultWorkspaces);
 			});
 		default:
 			break;

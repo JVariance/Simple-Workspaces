@@ -6,7 +6,7 @@ namespace Ext {
 		tabIds: number[];
 		active: boolean;
 		activeTabId?: number;
-		windowId: number;
+		windowId: string;
 		hidden?: boolean;
 	};
 

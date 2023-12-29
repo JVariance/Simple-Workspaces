@@ -91,6 +91,7 @@ export class DeferredPromise<T> {
 	catch: (typeof Promise)["prototype"]["catch"];
 	finally: (typeof Promise)["prototype"]["finally"];
 	[Symbol.toStringTag]!: string;
+	#state: "pending" | "fulfilled" = "pending";
 
 	constructor() {
 		this.promise = new Promise((resolve, reject) => {
@@ -99,10 +100,15 @@ export class DeferredPromise<T> {
 			this.resolve = resolve;
 			this.reject = reject;
 		});
+		this.promise.finally(() => (this.#state = "fulfilled"));
 		// bind `then` and `catch` to implement the same interface as Promise
 		this.then = this.promise.then.bind(this.promise);
 		this.catch = this.promise.catch.bind(this.promise);
 		this.finally = this.promise.finally.bind(this.promise);
 		this[Symbol.toStringTag] = "Promise";
+	}
+
+	get state() {
+		return this.#state;
 	}
 }

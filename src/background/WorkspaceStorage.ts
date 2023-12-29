@@ -3,9 +3,9 @@ import Browser from "webextension-polyfill";
 import { Window } from "./Window";
 
 enum StorageKeys {
-	windowIds = "tw_windowIds",
-	workspaces = "tw_workspaces",
-	activeWorkspace = "tw_activeWorkspace",
+	windowIds = "windowIds",
+	workspaces = "workspaces",
+	activeWorkspace = "activeWorkspace",
 }
 
 export class WorkspaceStorage {
@@ -19,7 +19,7 @@ export class WorkspaceStorage {
 		// this.clearDB();
 		let { [StorageKeys.windowIds]: localWindowIds } =
 			(await Browser.storage.local.get(StorageKeys.windowIds)) as {
-				[StorageKeys.windowIds]: Ext.Window["id"][];
+				[StorageKeys.windowIds]: string[];
 			};
 
 		const currentWindows = await Browser.windows.getAll();
@@ -28,36 +28,40 @@ export class WorkspaceStorage {
 
 		this.#focusedWindowId = focusedWindow.id!;
 
-		if (!localWindowIds) {
-			for (let window of currentWindows) {
-				const newWindowInstance = new Window(window.id!);
-				await newWindowInstance.init();
-
-				this.windows.set(newWindowInstance.id, newWindowInstance);
+		if (localWindowIds) {
+			console.info("found local window ids");
+			console.info({ localWindowIds });
+			for (let winId of localWindowIds) {
+				const windowInstance = new Window(winId!);
+				await windowInstance.init();
+				this.windows.set(windowInstance.windowId, windowInstance);
 			}
 		} else {
-			for (let winId of localWindowIds) {
-				const windowInstance = new Window(winId);
-				await windowInstance.init();
-				this.windows.set(winId, windowInstance);
+			for (let window of currentWindows) {
+				const newWindowInstance = new Window(undefined, window.id!);
+				await newWindowInstance.init();
+
+				this.windows.set(newWindowInstance.windowId, newWindowInstance);
 			}
 		}
 
 		for (let window of this.#windows.values()) {
 			const workspaces = window.workspaces;
+			const activeWorkspace = workspaces.find(({ active }) => active)!;
 
-			await Browser.tabs.hide(
-				workspaces
-					.filter(({ active }) => !active)
-					.flatMap(({ tabIds }) => tabIds)
+			console.info({ activeWorkspace });
+			await Browser.tabs.update(
+				activeWorkspace.activeTabId || activeWorkspace.tabIds[0],
+				{
+					active: true,
+				}
 			);
 
-			for (let workspace of workspaces.filter(({ active }) => active)) {
-				await Browser.tabs.update(
-					workspace.activeTabId || workspace.tabIds[0],
-					{ active: true }
-				);
-			}
+			const inactiveWorkspaces = workspaces.filter(({ active }) => !active);
+			console.info({ inactiveWorkspaces });
+			await Browser.tabs.hide(
+				inactiveWorkspaces.flatMap(({ tabIds }) => tabIds)
+			);
 		}
 
 		this.#persistWindows();
@@ -82,10 +86,15 @@ export class WorkspaceStorage {
 	#persistWindows = promisedDebounceFunc<void>(this.#_persistWindows, 500);
 
 	#_persistWindows() {
+		// return Browser.storage.local.set({
+		// 	[StorageKeys.windowIds]: Array.from(this.#windows).flatMap(
+		// 		([key, _]) => key
+		// 	),
+		// });
+		const windowIds = Array.from(this.#windows).flatMap(({ 1: win }) => win.id);
+		console.log("persistWindowIds -> " + windowIds);
 		return Browser.storage.local.set({
-			[StorageKeys.windowIds]: Array.from(this.#windows).flatMap(
-				([key, val]) => key
-			),
+			[StorageKeys.windowIds]: windowIds,
 		});
 	}
 
@@ -139,7 +148,7 @@ export class WorkspaceStorage {
 			const activeTab = (
 				await Browser.tabs.query({
 					active: true,
-					windowId: window.id,
+					windowId: window.windowId,
 				})
 			)?.at(0);
 
@@ -153,7 +162,7 @@ export class WorkspaceStorage {
 
 				const newTab = await Browser.tabs.create({
 					active: false,
-					windowId: window.id,
+					windowId: window.windowId,
 				});
 
 				await window.addTab(newTab.id!);
@@ -189,7 +198,7 @@ export class WorkspaceStorage {
 
 	async addWindow(windowId: number): Promise<Window> {
 		this.#focusedWindowId = windowId;
-		const newWindow = new Window(windowId);
+		const newWindow = new Window(undefined, windowId);
 		await newWindow.init({ lookInStorage: false });
 		this.#windows.set(windowId, newWindow);
 
