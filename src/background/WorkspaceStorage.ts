@@ -50,18 +50,26 @@ export class WorkspaceStorage {
 			const activeWorkspace = workspaces.find(({ active }) => active)!;
 
 			console.info({ activeWorkspace });
-			await Browser.tabs.update(
-				activeWorkspace.activeTabId || activeWorkspace.tabIds[0],
-				{
-					active: true,
-				}
-			);
+			try {
+				await Browser.tabs.update(
+					activeWorkspace.activeTabId || activeWorkspace.tabIds[0],
+					{
+						active: true,
+					}
+				);
+			} catch (e) {
+				console.error({ e });
+			}
 
 			const inactiveWorkspaces = workspaces.filter(({ active }) => !active);
 			console.info({ inactiveWorkspaces });
-			await Browser.tabs.hide(
-				inactiveWorkspaces.flatMap(({ tabIds }) => tabIds)
-			);
+			try {
+				await Browser.tabs.hide(
+					inactiveWorkspaces.flatMap(({ tabIds }) => tabIds)
+				);
+			} catch (e) {
+				console.error({ e });
+			}
 		}
 
 		this.#persistWindows();

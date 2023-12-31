@@ -103,6 +103,7 @@
 
 	port.onMessage.addListener((message) => {
 		const { msg } = message;
+		console.info("port onmessage", { message });
 		switch(msg){
 			case "connected":
 					initView();

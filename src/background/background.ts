@@ -41,7 +41,7 @@ async function initExtension() {
 		await initTabMenu();
 		console.info("initExtension 5");
 	}
-	// informPorts("initialized");
+	// informViews("initialized");
 	console.info("initExtension 6");
 	extensionIsInitialized = true;
 	console.info("initExtension 7");
@@ -113,13 +113,13 @@ browser.runtime.onConnect.addListener(async (port) => {
 // 	});
 // });
 
-async function informPorts(
+async function informViews(
 	windowId: number,
 	message: string,
 	props: Record<string | symbol, any> = {}
 ) {
 	// await Promise.all([windowCreationProcess, tabCreationProcess]);
-	console.info("bg - informPorts");
+	console.info("bg - informViews");
 	const popups = browser.extension.getViews({ type: "popup", windowId });
 	const sidebar = browser.extension.getViews({ type: "sidebar", windowId });
 
@@ -173,7 +173,7 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 			newWorkspace = await workspaceStorage.activeWindow.addWorkspace([]);
 			newWorkspace.active = false;
 			targetWorkspaceId = newWorkspace.id;
-			// informPorts("addedWorkspace", {
+			// informViews("addedWorkspace", {
 			// 	workspace: newWorkspace,
 			// });
 		}
@@ -186,16 +186,16 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 		});
 
 		if (newWorkspaceDemanded)
-			informPorts(tab.windowId, "movedTabsToNewWorkspace", {
+			informViews(tab.windowId, "movedTabsToNewWorkspace", {
 				workspace: newWorkspace,
 				tabIds,
 			});
-		else informPorts(tab.windowId!, "movedTabs", { targetWorkspaceId, tabIds });
+		else informViews(tab.windowId!, "movedTabs", { targetWorkspaceId, tabIds });
 
 		if (
 			targetWorkspaceId === workspaceStorage.activeWindow.activeWorkspace.id
 		) {
-			informPorts(tab.windowId!, "updatedActiveWorkspace", {
+			informViews(tab.windowId!, "updatedActiveWorkspace", {
 				id: targetWorkspaceId,
 			});
 		}
@@ -243,11 +243,11 @@ browser.windows.onFocusChanged.addListener((windowId) => {
 	}
 });
 
-browser.windows.onRemoved.addListener(async (windowId) => {
-	if (workspaceStorage.windows.size > 1) {
-		await workspaceStorage.removeWindow(windowId);
-	}
-});
+// browser.windows.onRemoved.addListener(async (windowId) => {
+// 	if (workspaceStorage.windows.size > 1) {
+// 		await workspaceStorage.removeWindow(windowId);
+// 	}
+// });
 
 browser.windows.onCreated.addListener(async (window) => {
 	await tabCreationProcess;
@@ -270,7 +270,7 @@ browser.tabs.onCreated.addListener(async (tab) => {
 
 	(await workspaceStorage.getOrCreateWindow(tab.windowId!)).addTab(tab.id!);
 
-	if (!windowIsNew) informPorts(tab.windowId!, "createdTab", { tabId: tab.id });
+	if (!windowIsNew) informViews(tab.windowId!, "createdTab", { tabId: tab.id });
 	tabCreationProcess.resolve();
 });
 
@@ -280,6 +280,9 @@ browser.tabs.onRemoved.addListener(async (tabId, info) => {
 		tabAttachmentProcess,
 		tabDetachmentProcess,
 	]);
+
+	console.info("tab removed");
+	// if (!this.workspaces.flatMap(({ tabIds }) => tabIds).length) {}
 
 	const window = workspaceStorage.getWindow(info.windowId);
 	const prevActiveWorkspace = window.activeWorkspace;
@@ -296,13 +299,13 @@ browser.tabs.onRemoved.addListener(async (tabId, info) => {
 		prevActiveWorkspace.activeTabId = newTab.id;
 		await window.switchToPreviousWorkspace();
 
-		informPorts(window.windowId, "updatedActiveWorkspace", {
+		informViews(window.windowId, "updatedActiveWorkspace", {
 			id: window.activeWorkspace.id,
 		});
 		manualTabCreationHandling = false;
 	}
 
-	informPorts(window.windowId, "removedTab", { tabId });
+	informViews(window.windowId, "removedTab", { tabId });
 });
 
 // browser.tabs.onMoved.addListener((tabId, moveInfo) => {
@@ -348,7 +351,7 @@ async function _handleDetachedTabs(tabIds: number[], currentWindowId: number) {
 	// 			id: activeWorkspace.id,
 	// 		});
 	// 	});
-	informPorts(currentWindowId, "updatedActiveWorkspace", {
+	informViews(currentWindowId, "updatedActiveWorkspace", {
 		id: activeWorkspace.id,
 	});
 
@@ -393,7 +396,7 @@ browser.commands.onCommand.addListener((command) => {
 				const activeWorkspace =
 					await workspaceStorage.activeWindow.switchToNextWorkspace();
 				if (!activeWorkspace) return;
-				informPorts(
+				informViews(
 					workspaceStorage.activeWindow.windowId,
 					"updatedActiveWorkspace",
 					{
@@ -407,7 +410,7 @@ browser.commands.onCommand.addListener((command) => {
 				const activeWorkspace =
 					await workspaceStorage.activeWindow.switchToPreviousWorkspace();
 				if (!activeWorkspace) return;
-				informPorts(
+				informViews(
 					workspaceStorage.activeWindow.windowId,
 					"updatedActiveWorkspace",
 					{
@@ -420,7 +423,7 @@ browser.commands.onCommand.addListener((command) => {
 			(async () => {
 				const newWorkspace =
 					await workspaceStorage.activeWindow.addWorkspaceAndSwitch();
-				informPorts(workspaceStorage.activeWindow.windowId, "addedWorkspace", {
+				informViews(workspaceStorage.activeWindow.windowId, "addedWorkspace", {
 					workspace: newWorkspace,
 				});
 			})();
@@ -442,7 +445,7 @@ browser.runtime.onMessage.addListener((message) => {
 			break;
 		case "addWorkspace":
 			(async () => {
-				informPorts(workspaceStorage.activeWindow.windowId, "addedWorkspace", {
+				informViews(workspaceStorage.activeWindow.windowId, "addedWorkspace", {
 					workspace:
 						await workspaceStorage.activeWindow.addWorkspaceAndSwitch(),
 				});
@@ -526,7 +529,7 @@ browser.runtime.onMessage.addListener((message) => {
 
 			(async () => {
 				await workspaceStorage.activeWindow.switchWorkspace(nextWorkspace);
-				informPorts(
+				informViews(
 					workspaceStorage.activeWindow.windowId,
 					"updatedActiveWorkspace",
 					{ id: nextWorkspace.id }

@@ -57,7 +57,7 @@ export class Window {
 				const allTabs = await Browser.tabs.query({});
 				const firstTab = allTabs.find(({ id }) => id === firstTabId)!;
 				this.#windowId = firstTab.windowId!;
-				console.info("windowId" + this.#windowId);
+				console.info("windowId: " + this.#windowId);
 				this.#workspaces = localWindow.workspaces;
 			} catch (error) {
 				console.log({ error });

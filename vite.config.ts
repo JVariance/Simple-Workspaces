@@ -25,6 +25,9 @@ export default defineConfig({
 			{ find: "@pages/*", replacement: "/src/pages/*" },
 		],
 	},
+	esbuild: {
+		// drop: ["console", "debugger"],
+	},
 	plugins: [
 		svelte(),
 		webExtension({
