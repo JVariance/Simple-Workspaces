@@ -38,11 +38,25 @@ export class Window {
 
 		const tabs = await Browser.tabs.query({ windowId: this.#windowId });
 
+		console.info({ localWindow, tabs });
+
 		if (localWindow) {
-			const localWorkspaces: Map<string, Ext.Workspace> = Map.groupBy(
-				localWindow.workspaces,
-				({ id }) => id
-			);
+			// const localWorkspaces: Map<string, Ext.Workspace> = Map.groupBy(
+			// 	localWindow.workspaces,
+			// 	({ UUID }) => UUID
+			// );
+			const localWorkspaces: Map<string, Ext.Workspace> =
+				localWindow.workspaces.reduce((acc, workspace) => {
+					acc.set(workspace.UUID, workspace);
+					return acc;
+				}, new Map());
+
+			localWorkspaces.forEach(({ tabIds, activeTabId }) => {
+				tabIds = [];
+				activeTabId = undefined;
+			});
+
+			console.info({ localWorkspaces });
 
 			for (let tab of tabs) {
 				const workspaceSessionUUID: string = await Browser.sessions.getTabValue(
@@ -50,33 +64,46 @@ export class Window {
 					"workspaceUUID"
 				);
 
+				console.info({ workspaceSessionUUID });
+
 				if (workspaceSessionUUID) {
 					let currentWorkspaceValue =
 						localWorkspaces.get(workspaceSessionUUID)!;
-					currentWorkspaceValue.tabIds = [];
 
 					currentWorkspaceValue = {
 						...currentWorkspaceValue,
 						active: tab.active,
 						tabIds: [...currentWorkspaceValue.tabIds, tab.id!],
 					};
+					console.info({ currentWorkspaceValue, tab });
 				} else {
+					console.info("else-Zweig");
 					const homeWorkspace = localWorkspaces.get("HOME")!;
+					console.info({ homeWorkspace });
 					localWorkspaces.set("HOME", {
 						...homeWorkspace,
-						...{
-							...this.#getNewWorkspace(),
-							...(localWorkspaces.has(workspaceSessionUUID) && {
-								name: localWorkspaces.get(workspaceSessionUUID)!.name,
-							}),
-							active: tab.active,
-							tabIds: [...homeWorkspace.tabIds, tab.id!],
-						},
+						...this.#getNewWorkspace(),
+						...(localWorkspaces.has("HOME") && {
+							name: localWorkspaces.get("HOME")!.name || "Home",
+						}),
+						active: tab.active,
+						tabIds: [...homeWorkspace.tabIds, tab.id!],
 					});
 
+					console.info("hojojojo", structuredClone(tab));
+
 					await Browser.sessions.setTabValue(tab.id!, "workspaceUUID", "HOME");
+
+					console.info("heja");
 				}
 			}
+
+			console.info(localWorkspaces);
+			console.info(localWorkspaces.values());
+			console.info(
+				"array.from(localworkspaces.values()) -> ",
+				Array.from(localWorkspaces.values())
+			);
 
 			this.#workspaces = Array.from(localWorkspaces.values());
 		} else {
@@ -86,6 +113,8 @@ export class Window {
 				(await Browser.storage.local.get("defaultWorkspaces")) as {
 					defaultWorkspaces: Ext.Workspace[] & { id: string };
 				};
+
+			console.info({ _defaultWorkspaces });
 
 			const homeWorkspace: Ext.Workspace = {
 				...this.#getNewWorkspace(),
@@ -98,13 +127,21 @@ export class Window {
 			};
 			this.#workspaces.push(homeWorkspace);
 
-			for (let _defaultWorkspace of _defaultWorkspaces?.values() || []) {
+			for (let _defaultWorkspace of _defaultWorkspaces || []) {
 				const { id, ...defaultWorkspace } = _defaultWorkspace;
 				this.workspaces.push({
 					...this.#getNewWorkspace(),
 					...defaultWorkspace,
 					active: false,
 				});
+			}
+
+			for (let tab of tabs) {
+				await Browser.sessions.setTabValue(
+					tab.id!,
+					"workspaceUUID",
+					homeWorkspace.UUID
+				);
 			}
 		}
 
@@ -327,6 +364,12 @@ export class Window {
 			const tabId: number = (await Browser.tabs.create({ active: false })).id!;
 			newWorkspace.tabIds = [tabId!];
 			newWorkspace.activeTabId = tabId;
+
+			await Browser.sessions.setTabValue(
+				tabId,
+				"workspaceUUID",
+				newWorkspace.UUID
+			);
 		}
 
 		this.#workspaces = [...this.#workspaces, newWorkspace];

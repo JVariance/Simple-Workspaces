@@ -43,6 +43,12 @@ export class WorkspaceStorage {
 			);
 			await newWindowInstance.init();
 			this.windows.set(currentWindow.windowId, newWindowInstance);
+			if (!currentWindow.uuid)
+				await Browser.sessions.setWindowValue(
+					currentWindow.windowId,
+					"windowUUID",
+					newWindowInstance.UUID
+				);
 		}
 
 		const focusedWindow = (currentWindows.find(({ focused }) => focused) ||

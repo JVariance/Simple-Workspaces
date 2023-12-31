@@ -271,6 +271,7 @@ browser.tabs.onCreated.addListener(async (tab) => {
 	tabCreationProcess = new DeferredPromise();
 	const windowIsNew = !workspaceStorage.windows.has(tab.windowId!);
 
+	console.info("createdTab", { tab: structuredClone(tab) });
 	(await workspaceStorage.getOrCreateWindow(tab.windowId!)).addTab(tab.id!);
 
 	if (!windowIsNew) informViews(tab.windowId!, "createdTab", { tabId: tab.id });
@@ -298,6 +299,13 @@ browser.tabs.onRemoved.addListener(async (tabId, info) => {
 			active: false,
 			windowId: window.windowId,
 		});
+
+		await browser.sessions.setTabValue(
+			newTab.id!,
+			"workspaceUUID",
+			window.activeWorkspace.UUID
+		);
+
 		prevActiveWorkspace.tabIds.push(newTab.id!);
 		prevActiveWorkspace.activeTabId = newTab.id;
 		await window.switchToPreviousWorkspace();
