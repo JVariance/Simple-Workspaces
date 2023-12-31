@@ -1,6 +1,6 @@
 namespace Ext {
 	type Workspace = {
-		id: string;
+		UUID: string;
 		icon: string;
 		name: string;
 		tabIds: number[];
@@ -11,7 +11,7 @@ namespace Ext {
 	};
 
 	type Window = {
-		id: number;
+		UUID: string;
 		workspaces: Workspace[];
 	};
 }

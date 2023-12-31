@@ -33,6 +33,7 @@ async function initExtension() {
 	console.info("initExtension 1");
 	extensionInitializationProcess = new DeferredPromise();
 	console.info("initExtension 2");
+
 	// await browser.storage.local.clear();
 	if (!workspaceStorage && !tabMenu) {
 		console.info("initExtension 3");
@@ -150,7 +151,7 @@ browser.menus.onShown.addListener((info, tab) => {
 browser.menus.onClicked.addListener(async (info, tab) => {
 	const { menuItemId: _menuItemId } = info;
 	const menuItemId = _menuItemId.toString();
-	let targetWorkspaceId!: string;
+	let targetWorkspaceUUID!: string;
 
 	const newWorkspaceDemanded =
 		menuItemId.toString() === "create-workspace-menu";
@@ -168,11 +169,11 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 			highlightedTabIds.length > 1 ? highlightedTabIds : [tab!.id!];
 
 		if (menuItemId.toString().startsWith("workspace-menu")) {
-			targetWorkspaceId = menuItemId.split("_").at(1)!;
+			targetWorkspaceUUID = menuItemId.split("_").at(1)!;
 		} else if (newWorkspaceDemanded) {
 			newWorkspace = await workspaceStorage.activeWindow.addWorkspace([]);
 			newWorkspace.active = false;
-			targetWorkspaceId = newWorkspace.id;
+			targetWorkspaceUUID = newWorkspace.UUID;
 			// informViews("addedWorkspace", {
 			// 	workspace: newWorkspace,
 			// });
@@ -182,7 +183,7 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 
 		await workspaceStorage.getWindow(tab!.windowId!).moveTabs({
 			tabIds,
-			targetWorkspaceId,
+			targetWorkspaceUUID,
 		});
 
 		if (newWorkspaceDemanded)
@@ -190,13 +191,14 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 				workspace: newWorkspace,
 				tabIds,
 			});
-		else informViews(tab.windowId!, "movedTabs", { targetWorkspaceId, tabIds });
+		else
+			informViews(tab.windowId!, "movedTabs", { targetWorkspaceUUID, tabIds });
 
 		if (
-			targetWorkspaceId === workspaceStorage.activeWindow.activeWorkspace.id
+			targetWorkspaceUUID === workspaceStorage.activeWindow.activeWorkspace.UUID
 		) {
 			informViews(tab.windowId!, "updatedActiveWorkspace", {
-				id: targetWorkspaceId,
+				id: targetWorkspaceUUID,
 			});
 		}
 	}
@@ -243,11 +245,11 @@ browser.windows.onFocusChanged.addListener((windowId) => {
 	}
 });
 
-// browser.windows.onRemoved.addListener(async (windowId) => {
-// 	if (workspaceStorage.windows.size > 1) {
-// 		await workspaceStorage.removeWindow(windowId);
-// 	}
-// });
+browser.windows.onRemoved.addListener(async (windowId) => {
+	if (workspaceStorage.windows.size > 1) {
+		await workspaceStorage.removeWindow(windowId);
+	}
+});
 
 browser.windows.onCreated.addListener(async (window) => {
 	await tabCreationProcess;
@@ -300,7 +302,7 @@ browser.tabs.onRemoved.addListener(async (tabId, info) => {
 		await window.switchToPreviousWorkspace();
 
 		informViews(window.windowId, "updatedActiveWorkspace", {
-			id: window.activeWorkspace.id,
+			id: window.activeWorkspace.UUID,
 		});
 		manualTabCreationHandling = false;
 	}
@@ -352,7 +354,7 @@ async function _handleDetachedTabs(tabIds: number[], currentWindowId: number) {
 	// 		});
 	// 	});
 	informViews(currentWindowId, "updatedActiveWorkspace", {
-		id: activeWorkspace.id,
+		id: activeWorkspace.UUID,
 	});
 
 	tabDetachmentProcess.resolve();
@@ -400,7 +402,7 @@ browser.commands.onCommand.addListener((command) => {
 					workspaceStorage.activeWindow.windowId,
 					"updatedActiveWorkspace",
 					{
-						id: activeWorkspace.id,
+						id: activeWorkspace.UUID,
 					}
 				);
 			})();
@@ -414,7 +416,7 @@ browser.commands.onCommand.addListener((command) => {
 					workspaceStorage.activeWindow.windowId,
 					"updatedActiveWorkspace",
 					{
-						id: activeWorkspace.id,
+						id: activeWorkspace.UUID,
 					}
 				);
 			})();
@@ -477,8 +479,8 @@ browser.runtime.onMessage.addListener((message) => {
 		case "reorderedWorkspaces":
 			(() => {
 				const { sortedWorkspacesIds, windowId } = message as {
-					sortedWorkspacesIds: Ext.Workspace["id"][];
-					windowId: Ext.Window["id"];
+					sortedWorkspacesIds: Ext.Workspace["UUID"][];
+					windowId: number;
 				};
 
 				console.log({ sortedWorkspacesIds });
@@ -525,14 +527,14 @@ browser.runtime.onMessage.addListener((message) => {
 			const { workspaceId } = message as { workspaceId: string };
 			const nextWorkspace = workspaceStorage.windows
 				.get(workspaceStorage.focusedWindowId)!
-				.workspaces.find(({ id }) => id === workspaceId)!;
+				.workspaces.find(({ UUID }) => UUID === workspaceId)!;
 
 			(async () => {
 				await workspaceStorage.activeWindow.switchWorkspace(nextWorkspace);
 				informViews(
 					workspaceStorage.activeWindow.windowId,
 					"updatedActiveWorkspace",
-					{ id: nextWorkspace.id }
+					{ id: nextWorkspace.UUID }
 				);
 			})();
 			break;

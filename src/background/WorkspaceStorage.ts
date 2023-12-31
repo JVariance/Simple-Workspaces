@@ -3,13 +3,13 @@ import Browser from "webextension-polyfill";
 import { Window } from "./Window";
 
 enum StorageKeys {
-	windowIds = "windowIds",
+	windowUUIDs = "windowIds",
 	workspaces = "workspaces",
 	activeWorkspace = "activeWorkspace",
 }
 
 export class WorkspaceStorage {
-	#windows: Map<Ext.Window["id"], Window> = new Map();
+	#windows: Map<number, Window> = new Map();
 	#focusedWindowId!: number;
 	#movingTabs = false;
 
@@ -17,33 +17,85 @@ export class WorkspaceStorage {
 
 	async init() {
 		// this.clearDB();
-		let { [StorageKeys.windowIds]: localWindowIds } =
-			(await Browser.storage.local.get(StorageKeys.windowIds)) as {
-				[StorageKeys.windowIds]: string[];
-			};
+		// const { [StorageKeys.windowUUIDs]: localWindowUUIDs } =
+		// 	(await Browser.storage.local.get(StorageKeys.windowUUIDs)) as {
+		// 		[StorageKeys.windowUUIDs]: string[];
+		// 	};
 
 		const currentWindows = await Browser.windows.getAll();
+		const currentWindowsObjs: { windowId: number; uuid: string | undefined }[] =
+			[];
+
+		for (let currentWindow of currentWindows) {
+			currentWindowsObjs.push({
+				windowId: currentWindow.id!,
+				uuid: await Browser.sessions.getWindowValue(
+					currentWindow.id!,
+					"windowUUID"
+				),
+			});
+		}
+
+		// const filteredLocalWindowUUIDs: string[] = localWindowUUIDs.filter(
+		// 	(localWindowUUID) => currentWindowUUIDs.includes(localWindowUUID)
+		// );
+
+		// const unifiedWindowUUIDS = Array.from(
+		// 	new Set([...filteredLocalWindowUUIDs, ...currentWindowUUIDs])
+		// );
+
+		// if (currentWindowsObjs.length) {
+		// 	// extension has already been used
+		for (let currentWindow of currentWindowsObjs) {
+			const newWindowInstance = new Window(
+				currentWindow.uuid,
+				currentWindow.windowId
+			);
+			await newWindowInstance.init();
+			this.windows.set(currentWindow.windowId, newWindowInstance);
+		}
+		// } else {
+		// 	// iterate currentWindows and create new extension windows
+		// }
+
+		// const localWindows = await Promise.all(
+		// 	currentWindowUUIDs.map((windowUUID) =>
+		// 		Browser.storage.local.get(`window_${windowUUID}`)
+		// 	)
+		// );
+
+		// const updatedLocal Array.from(new Set());
+
+		// if (localWindowUUIDs) {
+		// 	const currentWindowIds = currentWindows.flatMap(({ id }) => id);
+		// }
+
 		const focusedWindow = (currentWindows.find(({ focused }) => focused) ||
 			currentWindows.at(0))!;
 
+		// const allTabs = await Browser.tabs.query({});
+		// allTabs.forEach(({ id, windowId }) => {});
+		// await Browser.sessions.getWindowValue();
+		// await Browser.sessions.getTabValue();
+
 		this.#focusedWindowId = focusedWindow.id!;
 
-		if (localWindowIds) {
-			console.info("found local window ids");
-			console.info({ localWindowIds });
-			for (let winId of localWindowIds) {
-				const windowInstance = new Window(winId!);
-				await windowInstance.init();
-				this.windows.set(windowInstance.windowId, windowInstance);
-			}
-		} else {
-			for (let window of currentWindows) {
-				const newWindowInstance = new Window(undefined, window.id!);
-				await newWindowInstance.init();
+		// if (localWindowUUIDs) {
+		// 	console.info("found local window ids");
+		// 	console.info({ localWindowUUIDs });
+		// 	for (let winId of localWindowUUIDs) {
+		// 		const windowInstance = new Window(winId!);
+		// 		await windowInstance.init();
+		// 		this.windows.set(windowInstance.windowId, windowInstance);
+		// 	}
+		// } else {
+		// 	for (let window of currentWindows) {
+		// 		const newWindowInstance = new Window(undefined, window.id!);
+		// 		await newWindowInstance.init();
 
-				this.windows.set(newWindowInstance.windowId, newWindowInstance);
-			}
-		}
+		// 		this.windows.set(newWindowInstance.windowId, newWindowInstance);
+		// 	}
+		// }
 
 		for (let window of this.#windows.values()) {
 			const workspaces = window.workspaces;
@@ -75,7 +127,7 @@ export class WorkspaceStorage {
 		this.#persistWindows();
 	}
 
-	get windows(): Map<Ext.Window["id"], Window> {
+	get windows(): Map<number, Window> {
 		return this.#windows;
 	}
 
@@ -99,16 +151,18 @@ export class WorkspaceStorage {
 		// 		([key, _]) => key
 		// 	),
 		// });
-		const windowIds = Array.from(this.#windows).flatMap(({ 1: win }) => win.id);
-		console.log("persistWindowIds -> " + windowIds);
+		const windowUUIDs = Array.from(this.#windows).flatMap(
+			({ 1: win }) => win.UUID
+		);
+		console.log("persistWindowIds -> " + windowUUIDs);
 		return Browser.storage.local.set({
-			[StorageKeys.windowIds]: windowIds,
+			[StorageKeys.windowUUIDs]: windowUUIDs,
 		});
 	}
 
 	clearDB() {
 		Browser.storage.local.remove([
-			StorageKeys.windowIds,
+			StorageKeys.windowUUIDs,
 			StorageKeys.workspaces,
 			StorageKeys.activeWorkspace,
 		]);

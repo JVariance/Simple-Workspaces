@@ -1,3 +1,10 @@
+	1. get local window ids
+	2. get browser.windows -> session.windowIds
+	3. remove local windows that are not in browser.windows
+	4. get local windows according to browser.windows.session.windowIds
+	5. init windows -> get tabs -> session.workspaceIds ->
+
+
 # Scenarios
 ---
 []
