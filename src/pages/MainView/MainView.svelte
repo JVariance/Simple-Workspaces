@@ -7,12 +7,16 @@
 	import Icon from "@root/components/Icon.svelte";
 	import { debounceFunc } from "@root/utils";
 	import Skeleton from "@root/components/Skeleton.svelte";
+	import { unstate } from "svelte";
+
+	import {overrideItemIdKeyNameBeforeInitialisingDndZones} from "svelte-dnd-action";
+	overrideItemIdKeyNameBeforeInitialisingDndZones("UUID");
 
 	let workspaces: Ext.Workspace[] = $state([]);
 	let activeWorkspace: Ext.Workspace = $state()!;
 	let searchFilteredWorkspaceIds: string[] = $state([]);
 	let viewWorkspaces: Ext.Workspace[] = $derived(
-		workspaces.filter(({ id }) => !searchFilteredWorkspaceIds.includes(id))
+		workspaces.filter(({ UUID }) => !searchFilteredWorkspaceIds.includes(UUID))
 	);
 	let selectedIndex = $state(0);
 
@@ -21,7 +25,8 @@
 
 	$effect(() => {
 		console.info("effect", { activeWorkspace, workspaces });
-		activeWorkspace = workspaces.find((workspace) => workspace.active)!;
+		console.info({workspaces: structuredClone(unstate(workspaces))});
+		activeWorkspace = workspaces.find(({active}) => active)!;
 		console.info({ activeWorkspace });
 	});
 
@@ -34,13 +39,13 @@
 	}
 
 	function updatedActiveWorkspace({
-		id: workspaceId,
+		UUID: workspaceUUID,
 	}: {
-		id: Ext.Workspace["id"];
+		UUID: Ext.Workspace["UUID"];
 	}) {
-		console.info("UPDATEDACTIVEWORKSPACE", {windowId});
+		console.info("UPDATEDACTIVEWORKSPACE", {windowId, activeWorkspace});
 		activeWorkspace.active = false;
-		const workspace = workspaces.find(({ id }) => id === workspaceId)!;
+		const workspace = workspaces.find(({ UUID }) => UUID === workspaceUUID)!;
 		workspace.active = true;
 	}
 
@@ -48,7 +53,7 @@
 		(async () => {
 			await Browser.runtime.sendMessage({
 				msg: "switchWorkspace",
-				workspaceId: workspace.id,
+				workspaceId: workspace.UUID,
 			});
 
 			searchInput.value = "";
@@ -64,7 +69,7 @@
 		tabIds: number[];
 	}) {
 		const targetWorkspace = workspaces.find(
-			({ id }) => id === targetWorkspaceId
+			({ UUID }) => UUID === targetWorkspaceId
 			)!;
 			
 			activeWorkspace.tabIds = activeWorkspace.tabIds.filter(
@@ -73,7 +78,7 @@
 				
 				if (!activeWorkspace.tabIds.length) {
 					console.info("habe keine Tabs mehr :(", {activeWorkspace});
-					updatedActiveWorkspace({ id: targetWorkspace.id });
+					updatedActiveWorkspace({ UUID: targetWorkspace.UUID });
 				}
 				
 				targetWorkspace.tabIds.push(...tabIds);
@@ -92,7 +97,7 @@
 
 	function addedWorkspace({ workspace }: { workspace: Ext.Workspace }) {
 		workspaces.push(workspace);
-		updatedActiveWorkspace({ id: workspace.id });
+		updatedActiveWorkspace({ UUID: workspace.UUID });
 	}
 	
 	function movedTabsToNewWorkspace({workspace}: {workspace: Ext.Workspace}){
@@ -162,7 +167,7 @@
 		(async () => {
 			if (workspace === activeWorkspace) {
 				const currentActiveWorkspaceIndex = workspaces.findIndex(
-					({ id }) => id === activeWorkspace.id
+					({ UUID }) => UUID === activeWorkspace.UUID
 				);
 
 				const newActiveWorkspaceIndex = Math.max(
@@ -173,11 +178,11 @@
 				workspaces.at(newActiveWorkspaceIndex)!.active = true;
 			}
 
-			workspaces = workspaces.filter(({ id }) => id !== workspace.id);
+			workspaces = workspaces.filter(({ UUID }) => UUID !== workspace.UUID);
 
 			await Browser.runtime.sendMessage({
 				msg: "removeWorkspace",
-				workspaceId: workspace.id,
+				workspaceId: workspace.UUID,
 				windowId,
 			});
 		})();
@@ -197,7 +202,7 @@
 		Browser.runtime.sendMessage({
 			msg: "editWorkspace",
 			windowId,
-			workspaceId: workspace.id,
+			workspaceId: workspace.UUID,
 			icon,
 			name,
 		});
@@ -250,7 +255,7 @@
 		console.info("initView");
 		windowId = (await Browser.windows.getCurrent()).id!;
 		// console.info({windowId});
-		console.info({windowId});
+		console.info({ windowId });
 		const localWorkspaces = await getWorkspaces({ windowId });
 		console.info("localWorkspaces", { localWorkspaces });
 		workspaces.push(...localWorkspaces);
@@ -278,7 +283,7 @@
 					matchingTabIds.includes(tabId)
 				);
 				if (!workspaceHasSomeMatchingTab) {
-					acc.push(workspace.id);
+					acc.push(workspace.UUID);
 				}
 				return acc;
 			}, [] as string[]);
@@ -296,7 +301,7 @@
 
 		Browser.runtime.sendMessage({
 			msg: "reorderedWorkspaces",
-			sortedWorkspacesIds: workspaces.map(({ id }) => id),
+			sortedWorkspacesIds: workspaces.map(({ UUID }) => UUID),
 			windowId,
 		});
 	}
@@ -383,7 +388,7 @@
 		on:consider={handleDndConsider}
 		on:finalize={handleDndFinalize}
 	>
-		{#each viewWorkspaces as workspace, i (workspace.id)}
+		{#each viewWorkspaces as workspace, i (workspace.UUID)}
 			<li class="item relative">
 				<Workspace
 					{workspace}

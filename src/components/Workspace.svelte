@@ -133,7 +133,7 @@
 	>
 </dialog>
 {#if workspace}
-	{@const { id, name, icon, tabIds, windowId } = workspace}
+	{@const { UUID, name, icon, tabIds, windowId } = workspace}
 	<div
 		class:active
 		class:selected
@@ -149,7 +149,7 @@
 			>
 			<input
 				class="bg-transparent border-b disabled:border-transparent outline-none"
-				{id}
+				id={UUID}
 				type="text"
 				disabled={!editMode}
 				onkeydown={onKeyDown}

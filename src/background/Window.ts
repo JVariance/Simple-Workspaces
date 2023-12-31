@@ -36,34 +36,13 @@ export class Window {
 		const { [this.#storageKey]: localWindow }: Record<string, Ext.Window> =
 			await Browser.storage.local.get(this.#storageKey);
 
-		// console.log({
-		// 	localWindow,
-		// 	storageKey: this.#storageKey,
-		// 	dings: await Browser.storage.local.get(this.#storageKey),
-		// });
+		const tabs = await Browser.tabs.query({ windowId: this.#windowId });
 
 		if (localWindow) {
-			// {id ,this.#workspaces} = localWindow;
-			// console.log("found local window", { localWindow });
-			// this.#UUID = localWindow.UUID;
-			// const firstTabId = localWindow.workspaces?.at(0)?.tabIds?.at(0);
-			// console.info(localWindow.workspaces.at(0));
-			// console.info(localWindow.workspaces.at(0).tabIds);
-			// console.info({ firstTabId });
-
 			const localWorkspaces: Map<string, Ext.Workspace> = Map.groupBy(
 				localWindow.workspaces,
 				({ id }) => id
 			);
-
-			
-
-			const tabs = await Browser.tabs.query({ windowId: this.#windowId });
-
-			// const workspaces = new Map<string, Ext.Workspace>();
-
-			//default, non-removable Workspace
-			// workspaces.set("HOME", { ...this.#getNewWorkspace(), UUID: "HOME" });
 
 			for (let tab of tabs) {
 				const workspaceSessionUUID: string = await Browser.sessions.getTabValue(
@@ -72,98 +51,65 @@ export class Window {
 				);
 
 				if (workspaceSessionUUID) {
-					// if (workspaces.has(workspaceSessionUUID)) {
 					let currentWorkspaceValue =
 						localWorkspaces.get(workspaceSessionUUID)!;
 					currentWorkspaceValue.tabIds = [];
 
 					currentWorkspaceValue = {
 						...currentWorkspaceValue,
-						// ...(localWorkspaces.has(workspaceSessionUUID) && {
-						// 	name: localWorkspaces.get(workspaceSessionUUID)!.name,
-						// }),
 						active: tab.active,
 						tabIds: [...currentWorkspaceValue.tabIds, tab.id!],
 					};
-					// }
-					// else {
-					// 	workspaces.set(workspaceSessionUUID, {
-					// 		...this.#getNewWorkspace(),
-					// 		...(localWorkspaces.has(workspaceSessionUUID) && {
-					// 			name: localWorkspaces.get(workspaceSessionUUID)!.name,
-					// 		}),
-					// 		active: tab.active,
-					// 		tabIds: [tab.id!],
-					// 	});
-					// }
 				} else {
-					workspaces.set(workspaceSessionUUID, {
-						...this.#getNewWorkspace(),
-						...(localWorkspaces.has(workspaceSessionUUID) && {
-							name: localWorkspaces.get(workspaceSessionUUID)!.name,
-						}),
-						active: tab.active,
-						tabIds: [tab.id!],
+					const homeWorkspace = localWorkspaces.get("HOME")!;
+					localWorkspaces.set("HOME", {
+						...homeWorkspace,
+						...{
+							...this.#getNewWorkspace(),
+							...(localWorkspaces.has(workspaceSessionUUID) && {
+								name: localWorkspaces.get(workspaceSessionUUID)!.name,
+							}),
+							active: tab.active,
+							tabIds: [...homeWorkspace.tabIds, tab.id!],
+						},
 					});
+
+					await Browser.sessions.setTabValue(tab.id!, "workspaceUUID", "HOME");
 				}
 			}
 
-			try {
-				// const firstTab = await Browser.tabs.get(firstTabId);
-				const allTabs = await Browser.tabs.query({});
-				const firstTab = allTabs.find(({ id }) => id === firstTabId)!;
-				this.#windowId = firstTab.windowId!;
-				console.info("windowId: " + this.#windowId);
-				this.#workspaces = localWindow.workspaces;
-			} catch (error) {
-				console.log({ error });
-			}
+			this.#workspaces = Array.from(localWorkspaces.values());
 		} else {
-			const currentTabs = await Browser.tabs.query({
-				windowId: this.#windowId,
-			});
-			const currentTabIds = currentTabs.map((tab) => tab.id!);
+			const tabIds = tabs.map((tab) => tab.id!);
 
-			const { defaultWorkspaces } = (await Browser.storage.local.get(
-				"defaultWorkspaces"
-			)) as {
-				defaultWorkspaces: Ext.Workspace[];
+			const { defaultWorkspaces: _defaultWorkspaces } =
+				(await Browser.storage.local.get("defaultWorkspaces")) as {
+					defaultWorkspaces: Ext.Workspace[] & { id: string };
+				};
+
+			const homeWorkspace: Ext.Workspace = {
+				...this.#getNewWorkspace(),
+				UUID: "HOME",
+				icon: "🏠",
+				name: "Home",
+				active: true,
+				activeTabId: tabs.find(({ active }) => active)?.id!,
+				tabIds,
 			};
+			this.#workspaces.push(homeWorkspace);
 
-			// let activeWorkspace: Ext.Workspace;
-
-			if (defaultWorkspaces) {
-				console.info("defaultWorkspaces found");
-				for (let [i, defaultWorkspace] of defaultWorkspaces.entries()) {
-					this.workspaces.push({
-						...this.#getNewWorkspace(),
-						...defaultWorkspace,
-						active: i === 0,
-					});
-				}
-
-				// activeWorkspace = this.workspaces.at(0)!;
-			} else {
-				console.info("no defaultWorkspaces found");
-				const newWorkspace = this.#getNewWorkspace();
-				newWorkspace.tabIds = currentTabIds || [];
-				newWorkspace.activeTabId = currentTabIds?.at(0);
-				this.#workspaces.push(newWorkspace);
-				// activeWorkspace = newWorkspace;
+			for (let _defaultWorkspace of _defaultWorkspaces?.values() || []) {
+				const { id, ...defaultWorkspace } = _defaultWorkspace;
+				this.workspaces.push({
+					...this.#getNewWorkspace(),
+					...defaultWorkspace,
+					active: false,
+				});
 			}
-
-			// this.#workspaces = [activeWorkspace];
-
-			// await this.#persist();
 		}
 
 		this.#activeWorkspace =
 			this.#workspaces.find(({ active }) => active) || this.#workspaces[0];
-
-		// if (localWindow) {
-		// 	Browser.tabs.update(this.#activeWorkspace.activeTabId, { active: true });
-		// 	Browser.tabs.hide();
-		// }
 
 		console.info("before persist");
 		await this.#persist();
@@ -244,6 +190,14 @@ export class Window {
 
 		this.activeWorkspace.activeTabId = tabIds.at(-1);
 		this.activeWorkspace.tabIds.push(...tabIds);
+
+		for (let tabId of tabIds) {
+			await Browser.sessions.setTabValue(
+				tabId,
+				"workspaceUUID",
+				this.activeWorkspace.UUID
+			);
+		}
 
 		this.#persist();
 	}

@@ -36,16 +36,6 @@ export class WorkspaceStorage {
 			});
 		}
 
-		// const filteredLocalWindowUUIDs: string[] = localWindowUUIDs.filter(
-		// 	(localWindowUUID) => currentWindowUUIDs.includes(localWindowUUID)
-		// );
-
-		// const unifiedWindowUUIDS = Array.from(
-		// 	new Set([...filteredLocalWindowUUIDs, ...currentWindowUUIDs])
-		// );
-
-		// if (currentWindowsObjs.length) {
-		// 	// extension has already been used
 		for (let currentWindow of currentWindowsObjs) {
 			const newWindowInstance = new Window(
 				currentWindow.uuid,
@@ -54,48 +44,11 @@ export class WorkspaceStorage {
 			await newWindowInstance.init();
 			this.windows.set(currentWindow.windowId, newWindowInstance);
 		}
-		// } else {
-		// 	// iterate currentWindows and create new extension windows
-		// }
-
-		// const localWindows = await Promise.all(
-		// 	currentWindowUUIDs.map((windowUUID) =>
-		// 		Browser.storage.local.get(`window_${windowUUID}`)
-		// 	)
-		// );
-
-		// const updatedLocal Array.from(new Set());
-
-		// if (localWindowUUIDs) {
-		// 	const currentWindowIds = currentWindows.flatMap(({ id }) => id);
-		// }
 
 		const focusedWindow = (currentWindows.find(({ focused }) => focused) ||
 			currentWindows.at(0))!;
 
-		// const allTabs = await Browser.tabs.query({});
-		// allTabs.forEach(({ id, windowId }) => {});
-		// await Browser.sessions.getWindowValue();
-		// await Browser.sessions.getTabValue();
-
 		this.#focusedWindowId = focusedWindow.id!;
-
-		// if (localWindowUUIDs) {
-		// 	console.info("found local window ids");
-		// 	console.info({ localWindowUUIDs });
-		// 	for (let winId of localWindowUUIDs) {
-		// 		const windowInstance = new Window(winId!);
-		// 		await windowInstance.init();
-		// 		this.windows.set(windowInstance.windowId, windowInstance);
-		// 	}
-		// } else {
-		// 	for (let window of currentWindows) {
-		// 		const newWindowInstance = new Window(undefined, window.id!);
-		// 		await newWindowInstance.init();
-
-		// 		this.windows.set(newWindowInstance.windowId, newWindowInstance);
-		// 	}
-		// }
 
 		for (let window of this.#windows.values()) {
 			const workspaces = window.workspaces;

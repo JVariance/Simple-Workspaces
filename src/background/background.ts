@@ -198,7 +198,7 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 			targetWorkspaceUUID === workspaceStorage.activeWindow.activeWorkspace.UUID
 		) {
 			informViews(tab.windowId!, "updatedActiveWorkspace", {
-				id: targetWorkspaceUUID,
+				UUID: targetWorkspaceUUID,
 			});
 		}
 	}
@@ -256,10 +256,11 @@ browser.windows.onCreated.addListener(async (window) => {
 	windowCreationProcess = new DeferredPromise();
 	console.info("windows.onCreated");
 
-	const windowId = (await workspaceStorage.getOrCreateWindow(window.id!))
-		.windowId;
+	const newWindow = await workspaceStorage.getOrCreateWindow(window.id!);
+	const windowId = newWindow.windowId;
 	//workspaceStorage.addWindow(window.id!);
 	await workspaceStorage.initFreshWindow(windowId);
+	await browser.sessions.setWindowValue(windowId, "windowUUID", newWindow.UUID);
 
 	windowCreationProcess.resolve();
 });
@@ -302,7 +303,7 @@ browser.tabs.onRemoved.addListener(async (tabId, info) => {
 		await window.switchToPreviousWorkspace();
 
 		informViews(window.windowId, "updatedActiveWorkspace", {
-			id: window.activeWorkspace.UUID,
+			UUID: window.activeWorkspace.UUID,
 		});
 		manualTabCreationHandling = false;
 	}
@@ -402,7 +403,7 @@ browser.commands.onCommand.addListener((command) => {
 					workspaceStorage.activeWindow.windowId,
 					"updatedActiveWorkspace",
 					{
-						id: activeWorkspace.UUID,
+						UUID: activeWorkspace.UUID,
 					}
 				);
 			})();
@@ -416,7 +417,7 @@ browser.commands.onCommand.addListener((command) => {
 					workspaceStorage.activeWindow.windowId,
 					"updatedActiveWorkspace",
 					{
-						id: activeWorkspace.UUID,
+						UUID: activeWorkspace.UUID,
 					}
 				);
 			})();
@@ -534,7 +535,7 @@ browser.runtime.onMessage.addListener((message) => {
 				informViews(
 					workspaceStorage.activeWindow.windowId,
 					"updatedActiveWorkspace",
-					{ id: nextWorkspace.UUID }
+					{ UUID: nextWorkspace.UUID }
 				);
 			})();
 			break;

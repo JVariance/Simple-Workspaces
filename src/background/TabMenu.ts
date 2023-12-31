@@ -34,7 +34,7 @@ export class TabMenu {
 			.filter(({ active }) => !active)
 			.forEach((workspace) => {
 				Browser.menus.create({
-					id: `workspace-menu_${workspace.id}`,
+					id: `workspace-menu_${workspace.UUID}`,
 					title: `${workspace.icon} ${workspace.name}`,
 					contexts: ["tab"],
 					type: "normal",
