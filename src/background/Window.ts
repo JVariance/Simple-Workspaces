@@ -1,6 +1,8 @@
 import { debounceFunc, promisedDebounceFunc } from "@root/utils";
 import Browser from "webextension-polyfill";
 
+type EnhancedTab = Browser.Tabs.Tab & { workspaceUUID?: string };
+
 // TODO: Svelte 5: define workspaces as state and persist on changes
 
 export class Window {
@@ -36,7 +38,9 @@ export class Window {
 		const { [this.#storageKey]: localWindow }: Record<string, Ext.Window> =
 			await Browser.storage.local.get(this.#storageKey);
 
-		const tabs = await Browser.tabs.query({ windowId: this.#windowId });
+		const tabs = (await Browser.tabs.query({
+			windowId: this.#windowId,
+		})) as EnhancedTab[];
 
 		console.info({ localWindow, tabs });
 
@@ -51,61 +55,84 @@ export class Window {
 					return acc;
 				}, new Map());
 
-			localWorkspaces.forEach(({ tabIds, activeTabId }) => {
-				tabIds = [];
-				activeTabId = undefined;
+			localWorkspaces.forEach((workspace) => {
+				workspace.tabIds = [];
+				workspace.activeTabId = undefined;
 			});
 
 			console.info({ localWorkspaces });
+
+			const activeTabId = tabs.find(({ active }) => active)?.id;
+
+			const workspaceMap = new Map<string, EnhancedTab[]>();
 
 			for (let tab of tabs) {
 				const workspaceSessionUUID: string = await Browser.sessions.getTabValue(
 					tab.id!,
 					"workspaceUUID"
 				);
+				tab.workspaceUUID = workspaceSessionUUID;
 
-				console.info({ workspaceSessionUUID });
-
-				if (workspaceSessionUUID) {
-					let currentWorkspaceValue =
-						localWorkspaces.get(workspaceSessionUUID)!;
-
-					currentWorkspaceValue = {
-						...currentWorkspaceValue,
-						active: tab.active,
-						tabIds: [...currentWorkspaceValue.tabIds, tab.id!],
-					};
-					console.info({ currentWorkspaceValue, tab });
-				} else {
-					console.info("else-Zweig");
-					const homeWorkspace = localWorkspaces.get("HOME")!;
-					console.info({ homeWorkspace });
-					localWorkspaces.set("HOME", {
-						...homeWorkspace,
-						...this.#getNewWorkspace(),
-						...(localWorkspaces.has("HOME") && {
-							name: localWorkspaces.get("HOME")!.name || "Home",
-						}),
-						active: tab.active,
-						tabIds: [...homeWorkspace.tabIds, tab.id!],
-					});
-
-					console.info("hojojojo", structuredClone(tab));
-
-					await Browser.sessions.setTabValue(tab.id!, "workspaceUUID", "HOME");
-
-					console.info("heja");
-				}
+				workspaceMap.has(workspaceSessionUUID)
+					? workspaceMap.get(workspaceSessionUUID)!.push(tab)
+					: workspaceMap.set(workspaceSessionUUID || "___", [tab]);
 			}
 
-			console.info(localWorkspaces);
-			console.info(localWorkspaces.values());
-			console.info(
-				"array.from(localworkspaces.values()) -> ",
-				Array.from(localWorkspaces.values())
-			);
+			const workspaceMap2 = new Map<string, Ext.Workspace>();
+			Array.from(workspaceMap.entries()).forEach(([key, tabs]) => {
+				if (key === "___") {
+					const activeTab = tabs.find(({ active }) => active);
+					const activeTabId = activeTab?.id! || tabs.at(0)?.id!;
+					const workspace: Ext.Workspace = {
+						...this.#getNewWorkspace(),
+						tabIds: tabs.map((tab) => tab.id!),
+						activeTabId,
+						active: activeTab ? true : false,
+					};
+					workspaceMap2.set(workspace.UUID, workspace);
+				}
+			});
+
+			// for (let tab of tabs) {
+			// 	if (workspaceSessionUUID) {
+			// 		let currentWorkspaceValue =
+			// 			localWorkspaces.get(workspaceSessionUUID)!;
+
+			// 		if (tab.active) currentWorkspaceValue.active = true;
+			// 		currentWorkspaceValue.tabIds.push(tab.id!);
+			// 	} else {
+			// 		console.info("else-Zweig");
+			// 		const homeWorkspace = localWorkspaces.get("HOME")!;
+			// 		console.info({ homeWorkspace });
+			// 		localWorkspaces.set("HOME", {
+			// 			...homeWorkspace,
+			// 			...this.#getNewWorkspace(),
+			// 			...(localWorkspaces.has("HOME") && {
+			// 				name: localWorkspaces.get("HOME")!.name || "Home",
+			// 			}),
+			// 			active: homeWorkspace.active || tab.active,
+			// 			activeTabId,
+			// 			tabIds: [...homeWorkspace.tabIds, tab.id!],
+			// 		});
+
+			// 		console.info("hojojojo", structuredClone(tab));
+
+			// 		await Browser.sessions.setTabValue(tab.id!, "workspaceUUID", "HOME");
+
+			// 		console.info("heja");
+			// 	}
+			// }
+
+			// console.info(localWorkspaces);
+			// console.info(localWorkspaces.values());
+			// console.info(
+			// 	"array.from(localworkspaces.values()) -> ",
+			// 	Array.from(localWorkspaces.values())
+			// );
 
 			this.#workspaces = Array.from(localWorkspaces.values());
+
+			// hide tabs
 		} else {
 			this.#addingWorkspace = true;
 			let tabIds = tabs.map((tab) => tab.id!);
@@ -124,7 +151,7 @@ export class Window {
 				name: "Home",
 				active: true,
 				activeTabId: tabs.find(({ active }) => active)?.id!,
-				tabIds,
+				tabIds: [...tabIds],
 			};
 			this.#workspaces.push(homeWorkspace);
 
@@ -192,6 +219,10 @@ export class Window {
 						homeWorkspace.UUID
 					);
 				} catch (err) {
+					// if (err instanceof Error) {
+					// 	const errTabId = err.message.match("[0-9]+$")?.at(0);
+					// 	const tabId = errTabId ? +errTabId : undefined;
+					// }
 					console.error({ err });
 				}
 			}
@@ -220,35 +251,6 @@ export class Window {
 
 	get activeWorkspace(): Ext.Workspace {
 		return this.#activeWorkspace;
-	}
-
-	async freshInit() {
-		// const isFreshWindow =
-		// 	currentTabIds.length === 1 && currentTabs?.at(0)?.url === "about:blank";
-		console.info("Win - freshInit Start");
-		const currentTabs = await Browser.tabs.query({
-			windowId: this.#windowId,
-		});
-		const currentTabIds = currentTabs.map((tab) => tab.id!);
-
-		console.info({ currentTabIds });
-
-		if (currentTabs?.at(0)?.url === "about:blank") {
-			const newTab = await Browser.tabs.create({
-				active: true,
-				windowId: this.#windowId,
-			});
-
-			await Browser.tabs.remove(currentTabIds[0]);
-			this.activeWorkspace.tabIds = [newTab.id!];
-			// console.log(structuredClone(this.activeWorkspace));
-			this.activeWorkspace.activeTabId = newTab.id!;
-		}
-		// else {
-		// 	this.activeWorkspace.activeTabId = currentTabs?.at(0)?.id;
-		// }
-
-		console.info("Win - freshInit End");
 	}
 
 	setActiveTab(tabId: number) {

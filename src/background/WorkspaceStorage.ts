@@ -239,8 +239,4 @@ export class WorkspaceStorage {
 
 		return newWindow;
 	}
-
-	async initFreshWindow(windowId: number) {
-		await this.getWindow(windowId).freshInit();
-	}
 }

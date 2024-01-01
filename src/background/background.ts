@@ -218,15 +218,15 @@ browser.windows.onCreated.addListener(async (window) => {
 
 	const newWindow = await workspaceStorage.getOrCreateWindow(window.id!);
 	const windowId = newWindow.windowId;
-	//workspaceStorage.addWindow(window.id!);
-	// await workspaceStorage.initFreshWindow(windowId);
 	await browser.sessions.setWindowValue(windowId, "windowUUID", newWindow.UUID);
 
 	windowCreationProcess.resolve();
 });
 
 browser.tabs.onCreated.addListener(async (tab) => {
+	console.info("browser.tabs.onCreated", { manualTabCreationHandling });
 	if (manualTabCreationHandling) return;
+	if (windowCreationProcess.state === "pending") return;
 	await windowCreationProcess;
 	tabCreationProcess = new DeferredPromise();
 	const windowIsNew = !workspaceStorage.windows.has(tab.windowId!);
@@ -256,6 +256,7 @@ browser.tabs.onRemoved.addListener(async (tabId, info) => {
 	await window.removeTab(tabId);
 
 	if (!window.activeWorkspace.tabIds.length) {
+		console.info("| activeWorkspace has no tabs");
 		manualTabCreationHandling = true;
 		const newTab = await browser.tabs.create({
 			active: false,
