@@ -301,7 +301,7 @@ async function _handleAttachedTabs(tabIds: number[], targetWindowId: number) {
 	tabAttachmentProcess.resolve();
 
 	informViews(targetWindowId, "updatedActiveWorkspace", {
-		id: activeWorkspace.UUID,
+		UUID: activeWorkspace.UUID,
 	});
 }
 
