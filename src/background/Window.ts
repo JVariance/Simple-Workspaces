@@ -107,7 +107,8 @@ export class Window {
 
 			this.#workspaces = Array.from(localWorkspaces.values());
 		} else {
-			const tabIds = tabs.map((tab) => tab.id!);
+			this.#addingWorkspace = true;
+			let tabIds = tabs.map((tab) => tab.id!);
 
 			const { defaultWorkspaces: _defaultWorkspaces } =
 				(await Browser.storage.local.get("defaultWorkspaces")) as {
@@ -127,22 +128,75 @@ export class Window {
 			};
 			this.#workspaces.push(homeWorkspace);
 
-			for (let _defaultWorkspace of _defaultWorkspaces || []) {
-				const { id, ...defaultWorkspace } = _defaultWorkspace;
-				this.workspaces.push({
-					...this.#getNewWorkspace(),
-					...defaultWorkspace,
-					active: false,
-				});
-			}
+			const blankTab = (
+				await Browser.tabs.query({
+					windowId: this.windowId,
+					index: 0,
+				})
+			)[0];
 
-			for (let tab of tabs) {
+			if (blankTab.url === "about:blank") {
+				const newTab = await Browser.tabs.create({
+					active: true,
+					windowId: this.#windowId,
+				});
+
+				await Browser.tabs.remove(blankTab.id!);
+				tabIds = tabIds.filter((id) => id !== blankTab.id!);
+				homeWorkspace.tabIds = homeWorkspace.tabIds.filter(
+					(id) => id !== blankTab.id!
+				);
+
+				homeWorkspace.tabIds.push(newTab.id!);
+				homeWorkspace.activeTabId = newTab.id!;
 				await Browser.sessions.setTabValue(
-					tab.id!,
+					newTab.id!,
 					"workspaceUUID",
 					homeWorkspace.UUID
 				);
 			}
+
+			for (let _defaultWorkspace of _defaultWorkspaces || []) {
+				const { id, ...defaultWorkspace } = _defaultWorkspace;
+
+				const newTab = await Browser.tabs.create({
+					active: false,
+					windowId: this.#windowId,
+				});
+				await Browser.tabs.hide(newTab.id!);
+
+				const newWorkspaceData = this.#getNewWorkspace();
+
+				this.#workspaces.push({
+					...newWorkspaceData,
+					...defaultWorkspace,
+					active: false,
+					activeTabId: newTab.id!,
+					tabIds: [newTab.id!],
+				});
+
+				await Browser.sessions.setTabValue(
+					newTab.id!,
+					"workspaceUUID",
+					newWorkspaceData.UUID
+				);
+			}
+
+			console.info("nach defaultworkspaces loop");
+
+			for (let tabId of tabIds) {
+				try {
+					await Browser.sessions.setTabValue(
+						tabId!,
+						"workspaceUUID",
+						homeWorkspace.UUID
+					);
+				} catch (err) {
+					console.error({ err });
+				}
+			}
+
+			this.#addingWorkspace = false;
 		}
 
 		this.#activeWorkspace =
@@ -208,7 +262,6 @@ export class Window {
 	async addTab(tabId: number) {
 		console.info("addTab");
 		await this.addTabs([tabId]);
-		return;
 	}
 
 	async addTabs(tabIds: number[]) {

@@ -219,7 +219,7 @@ browser.windows.onCreated.addListener(async (window) => {
 	const newWindow = await workspaceStorage.getOrCreateWindow(window.id!);
 	const windowId = newWindow.windowId;
 	//workspaceStorage.addWindow(window.id!);
-	await workspaceStorage.initFreshWindow(windowId);
+	// await workspaceStorage.initFreshWindow(windowId);
 	await browser.sessions.setWindowValue(windowId, "windowUUID", newWindow.UUID);
 
 	windowCreationProcess.resolve();
@@ -232,9 +232,11 @@ browser.tabs.onCreated.addListener(async (tab) => {
 	const windowIsNew = !workspaceStorage.windows.has(tab.windowId!);
 
 	console.info("createdTab", { tab: structuredClone(tab) });
-	(await workspaceStorage.getOrCreateWindow(tab.windowId!)).addTab(tab.id!);
+	if (!windowIsNew) {
+		await workspaceStorage.getWindow(tab.windowId!).addTab(tab.id!);
+		informViews(tab.windowId!, "createdTab", { tabId: tab.id });
+	}
 
-	if (!windowIsNew) informViews(tab.windowId!, "createdTab", { tabId: tab.id });
 	tabCreationProcess.resolve();
 });
 
@@ -321,6 +323,9 @@ async function _handleDetachedTabs(tabIds: number[], currentWindowId: number) {
 		return;
 	}
 
+	informViews(currentWindowId, "updatedActiveWorkspace", {
+		UUID: activeWorkspace.UUID,
+	});
 	tabDetachmentProcess.resolve();
 }
 

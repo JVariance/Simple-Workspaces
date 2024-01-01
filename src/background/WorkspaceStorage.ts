@@ -205,6 +205,7 @@ export class WorkspaceStorage {
 					// window.setActiveTab(newTab.id!);
 					currentActiveWorkspace.activeTabId = newTab.id!;
 				}
+
 				// window. = workspaceOfActiveTab;
 				// window.setActiveTab(activeTab.id!);
 
