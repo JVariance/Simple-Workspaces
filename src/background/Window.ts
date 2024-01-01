@@ -321,8 +321,15 @@ export class Window {
 			await Browser.tabs.hide(tabIds);
 		}
 
-		this.#persist();
+		for (let tabId of tabIds) {
+			await Browser.sessions.setTabValue(
+				tabId,
+				"workspaceUUID",
+				targetWorkspace.UUID
+			);
+		}
 
+		this.#persist();
 		this.#movingTabs = false;
 	}
 

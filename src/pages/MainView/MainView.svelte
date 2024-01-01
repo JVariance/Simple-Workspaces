@@ -7,7 +7,7 @@
 	import Icon from "@root/components/Icon.svelte";
 	import { debounceFunc } from "@root/utils";
 	import Skeleton from "@root/components/Skeleton.svelte";
-	import { unstate } from "svelte";
+	import { unstate, untrack } from "svelte";
 
 	import {overrideItemIdKeyNameBeforeInitialisingDndZones} from "svelte-dnd-action";
 	overrideItemIdKeyNameBeforeInitialisingDndZones("UUID");
@@ -24,8 +24,9 @@
 	let windowId: number;
 
 	$effect(() => {
+		untrack(() => activeWorkspace);
 		console.info("effect", { activeWorkspace, workspaces });
-		console.info({workspaces: structuredClone(unstate(workspaces))});
+		// console.info({workspaces: structuredClone(unstate(workspaces))});
 		activeWorkspace = workspaces.find(({active}) => active)!;
 		console.info({ activeWorkspace });
 	});
@@ -53,7 +54,7 @@
 		(async () => {
 			await Browser.runtime.sendMessage({
 				msg: "switchWorkspace",
-				workspaceId: workspace.UUID,
+				workspaceUUID: workspace.UUID,
 			});
 
 			searchInput.value = "";
@@ -118,9 +119,12 @@
 		}
 	});
 
-	window.addEventListener('message', ({data: message}) => {
+
+	Browser.runtime.onMessage.addListener((message) => {
 		console.info("browser runtime onmessage");
-		const { msg } = message;
+		const { windowId: targetWindowId, msg } = message;
+		if(targetWindowId !== windowId) return;
+
 		switch (msg) {
 			case "initialized":
 				console.info("background initialized");
@@ -315,7 +319,7 @@
 
 <div class="w-[100dvw] p-2 box-border">
 	<!-- <h1 class="mb-4">Workspaces</h1> -->
-	{#if !import.meta.env.DEV}
+	{#if true || import.meta.env.DEV}
 		<div class="flex flex-wrap gap-1 absolute top-0 right-0">
 			<details class="bg-neutral-950 p-1 rounded-md">
 				<summary></summary>

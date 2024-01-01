@@ -73,64 +73,27 @@ browser.runtime.onStartup.addListener(async () => {
 	if (!workspaceStorage) await initExtension();
 });
 
-// let backgroundListenerPorts: {
-// 	port: browser.Runtime.Port;
-// 	windowId: number;
-// }[] = [];
-
 browser.runtime.onConnect.addListener(async (port) => {
 	extensionInitializationProcess.then(() => {
 		port.postMessage({ msg: "connected" });
 	});
 });
-// browser.runtime.onConnect.addListener(async (port) => {
-// 	console.info("onConnect");
-// 	// if (!extensionIsInitialized) {
-// 	// 	await initExtension();
-// 	// }
-// 	// await extensionInitializationProcess;
-
-// 	// const windowId = port.sender?.tab?.windowId!;
-
-// 	console.info("port.sender.tab.windowId");
-// 	browser.extension.getViews({ type: "popup" });
-// 	// browser.extension.getViews({}).at(0)?.postMessage();
-// 	// port.sender.
-
-// 	extensionInitializationProcess.then(() => {
-// 		console.info("port connected");
-// 		backgroundListenerPorts.push({
-// 			port,
-// 			windowId,
-// 		});
-
-// 		port.postMessage({ msg: "connected" });
-
-// 		port.onDisconnect.addListener((port) => {
-// 			backgroundListenerPorts = backgroundListenerPorts.filter(
-// 				({ port: _port }) => port !== _port
-// 			);
-// 		});
-// 	});
-// });
 
 async function informViews(
 	windowId: number,
 	message: string,
 	props: Record<string | symbol, any> = {}
 ) {
-	// await Promise.all([windowCreationProcess, tabCreationProcess]);
-	console.info("bg - informViews");
-	const popups = browser.extension.getViews({ type: "popup", windowId });
-	const sidebar = browser.extension.getViews({ type: "sidebar", windowId });
+	console.info("bg - informViews -> " + message, props);
+	// const popups = browser.extension.getViews({ type: "popup", windowId });
+	// const sidebar = browser.extension.getViews({ type: "sidebar", windowId });
 
-	[...popups, ...sidebar].forEach((view) => {
-		view.postMessage({ msg: message, ...props });
-	});
-	// backgroundListenerPorts.forEach(({ port, windowId }) => {
-	// 	if (windowId === workspaceStorage.focusedWindowId) {
-	// 		port.postMessage({ msg: message, ...props });
-	// 	}
+	// console.info({ popups, sidebar });
+
+	// [...popups, ...sidebar].forEach((view) => {
+	// console.info({ view, window: view.window });
+	// view.postMessage({ msg: message, ...props });
+	browser.runtime.sendMessage({ windowId, msg: message, ...props });
 	// });
 }
 
@@ -138,10 +101,7 @@ browser.menus.onShown.addListener((info, tab) => {
 	console.info("browser.menus.onShown");
 	const workspaces = workspaceStorage.windows
 		.get(tab.windowId!)!
-		.workspaces.filter(
-			// ({ windowId, active }) => windowId === tab!.windowId! && !active
-			({ active }) => !active
-		);
+		.workspaces.filter(({ active }) => !active);
 
 	tabMenu.update({
 		workspaces,
@@ -333,9 +293,16 @@ async function _handleAttachedTabs(tabIds: number[], targetWindowId: number) {
 	console.info("handleAttachedTabs", { tabIds, targetWindowId });
 
 	tabAttachmentProcess = new DeferredPromise();
-	await workspaceStorage.moveAttachedTabs({ tabIds, targetWindowId });
+	const activeWorkspace = await workspaceStorage.moveAttachedTabs({
+		tabIds,
+		targetWindowId,
+	});
 	collectedAttachedTabs = [];
 	tabAttachmentProcess.resolve();
+
+	informViews(targetWindowId, "updatedActiveWorkspace", {
+		id: activeWorkspace.UUID,
+	});
 }
 
 async function _handleDetachedTabs(tabIds: number[], currentWindowId: number) {
@@ -353,18 +320,6 @@ async function _handleDetachedTabs(tabIds: number[], currentWindowId: number) {
 		tabDetachmentProcess.resolve();
 		return;
 	}
-
-	// backgroundListenerPorts
-	// 	.filter(({ windowId }) => windowId === currentWindowId)
-	// 	.forEach(({ port }) => {
-	// 		port.postMessage({
-	// 			msg: "updatedActiveWorkspace",
-	// 			id: activeWorkspace.id,
-	// 		});
-	// 	});
-	informViews(currentWindowId, "updatedActiveWorkspace", {
-		id: activeWorkspace.UUID,
-	});
 
 	tabDetachmentProcess.resolve();
 }
@@ -533,10 +488,10 @@ browser.runtime.onMessage.addListener((message) => {
 				return resolve(tabIds);
 			});
 		case "switchWorkspace":
-			const { workspaceId } = message as { workspaceId: string };
+			const { workspaceUUID } = message as { workspaceUUID: string };
 			const nextWorkspace = workspaceStorage.windows
 				.get(workspaceStorage.focusedWindowId)!
-				.workspaces.find(({ UUID }) => UUID === workspaceId)!;
+				.workspaces.find(({ UUID }) => UUID === workspaceUUID)!;
 
 			(async () => {
 				await workspaceStorage.activeWindow.switchWorkspace(nextWorkspace);

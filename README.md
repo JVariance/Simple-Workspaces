@@ -19,8 +19,9 @@ A Browser Extension for Firefox which lets you organize your tabs into workspace
 ### Potential implementation in future releases
 
  - History per window/workspace
- - Notification of active switched workspace
+ - hybrid approach: option to declare workspace as contextual identity/container
  - option to visually group workspaces
+ - Maybe a notification of the new active workspace when switching workspaces via shortcuts and the views are closed
 _______________________________________
 
 ## Development

@@ -143,10 +143,20 @@ export class WorkspaceStorage {
 	}: {
 		tabIds: number[];
 		targetWindowId: number;
-	}) {
+	}): Promise<Ext.Workspace> {
 		console.info("moveAttachedTabs");
-		await this.getWindow(targetWindowId)?.addTabs(tabIds);
+		const window = this.getWindow(targetWindowId);
+		await window?.addTabs(tabIds);
+		for (let tabId of tabIds) {
+			await Browser.sessions.setTabValue(
+				tabId,
+				"workspaceUUID",
+				window.activeWorkspace.UUID
+			);
+		}
 		console.info("End of moveAttachedTabs func");
+
+		return window.activeWorkspace;
 	}
 
 	async moveDetachedTabs({
@@ -207,6 +217,7 @@ export class WorkspaceStorage {
 			}
 		}
 
+		console.info("detachedTabs - Return ->", window?.activeWorkspace);
 		return window?.activeWorkspace;
 	}
 
