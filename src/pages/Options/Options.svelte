@@ -2,7 +2,7 @@
 	import EmojiPicker from "@root/components/EmojiPicker.svelte";
 	import Icon from "@root/components/Icon.svelte";
 	import { debounceFunc } from "@root/utils";
-	import { createRoot, onMount, tick, unstate, untrack } from "svelte";
+	import { createRoot, onMount} from "svelte";
 	import { SOURCES, dndzone } from "svelte-dnd-action";
 	import Browser, { i18n } from "webextension-polyfill";
 
@@ -30,6 +30,7 @@
 	function addDefaultWorkspace(e) {
 			e.stopImmediatePropagation();
 			defaultWorkspaces.push(getNewWorkspace());
+			console.info({defaultWorkspaces});
 	}
 
 	
@@ -96,21 +97,21 @@
 		e.stopImmediatePropagation();
 	}
 
-	const debouncedApplyChanges = debounceFunc(applyChanges, 500);
+	// const debouncedApplyChanges = debounceFunc(applyChanges, 500);
 
-	$effect(() => {
-		if(!mounted) return;
-		console.info("defaultWorkspaces");
-		debouncedApplyChanges(defaultWorkspaces);
-	});
+	// $effect(() => {
+	// 	if(!mounted) return;
+	// 	// console.info({defaultWorkspaces});
+	// 	debouncedApplyChanges();
+	// });
 
 	onMount(async () => {
 		const localDefaultWorkspaces = await Browser.runtime.sendMessage({msg: "getDefaultWorkspaces"}) as SimpleWorkspace[];
-		localDefaultWorkspaces.forEach((workspace, i) => {
+		localDefaultWorkspaces?.forEach((workspace, i) => {
 			workspace.id = i;
 		});
 
-		defaultWorkspaces = localDefaultWorkspaces.length ? localDefaultWorkspaces : [getNewWorkspace()];
+		if(localDefaultWorkspaces) defaultWorkspaces.push(...localDefaultWorkspaces);
 		
 		windowWorkspaces = await getWorkspaces();
 		mounted = true;
@@ -120,6 +121,7 @@
 {#snippet Workspace(workspace)}
 	<button
 		title="choose icon"
+		style="width: 2.25rem; height: 2.25rem; display: flex; justify-content: center; align-items: center;"
 		onclick={(e) => {
 			openEmojiPicker(e, workspace);
 		}}
@@ -130,103 +132,125 @@
 		class="bg-transparent border"
 		type="text"
 		bind:value={workspace.name}
-	/>
+		/>
 {/snippet}
 
-<h1>{i18n.getMessage('options')}</h1>
+<div style="padding: 2rem;">
+	<h2 style="display: flex; gap: 0.5rem;">
+		<img src="/icon/icon-dark.svg" width="40"/>
+		Simple Workspaces
+	</h2>
+	<h1>{i18n.getMessage('options')}</h1>
 
-<div id="applying-notification" class={applyingChangesState}>
-	<span class="loading-spinner">&#9692;</span>
-	<span class="checkmark">&#10003;</span>
-	<span>
-		{#if applyingChangesState === "applying"}
-			{i18n.getMessage('applying_changes')}
-			{:else if applyingChangesState === "applied"}
-				{i18n.getMessage('applied_changes')}
-		{/if}
-	</span>
-</div>
+	<div id="applying-notification" class={applyingChangesState}>
+		<span class="loading-spinner">&#9692;</span>
+		<span class="checkmark">&#10003;</span>
+		<span>
+			{#if applyingChangesState === "applying"}
+				{i18n.getMessage('applying_changes')}
+				{:else if applyingChangesState === "applied"}
+					{i18n.getMessage('applied_changes')}
+			{/if}
+		</span>
+	</div>
 
-<div class="grid gap-8">
-	<section>
-		<h2>🌍 {i18n.getMessage('language')}</h2>
-		<select id="selectLanguage">
-			{#each ['en', 'de-DE'] as lang}
-				<option value={lang}>{lang}</option>
-			{/each}
-		</select>
-	</section>
-	<section>
-		<h2>{i18n.getMessage('current_workspaces')}</h2>
-		<ul class="current-workspaces grid gap-4">
-			{#each windowWorkspaces as workspace}
-				<li>
-					{@render Workspace(workspace)}
-				</li>
-			{/each}
-		</ul>
-	</section>
-	<section>
-		<h2>{i18n.getMessage('default_workspaces')}</h2>
-		<p>⚠ {i18n.getMessage('will_apply_for_new_windows')}</p>
-		<button onclick={(e) => {defaultWorkspaces = []; addDefaultWorkspace(e);}}>{i18n.getMessage('reset_default_workspaces')}</button>
-		<div 
-			style:width="max-content"
-		>
-			<ul
-				use:dndzone={{
-					items: defaultWorkspaces, 
-					dropTargetStyle: {}, 
-					dragDisabled: !dragEnabled || defaultWorkspaces.length < 2,
-				}}
-				on:consider={(e: CustomEvent<DndEvent<SimpleWorkspace>>) => {
-					defaultWorkspaces = e.detail.items;
-				}}
-				on:finalize={(e: CustomEvent<DndEvent<SimpleWorkspace>>) => {
-					const { info: { source } } = e.detail;
-					defaultWorkspaces = e.detail.items;
-					if(source === SOURCES.POINTER){
-						dragEnabled = false;
-					}
-				}}
-				class="default-workspaces grid gap-4"
-			>
-				{#each defaultWorkspaces as workspace, i (workspace.id)}
-					<li class="flex gap-2">
-						<div class="drag-handle" onpointerdown={(e) => {e.preventDefault(); dragEnabled = true}} onpointerup={() => {dragEnabled = false;}} aria-label="drag-handle">
-							<Icon icon="drag-handle" width={18} />
-						</div>
-						{@render Workspace(workspace)}
-					</li>
+	<div class="grid gap-8">
+		<section>
+			<h2>🌍 {i18n.getMessage('language')}</h2>
+			<select id="selectLanguage">
+				{#each ['en', 'de-DE'] as lang}
+					<option value={lang}>{lang}</option>
 				{/each}
+			</select>
+		</section>
+		<div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
+			<section style="flex: 0 1 auto;">
+				<h2>{i18n.getMessage('current_workspaces')}</h2>
+				<ul class="current-workspaces grid gap-4">
+					{#each windowWorkspaces as workspace}
+						<li>
+							{@render Workspace(workspace)}
+						</li>
+					{/each}
 				</ul>
-			<button
-				id="addDefaultWorkspace"
-				title="add default workspace"
-				onclick={addDefaultWorkspace}><Icon icon="add" width={20}/>{i18n.getMessage('add_default_workspace')}</button
-			>
-			<!-- <button id="applyChanges" onclick={applyChanges}>
-				{i18n.getMessage('apply_changes')}
-			</button> -->
+			</section>
+			<section style="flex: 1 1 auto;">
+				<h2>{i18n.getMessage('default_workspaces')}</h2>
+				<p style="padding: 0.25rem 0.5rem; width: max-content; background: rgb(70,100,200); border-radius: 0.25rem;">
+					ℹ {i18n.getMessage('will_apply_for_new_windows')}
+				</p>
+				<button style="margin-top: 1rem;" onclick={(e) => {defaultWorkspaces = [];}}><span style="display: inline-block; scale: -1;">↪</span> {i18n.getMessage('reset_default_workspaces')}</button>
+				<div 
+					style:width="max-content"
+				>
+					<div class="home-workspace flex gap-2" style="margin-bottom: 0.5rem;">
+						{@render Workspace({id: -1, icon: "🏠", name: "Home"})}
+					</div>
+					<ul
+						class="default-workspaces grid gap-4"
+						use:dndzone={{
+							items: defaultWorkspaces, 
+							dropTargetStyle: {}, 
+							dragDisabled: !dragEnabled || defaultWorkspaces.length < 2,
+						}}
+						on:consider={(e: CustomEvent<DndEvent<SimpleWorkspace>>) => {
+							defaultWorkspaces = e.detail.items;
+						}}
+						on:finalize={(e: CustomEvent<DndEvent<SimpleWorkspace>>) => {
+							const { info: { source } } = e.detail;
+							defaultWorkspaces = e.detail.items;
+							if(source === SOURCES.POINTER){
+								dragEnabled = false;
+							}
+						}}
+					>
+						{#each defaultWorkspaces as workspace, i (workspace.id)}
+							<li class="flex gap-2">
+								<div class="drag-handle" onpointerdown={(e) => {e.preventDefault(); dragEnabled = true}} onpointerup={() => {dragEnabled = false;}} aria-label="drag-handle">
+									<Icon icon="drag-handle" width={18} />
+								</div>
+								{@render Workspace(workspace)}
+							</li>
+						{/each}
+						</ul>
+					<button
+						id="addDefaultWorkspace"
+						title="add default workspace"
+						style="margin-left: 1.5rem; width: -moz-available;"
+						onclick={addDefaultWorkspace}><Icon icon="add" width={20}/>{i18n.getMessage('add_default_workspace')}</button
+					>
+					<button id="applyChanges" onclick={applyChanges}>
+						{i18n.getMessage('apply_changes')}
+					</button>
+				</div>
+			</section>
 		</div>
-	</section>
-	<section>
-		<h2>⚠ {i18n.getMessage('clear')}</h2>
-		<button onclick={clearExtensionData}>{i18n.getMessage('clear')}</button>
-	</section>
+		<section>
+			<h2>⚠ {i18n.getMessage('clear')}</h2>
+			<button onclick={clearExtensionData}>{i18n.getMessage('clear')}</button>
+		</section>
+	</div>
 </div>
 
 <style lang="postcss">
 	:global(html) {
-		@apply dark:bg-neutral-900 dark:text-white p-0 m-0 font-sans;
+		@apply dark:text-white p-0 m-0 font-sans;
 	}
 
-	h2{
-		@apply m-0 flex items-center;
+	:global(body){
+		@apply dark:bg-[#111] m-0 p-0 w-[100dvw] h-[100dvh];
+	}
+
+	h2 {
+		@apply m-0 mb-4 flex items-center text-lg;
+	}
+
+	p {
+		@apply m-0;
 	}
 
 	section {
-		@apply p-2 border border-solid rounded-md mt-4 dark:border-neutral-800;
+		@apply p-2 border border-solid rounded-md mt-4 dark:border-neutral-800 dark:bg-[#0b0b0b];
 	}
 
 	button {
@@ -235,6 +259,10 @@
 
 	.loading-spinner {
 		@apply animate-spin w-max h-max;
+	}
+
+	.home-workspace {
+		@apply mt-4 ml-6 flex gap-2;
 	}
 
 	#applying-notification {
@@ -276,7 +304,7 @@
 	}
 
 	.default-workspaces, .current-workspaces {
-		@apply grid gap-2 mb-4;
+		@apply grid gap-2;
 
 		& > li {
 			@apply flex gap-2 items-center;
@@ -292,7 +320,7 @@
 	}
 
 	ul {
-		@apply p-0;
+		@apply p-0 m-0;
 	}
 
 	li {
@@ -300,7 +328,7 @@
 	}
 
 	#selectLanguage {
-		@apply mt-4 border p-2 border-solid rounded-md dark:bg-neutral-900 dark:border-neutral-700 dark:text-white;
+		@apply border p-2 border-solid rounded-md dark:bg-neutral-900 dark:border-neutral-700 dark:text-white;
 
 		option {
 			@apply bg-transparent;
@@ -308,7 +336,7 @@
 	}
 
 	button#addDefaultWorkspace{
-			@apply mt-4 w-full flex gap-2 items-center;
+			@apply mt-2 w-full flex gap-2 items-center;
 	}
 		
 	button#applyChanges {
