@@ -3,6 +3,10 @@
 		"message": "Optionen",
 		"description": "options page title"
 	},
+	"general": {
+		"message": "allgemein",
+		"description": "options page"
+	},
 	"language": {
 		"message": "Sprache",
 		"description": ""
@@ -13,23 +17,47 @@
 	},
 	"reset_default_workspaces": {
 		"message": "Standard-Arbeitsbereiche zurücksetzen",
-		"description": ""
+		"description": "options page"
+	},
+	"add_default_workspace": {
+		"message": "Standard-Arbeitsbereich hinzufügen",
+		"description": "options page"
+	},
+	"will_apply_for_new_windows": {
+		"message": "Änderungen werden für neue Fenster angewendet",
+		"description": "options page -> default workspaces"
 	},
 	"default_workspace": {
 		"message": "Standard-Arbeitsbereich",
-		"description": ""
+		"description": "options page"
 	},
 	"default_workspaces": {
 		"message": "Standard-Arbeitsbereiche",
+		"description": "options page"
+	},
+	"current window": {
+		"message": "aktuelles Fenster",
 		"description": ""
+	},
+	"current_workspaces": {
+		"message": "aktuelle Arbeitsbereiche",
+		"description": "options page"
 	},
 	"apply_changes": {
 		"message": "Änderungen übernehmen",
-		"description": "apply changes on default workspaces button"
+		"description": "options page"
+	},
+	"applying_changes": {
+		"message": "Änderungen werden übernommen",
+		"description": "options page"
+	},
+	"applied_changes": {
+		"message": "Änderungen erfolgreich übernommen",
+		"description": "options page"
 	},
 	"clear": {
 		"message": "Erweiterungsdaten löschen",
-		"description": "clear extension data"
+		"description": "options page -> clear extension data"
 	},
 	"new_workspace": {
 		"message": "Neuer Arbeitsbereich",

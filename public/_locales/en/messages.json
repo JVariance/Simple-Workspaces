@@ -3,6 +3,10 @@
 		"message": "options",
 		"description": "options page title"
 	},
+	"general": {
+		"message": "general",
+		"description": "options page"
+	},
 	"language": {
 		"message": "language",
 		"description": ""
@@ -13,19 +17,43 @@
 	},
 	"reset_default_workspaces": {
 		"message": "reset default workspaces",
-		"description": ""
+		"description": "options page"
+	},
+	"add_default_workspace": {
+		"message": "add default workspace",
+		"description": "options page"
 	},
 	"default_workspace": {
 		"message": "default workspace",
-		"description": ""
+		"description": "options page"
 	},
 	"default_workspaces": {
 		"message": "default workspaces",
+		"description": "options page"
+	},
+	"current_window": {
+		"message": "current window",
 		"description": ""
+	},
+	"current_workspaces": {
+		"message": "current workspaces",
+		"description": ""
+	},
+	"will_apply_for_new_windows": {
+		"message": "will apply for new windows",
+		"description": "options page -> default workspaces"
 	},
 	"apply_changes": {
 		"message": "apply changes",
 		"description": "apply changes on default workspaces button"
+	},
+	"applying_changes": {
+		"message": "applying changes",
+		"description": "options page"
+	},
+	"applied_changes": {
+		"message": "applied changes",
+		"description": "options page"
 	},
 	"clear": {
 		"message": "clear",

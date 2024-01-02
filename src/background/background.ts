@@ -509,10 +509,12 @@ browser.runtime.onMessage.addListener((message) => {
 			})();
 			break;
 		case "setDefaultWorkspaces":
-			browser.storage.local.set({
-				defaultWorkspaces: message.defaultWorkspaces,
+			return new Promise(async (resolve) => {
+				await browser.storage.local.set({
+					defaultWorkspaces: message.defaultWorkspaces,
+				});
+				return resolve(true);
 			});
-			break;
 		case "getDefaultWorkspaces":
 			return new Promise(async (resolve) => {
 				const { defaultWorkspaces } = await browser.storage.local.get(
