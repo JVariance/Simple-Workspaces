@@ -45,94 +45,45 @@ export class Window {
 		console.info({ localWindow, tabs });
 
 		if (localWindow) {
-			// const localWorkspaces: Map<string, Ext.Workspace> = Map.groupBy(
-			// 	localWindow.workspaces,
-			// 	({ UUID }) => UUID
-			// );
 			const localWorkspaces: Map<string, Ext.Workspace> =
 				localWindow.workspaces.reduce((acc, workspace) => {
 					acc.set(workspace.UUID, workspace);
 					return acc;
 				}, new Map());
 
-			localWorkspaces.forEach((workspace) => {
-				workspace.tabIds = [];
-				workspace.activeTabId = undefined;
-			});
-
 			console.info({ localWorkspaces });
 
-			const activeTabId = tabs.find(({ active }) => active)?.id;
-
-			const workspaceMap = new Map<string, EnhancedTab[]>();
+			const sortedTabsInWorkspaces = new Map<string, EnhancedTab[]>();
 
 			for (let tab of tabs) {
 				const workspaceSessionUUID: string = await Browser.sessions.getTabValue(
 					tab.id!,
 					"workspaceUUID"
 				);
-				tab.workspaceUUID = workspaceSessionUUID;
+				tab.workspaceUUID = workspaceSessionUUID || "HOME";
+				if (!workspaceSessionUUID)
+					await Browser.sessions.setTabValue(tab.id!, "workspaceUUID", "HOME");
 
-				workspaceMap.has(workspaceSessionUUID)
-					? workspaceMap.get(workspaceSessionUUID)!.push(tab)
-					: workspaceMap.set(workspaceSessionUUID || "___", [tab]);
+				sortedTabsInWorkspaces.has(workspaceSessionUUID)
+					? sortedTabsInWorkspaces.get(workspaceSessionUUID)!.push(tab)
+					: sortedTabsInWorkspaces.set(workspaceSessionUUID || "HOME", [tab]);
 			}
 
-			const workspaceMap2 = new Map<string, Ext.Workspace>();
-			Array.from(workspaceMap.entries()).forEach(([key, tabs]) => {
-				if (key === "___") {
-					const activeTab = tabs.find(({ active }) => active);
-					const activeTabId = activeTab?.id! || tabs.at(0)?.id!;
-					const workspace: Ext.Workspace = {
-						...this.#getNewWorkspace(),
-						tabIds: tabs.map((tab) => tab.id!),
-						activeTabId,
-						active: activeTab ? true : false,
-					};
-					workspaceMap2.set(workspace.UUID, workspace);
-				}
+			Array.from(localWorkspaces.entries()).forEach(([key, workspace]) => {
+				const tabs = Array.from(sortedTabsInWorkspaces.get(key)!.values());
+				const activeTab = tabs.find(({ active }) => active);
+				const activeTabId = activeTab?.id!;
+				workspace.tabIds = tabs.flatMap(({ id }) => id!) || [];
+				workspace.active = activeTab ? true : false;
+				workspace.activeTabId = activeTabId;
+				workspace.windowId = this.#windowId;
 			});
 
-			// for (let tab of tabs) {
-			// 	if (workspaceSessionUUID) {
-			// 		let currentWorkspaceValue =
-			// 			localWorkspaces.get(workspaceSessionUUID)!;
-
-			// 		if (tab.active) currentWorkspaceValue.active = true;
-			// 		currentWorkspaceValue.tabIds.push(tab.id!);
-			// 	} else {
-			// 		console.info("else-Zweig");
-			// 		const homeWorkspace = localWorkspaces.get("HOME")!;
-			// 		console.info({ homeWorkspace });
-			// 		localWorkspaces.set("HOME", {
-			// 			...homeWorkspace,
-			// 			...this.#getNewWorkspace(),
-			// 			...(localWorkspaces.has("HOME") && {
-			// 				name: localWorkspaces.get("HOME")!.name || "Home",
-			// 			}),
-			// 			active: homeWorkspace.active || tab.active,
-			// 			activeTabId,
-			// 			tabIds: [...homeWorkspace.tabIds, tab.id!],
-			// 		});
-
-			// 		console.info("hojojojo", structuredClone(tab));
-
-			// 		await Browser.sessions.setTabValue(tab.id!, "workspaceUUID", "HOME");
-
-			// 		console.info("heja");
-			// 	}
-			// }
-
-			// console.info(localWorkspaces);
-			// console.info(localWorkspaces.values());
-			// console.info(
-			// 	"array.from(localworkspaces.values()) -> ",
-			// 	Array.from(localWorkspaces.values())
-			// );
+			console.info({ localWorkspaces });
 
 			this.#workspaces = Array.from(localWorkspaces.values());
 
-			// hide tabs
+			// hide tabs?
 		} else {
 			this.#addingWorkspace = true;
 			let tabIds = tabs.map((tab) => tab.id!);
@@ -400,7 +351,8 @@ export class Window {
 			name: `Workspace`,
 			tabIds: [],
 			active: true,
-			windowId: this.#UUID,
+			// windowId: this.#UUID,
+			windowId: this.#windowId,
 			activeTabId: undefined,
 		};
 	}
