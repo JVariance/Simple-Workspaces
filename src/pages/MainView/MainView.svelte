@@ -272,7 +272,6 @@
 	}
 
 	async function search(e: InputEvent & { target: HTMLInputElement }) {
-		console.info("search");
 		const { value } = e.target;
 		if (!value) {
 			searchFilteredWorkspaceUUIDS = [];
@@ -285,13 +284,10 @@
 			);
 			const matchingTabIds = matchingTabs.map(({ id }) => id!);
 
-			console.info({matchingTabs, matchingTabIds});
-
 			searchFilteredWorkspaceUUIDS = workspaces.reduce((acc, workspace) => {
 				const workspaceHasSomeMatchingTab = workspace.tabIds.some((tabId) =>
 					matchingTabIds.includes(tabId)
 				);
-				console.info({workspaceHasSomeMatchingTab});
 				if (workspaceHasSomeMatchingTab) acc.push(workspace.UUID);
 				return acc;
 			}, [] as string[]);

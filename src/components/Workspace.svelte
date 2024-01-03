@@ -106,7 +106,12 @@
 
 	$effect(() => {
 		// console.log("workspace update");
-		if (selected) {
+		const activeElement = document.activeElement;
+		if (
+			selected &&
+			activeElement?.tagName !== "search" &&
+			!activeElement?.closest("search")
+		) {
 			(async () => {
 				await tick();
 				workspaceButton?.focus();
