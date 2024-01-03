@@ -63,17 +63,16 @@
 		let lang: keyof typeof locales = "en";
 		switch (Browser.i18n.getUILanguage()) {
 			case "de-DE":
+			case "de":
 				lang = "de";
 				break;
 			default:
 				break;
 		}
 
-		console.info({ lang, a: Browser.i18n.getUILanguage() });
-
 		emojiPicker.i18n = locales[lang];
 		emojiPicker.locale = lang;
-		emojiPicker.dataSource = `https://cdn.jsdelivr.net/npm/emoji-picker-element-data@^1/${lang}/emojibase/data.json`;
+		emojiPicker.dataSource = `https://cdn.jsdelivr.net/npm/emoji-picker-element-data@%5E1/${lang}/cldr/data.json`;
 
 		picker = emojiPicker.shadowRoot.children[1];
 		searchInput = picker.querySelector("#search");
