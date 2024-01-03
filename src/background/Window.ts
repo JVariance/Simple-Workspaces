@@ -212,6 +212,27 @@ export class Window {
 		this.#persist();
 	}
 
+	async restoredTab(tabId: number, workspaceUUID: string) {
+		console.info("restoredTab", { tabId, workspaceUUID });
+
+		const workspace = this.#workspaces.find(
+			({ UUID }) => UUID === workspaceUUID
+		);
+
+		if (workspace) {
+			workspace.tabIds.push(tabId);
+
+			if (workspace !== this.#activeWorkspace) {
+				await Browser.tabs.update(this.#activeWorkspace.tabIds.at(-1), {
+					active: true,
+				});
+				await Browser.tabs.hide(tabId);
+			}
+		}
+
+		this.#persist();
+	}
+
 	async addTab(tabId: number) {
 		console.info("addTab");
 		await this.addTabs([tabId]);

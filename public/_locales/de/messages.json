@@ -7,6 +7,10 @@
 		"message": "allgemein",
 		"description": "options page"
 	},
+	"reset": {
+		"message": "zurücksetzen",
+		"description": "options page"
+	},
 	"language": {
 		"message": "Sprache",
 		"description": ""

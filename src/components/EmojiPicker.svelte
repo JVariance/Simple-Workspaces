@@ -4,6 +4,13 @@
 	import type { Picker } from "emoji-picker-element";
 	import { onMount } from "svelte";
 
+	import de from "emoji-picker-element/i18n/de";
+	import en from "emoji-picker-element/i18n/en";
+
+	const locales = { de, en };
+
+	import Browser from "webextension-polyfill";
+
 	type Props = {
 		x: number;
 		y: number;
@@ -53,6 +60,21 @@
 
 	onMount(() => {
 		visible = true;
+		let lang: keyof typeof locales = "en";
+		switch (Browser.i18n.getUILanguage()) {
+			case "de-DE":
+				lang = "de";
+				break;
+			default:
+				break;
+		}
+
+		console.info({ lang, a: Browser.i18n.getUILanguage() });
+
+		emojiPicker.i18n = locales[lang];
+		emojiPicker.locale = lang;
+		emojiPicker.dataSource = `https://cdn.jsdelivr.net/npm/emoji-picker-element-data@^1/${lang}/emojibase/data.json`;
+
 		picker = emojiPicker.shadowRoot.children[1];
 		searchInput = picker.querySelector("#search");
 		searchInput.focus();

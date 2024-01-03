@@ -1,3 +1,11 @@
+**Today**
+[] search improvements
+[] emoji picker improvements
+[] options page - current workspaces
+[] options page - remove single default workspace
+[] options page - impl clear functionality
+
+
 # Scenarios
 ---
 []

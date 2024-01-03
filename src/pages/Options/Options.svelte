@@ -2,9 +2,10 @@
 	import EmojiPicker from "@root/components/EmojiPicker.svelte";
 	import Icon from "@root/components/Icon.svelte";
 	import { debounceFunc } from "@root/utils";
-	import { createRoot, onMount} from "svelte";
+	import { createRoot, onMount, type Snippet} from "svelte";
 	import { SOURCES, dndzone } from "svelte-dnd-action";
 	import Browser, { i18n } from "webextension-polyfill";
+	import "@root/app.postcss";
 
 	type SimpleWorkspace = Pick<Ext.Workspace, "icon" | "name"> & { id: number };
 
@@ -33,7 +34,6 @@
 			console.info({defaultWorkspaces});
 	}
 
-	
 	let picker;
 
 	function openEmojiPicker(
@@ -121,7 +121,7 @@
 {#snippet Workspace(workspace)}
 	<button
 		title="choose icon"
-		style="width: 2.25rem; height: 2.25rem; display: flex; justify-content: center; align-items: center;"
+		class="w-12 h-auto aspect-square flex justify-center items-center"
 		onclick={(e) => {
 			openEmojiPicker(e, workspace);
 		}}
@@ -129,18 +129,24 @@
 		{workspace.icon}
 	</button>
 	<input
-		class="bg-transparent border"
+		class="bg-transparent border border-solid dark:border-neutral-700 rounded-md dark:text-white p-2"
 		type="text"
 		bind:value={workspace.name}
 		/>
 {/snippet}
 
-<div style="padding: 2rem;">
-	<h2 style="display: flex; gap: 0.5rem;">
-		<img src="/icon/icon-dark.svg" width="40"/>
+{#snippet Section([content, classes]: [Snippet, string])}
+	<section class="p-2 border border-solid rounded-md border-gray-300 dark:border-neutral-800 bg-gray-100 dark:bg-[#23222b] flex-initial {classes}">
+		{@render content()}
+	</section>
+{/snippet}
+
+<div class="p-8">
+	<h2 class="flex items-center gap-2 m-0 mb-4 text-lg first-letter:uppercase">
+		<img src="/icon/icon-dark.svg" alt="logo" width="40" class="[filter:_invert()] dark:[filter:_invert(0)]"/>
 		Simple Workspaces
 	</h2>
-	<h1>{i18n.getMessage('options')}</h1>
+	<!-- <h1 class="first-letter:uppercase mb-2">{i18n.getMessage('options')}</h1> -->
 
 	<div id="applying-notification" class={applyingChangesState}>
 		<span class="loading-spinner">&#9692;</span>
@@ -154,115 +160,127 @@
 		</span>
 	</div>
 
-	<div class="grid gap-8">
-		<section>
-			<h2>🌍 {i18n.getMessage('language')}</h2>
+	<div class="flex flex-wrap gap-4 mt-16">
+		<!-- <section>
+			<h2 class="m-0 mb-4 text-lg first-letter:uppercase">🌍 {i18n.getMessage('language')}</h2>
 			<select id="selectLanguage">
 				{#each ['en', 'de-DE'] as lang}
 					<option value={lang}>{lang}</option>
 				{/each}
 			</select>
-		</section>
-		<div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
-			<section style="flex: 0 1 auto;">
-				<h2>{i18n.getMessage('current_workspaces')}</h2>
-				<ul class="current-workspaces grid gap-4">
-					{#each windowWorkspaces as workspace}
-						<li>
+		</section> -->
+		{#snippet Section1Content()}
+			<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('current_workspaces')}</h2>
+			<ul class="current-workspaces grid gap-4">
+				{#each windowWorkspaces as workspace}
+				<li class="flex items-stretch gap-2">
+					{@render Workspace(workspace)}
+				</li>
+				{/each}
+			</ul>
+		{/snippet}
+		{#snippet Section2Content()}
+			<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('default_workspaces')}</h2>
+			<p class="py-1 px-2 flex gap-2 w-max rounded-md">
+				<Icon icon="info"/> {i18n.getMessage('will_apply_for_new_windows')}
+			</p>
+			<div 
+				class="w-max"
+			>
+				<div class="home-workspace flex gap-2 mb-2 mt-4 ml-6">
+					{@render Workspace({id: -1, icon: "🏠", name: "Home"})}
+				</div>
+				<ul
+					class="default-workspaces [&:not(:empty)]:!mb-2"
+					use:dndzone={{
+						items: defaultWorkspaces, 
+						dropTargetStyle: {}, 
+						dragDisabled: !dragEnabled || defaultWorkspaces.length < 2,
+					}}
+					on:consider={(e: CustomEvent<DndEvent<SimpleWorkspace>>) => {
+						defaultWorkspaces = e.detail.items;
+					}}
+					on:finalize={(e: CustomEvent<DndEvent<SimpleWorkspace>>) => {
+						const { info: { source } } = e.detail;
+						defaultWorkspaces = e.detail.items;
+						if(source === SOURCES.POINTER){
+							dragEnabled = false;
+						}
+					}}
+				>
+					{#each defaultWorkspaces as workspace, i (workspace.id)}
+						<li class="grid grid-flow-col gap-2 items-stretch">
+							<div class="drag-handle w-4 h-4 self-center" onpointerdown={(e) => {e.preventDefault(); dragEnabled = true}} onpointerup={() => {dragEnabled = false;}} aria-label="drag-handle">
+								<Icon icon="drag-handle" width={18} />
+							</div>
 							{@render Workspace(workspace)}
 						</li>
 					{/each}
 				</ul>
-			</section>
-			<section style="flex: 1 1 auto;">
-				<h2>{i18n.getMessage('default_workspaces')}</h2>
-				<p style="padding: 0.25rem 0.5rem; width: max-content; background: rgb(70,100,200); border-radius: 0.25rem;">
-					ℹ {i18n.getMessage('will_apply_for_new_windows')}
-				</p>
-				<button style="margin-top: 1rem;" onclick={(e) => {defaultWorkspaces = [];}}><span style="display: inline-block; scale: -1;">↪</span> {i18n.getMessage('reset_default_workspaces')}</button>
-				<div 
-					style:width="max-content"
-				>
-					<div class="home-workspace flex gap-2" style="margin-bottom: 0.5rem;">
-						{@render Workspace({id: -1, icon: "🏠", name: "Home"})}
+				<button
+					title="add default workspace"
+					class="ml-6 w-full flex gap-2 items-center"
+					style:width="-moz-available"
+					onclick={addDefaultWorkspace}><Icon icon="add" width={16}/>
+					<span class="-mt-1">{i18n.getMessage('add_default_workspace')}</span>
+				</button>
+				<button class="flex gap-2 items-center justify-center mt-4 bg-green-100" style:width="-moz-available" onclick={applyChanges}>
+					<Icon icon="check" />
+					<span class="-mt-1">{i18n.getMessage('apply_changes')}</span>
+				</button>
+				<details class="mt-4 rounded-md open:border group">
+					<summary class="flex items-center gap-2 px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded-md list-none cursor-pointer group-open:border-0">
+						<Icon icon="chevron-right" width={20} />
+						<span class="-mt-[0.125rem]">{i18n.getMessage('reset')}</span>
+					</summary>
+					<div class="content p-2 pt-0">
+						<button class="flex items-center justify-center gap-2 mt-4" style:width="-moz-available" onclick={(e) => {defaultWorkspaces = [];}}><Icon icon="reset"/><span class="-mt-0">{i18n.getMessage('reset_default_workspaces')}</span></button>
 					</div>
-					<ul
-						class="default-workspaces grid gap-4"
-						use:dndzone={{
-							items: defaultWorkspaces, 
-							dropTargetStyle: {}, 
-							dragDisabled: !dragEnabled || defaultWorkspaces.length < 2,
-						}}
-						on:consider={(e: CustomEvent<DndEvent<SimpleWorkspace>>) => {
-							defaultWorkspaces = e.detail.items;
-						}}
-						on:finalize={(e: CustomEvent<DndEvent<SimpleWorkspace>>) => {
-							const { info: { source } } = e.detail;
-							defaultWorkspaces = e.detail.items;
-							if(source === SOURCES.POINTER){
-								dragEnabled = false;
-							}
-						}}
-					>
-						{#each defaultWorkspaces as workspace, i (workspace.id)}
-							<li class="flex gap-2">
-								<div class="drag-handle" onpointerdown={(e) => {e.preventDefault(); dragEnabled = true}} onpointerup={() => {dragEnabled = false;}} aria-label="drag-handle">
-									<Icon icon="drag-handle" width={18} />
-								</div>
-								{@render Workspace(workspace)}
-							</li>
-						{/each}
-						</ul>
-					<button
-						id="addDefaultWorkspace"
-						title="add default workspace"
-						style="margin-left: 1.5rem; width: -moz-available;"
-						onclick={addDefaultWorkspace}><Icon icon="add" width={20}/>{i18n.getMessage('add_default_workspace')}</button
-					>
-					<button id="applyChanges" onclick={applyChanges}>
-						{i18n.getMessage('apply_changes')}
-					</button>
-				</div>
-			</section>
-		</div>
-		<section>
-			<h2>⚠ {i18n.getMessage('clear')}</h2>
+				</details>
+			</div>
+		{/snippet}
+		{#snippet Section3Content()}
+			<h2 class="m-0 mb-4 text-lg flex gap-2 items-center font-semibold first-letter:uppercase">
+				<Icon icon="clear" />
+				<span class="-mt-1">{i18n.getMessage('clear')}</span>
+			</h2>
 			<button onclick={clearExtensionData}>{i18n.getMessage('clear')}</button>
-		</section>
+		{/snippet}
+
+		{@render Section([Section1Content, "flex-0"])}
+		{@render Section([Section2Content, "flex-1"])}
+		{@render Section([Section3Content, "basis-full"])}
 	</div>
 </div>
 
 <style lang="postcss">
 	:global(html) {
-		@apply dark:text-white p-0 m-0 font-sans;
+		@apply text-neutral-800 dark:text-white p-0 m-0 font-sans;
 	}
 
 	:global(body){
-		@apply dark:bg-[#111] m-0 p-0 w-[100dvw] h-[100dvh];
-	}
-
-	h2 {
-		@apply m-0 mb-4 flex items-center text-lg;
+		@apply dark:bg-[#1c1b22] m-0 p-0 w-[100dvw] h-[100dvh];
 	}
 
 	p {
 		@apply m-0;
 	}
 
-	section {
-		@apply p-2 border border-solid rounded-md mt-4 dark:border-neutral-800 dark:bg-[#0b0b0b];
+	:global(details summary > svg){
+		@apply transition-transform duration-200;
+	}
+
+	:global(details[open] summary > svg){
+		@apply rotate-90;
 	}
 
 	button {
-		@apply cursor-pointer border border-solid p-2 rounded-md dark:bg-neutral-800 dark:text-white dark:border-neutral-700;
+		@apply cursor-pointer border border-solid p-2 rounded-md bg-gray-200 border-gray-300 dark:bg-[#33323a] dark:text-white dark:border-neutral-700;
+		@apply hover:bg-gray-300 dark:hover:bg-[#414049] focus-within:bg-gray-300;
 	}
 
 	.loading-spinner {
 		@apply animate-spin w-max h-max;
-	}
-
-	.home-workspace {
-		@apply mt-4 ml-6 flex gap-2;
 	}
 
 	#applying-notification {
@@ -307,16 +325,8 @@
 		@apply grid gap-2;
 
 		& > li {
-			@apply flex gap-2 items-center;
+			@apply flex gap-2;
 		}
-	}
-
-	.drag-handle {
-		@apply w-4 h-4;
-	}
-
-	input {
-		@apply bg-transparent border border-solid dark:border-neutral-700 rounded-md dark:text-white p-2;
 	}
 
 	ul {
@@ -327,19 +337,11 @@
 		@apply list-none;
 	}
 
-	#selectLanguage {
+	/* #selectLanguage {
 		@apply border p-2 border-solid rounded-md dark:bg-neutral-900 dark:border-neutral-700 dark:text-white;
 
 		option {
 			@apply bg-transparent;
 		}
-	}
-
-	button#addDefaultWorkspace{
-			@apply mt-2 w-full flex gap-2 items-center;
-	}
-		
-	button#applyChanges {
-		@apply mt-4 bg-green-300 text-black border-green-500;
-	}
+	} */
 </style>

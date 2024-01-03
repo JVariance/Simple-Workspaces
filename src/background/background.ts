@@ -233,7 +233,20 @@ browser.tabs.onCreated.addListener(async (tab) => {
 
 	console.info("createdTab", { tab: structuredClone(tab) });
 	if (!windowIsNew) {
-		await workspaceStorage.getWindow(tab.windowId!).addTab(tab.id!);
+		const tabSessionWorkspaceUUID = await browser.sessions.getTabValue(
+			tab.id!,
+			"workspaceUUID"
+		);
+
+		console.info({ tabSessionWorkspaceUUID });
+
+		if (tabSessionWorkspaceUUID) {
+			await workspaceStorage
+				.getWindow(tab.windowId!)
+				.restoredTab(tab.id!, tabSessionWorkspaceUUID);
+		} else {
+			await workspaceStorage.getWindow(tab.windowId!).addTab(tab.id!);
+		}
 		informViews(tab.windowId!, "createdTab", { tabId: tab.id });
 	}
 
