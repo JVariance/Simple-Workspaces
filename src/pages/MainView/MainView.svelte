@@ -12,21 +12,26 @@
 	import {overrideItemIdKeyNameBeforeInitialisingDndZones} from "svelte-dnd-action";
 	overrideItemIdKeyNameBeforeInitialisingDndZones("UUID");
 
+	let searchInput: HTMLInputElement = $state();
+	let selectedIndex = $state(0);
 	let workspaces: Ext.Workspace[] = $state([]);
 	let activeWorkspace: Ext.Workspace = $state()!;
-	let searchFilteredWorkspaceIds: string[] = $state([]);
-	let viewWorkspaces: Ext.Workspace[] = $derived(
-		workspaces.filter(({ UUID }) => !searchFilteredWorkspaceIds.includes(UUID))
-	);
-	let selectedIndex = $state(0);
+	let searchFilteredWorkspaceUUIDS: string[] = $state([]);
+	let viewWorkspaces: Ext.Workspace[] = $derived((() => {
+		const filteredWorkspaces = searchFilteredWorkspaceUUIDS.reduce((_workspaces, uuid) => {
+			const workspace = workspaces.find(({ UUID }) => UUID === uuid);
+			if(workspace) _workspaces.push(workspace);
+			return _workspaces;
+		}, []);
 
-	let searchInput: HTMLInputElement;
+		return filteredWorkspaces.length ? filteredWorkspaces : searchInput?.value.length ? [] : workspaces;
+	})());
+
 	let windowId: number;
 
 	$effect(() => {
 		untrack(() => activeWorkspace);
-		console.info("effect", { activeWorkspace, workspaces });
-		// console.info({workspaces: structuredClone(unstate(workspaces))});
+		// console.info("effect", { activeWorkspace, workspaces });
 		activeWorkspace = workspaces.find(({active}) => active)!;
 		console.info({ activeWorkspace });
 	});
@@ -230,6 +235,7 @@
 		switch (key) {
 			case Key.Enter:
 				e.stopPropagation();
+				console.info("????");
 				break;
 			default:
 				break;
@@ -265,33 +271,30 @@
 		workspaces.push(...localWorkspaces);
 	}
 
-	// let searchResults: string[] = [];
-
-	function search(e: InputEvent & { target: HTMLInputElement }) {
+	async function search(e: InputEvent & { target: HTMLInputElement }) {
+		console.info("search");
 		const { value } = e.target;
-
-		// // searchResults = [];
 		if (!value) {
-			searchFilteredWorkspaceIds = [];
-		}
+			searchFilteredWorkspaceUUIDS = [];
+			return;
+		};
 
-		(async () => {
 			const tabs = await Browser.tabs.query({ windowId });
 			const matchingTabs = tabs.filter((tab) =>
 				tab.url?.toLocaleLowerCase()?.includes(value.toLocaleLowerCase())
 			);
 			const matchingTabIds = matchingTabs.map(({ id }) => id!);
 
-			searchFilteredWorkspaceIds = workspaces.reduce((acc, workspace) => {
+			console.info({matchingTabs, matchingTabIds});
+
+			searchFilteredWorkspaceUUIDS = workspaces.reduce((acc, workspace) => {
 				const workspaceHasSomeMatchingTab = workspace.tabIds.some((tabId) =>
 					matchingTabIds.includes(tabId)
 				);
-				if (!workspaceHasSomeMatchingTab) {
-					acc.push(workspace.UUID);
-				}
+				console.info({workspaceHasSomeMatchingTab});
+				if (workspaceHasSomeMatchingTab) acc.push(workspace.UUID);
 				return acc;
 			}, [] as string[]);
-		})();
 	}
 
 	const debouncedSearch = debounceFunc(search, 500);
