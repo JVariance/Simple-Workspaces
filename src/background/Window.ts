@@ -93,13 +93,16 @@ export class Window {
 					defaultWorkspaces: Ext.Workspace[] & { id: string };
 				};
 
-			console.info({ _defaultWorkspaces });
+			const { homeWorkspace: localHomeWorkspace } =
+				await Browser.storage.local.get("homeWorkspace");
+
+			console.info({ localHomeWorkspace });
 
 			const homeWorkspace: Ext.Workspace = {
 				...this.#getNewWorkspace(),
 				UUID: "HOME",
-				icon: "🏠",
-				name: "Home",
+				icon: localHomeWorkspace?.icon || "🏠",
+				name: localHomeWorkspace?.name || "Home",
 				active: true,
 				activeTabId: tabs.find(({ active }) => active)?.id!,
 				tabIds: [...tabIds],

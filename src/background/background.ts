@@ -521,8 +521,43 @@ browser.runtime.onMessage.addListener((message) => {
 				);
 			})();
 			break;
+		case "setCurrentWorkspaces":
+			return new Promise(async (resolve) => {
+				const { currentWorkspaces } = message as {
+					currentWorkspaces: Ext.Workspace[];
+				};
+
+				// console.info("setCurrentWorkspaces", { currentWorkspaces });
+
+				// const [homeWorkspace, otherWorkspaces] = currentWorkspaces.reduce(
+				// 	(acc, workspace) => {
+				// 		if (workspace.UUID === "HOME") {
+				// 			acc[0] = workspace;
+				// 		} else {
+				// 			acc[1].push(workspace);
+				// 		}
+				// 		return acc;
+				// 	},
+				// 	new Array(2)
+				// ) as [Ext.Workspace, Ext.Workspace[]];
+
+				await Promise.all(
+					currentWorkspaces.map((workspace) =>
+						workspaceStorage.activeWindow.editWorkspace({
+							workspaceUUID: workspace.UUID,
+							icon: workspace.icon,
+							name: workspace.name,
+						})
+					)
+				);
+
+				return resolve(true);
+			});
 		case "setDefaultWorkspaces":
 			return new Promise(async (resolve) => {
+				await browser.storage.local.set({
+					homeWorkspace: message.homeWorkspace,
+				});
 				await browser.storage.local.set({
 					defaultWorkspaces: message.defaultWorkspaces,
 				});

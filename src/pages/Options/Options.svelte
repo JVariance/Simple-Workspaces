@@ -2,19 +2,21 @@
 	import EmojiPicker from "@root/components/EmojiPicker.svelte";
 	import Icon from "@root/components/Icon.svelte";
 	import { debounceFunc } from "@root/utils";
-	import { createRoot, onMount, type Snippet} from "svelte";
+	import { createRoot, onMount, unstate, type Snippet} from "svelte";
 	import { SOURCES, dndzone } from "svelte-dnd-action";
 	import Browser, { i18n } from "webextension-polyfill";
 	import "@root/app.postcss";
 	import Accordion from "@root/components/Accordion.svelte";
 
-	type SimpleWorkspace = Pick<Ext.Workspace, "icon" | "name"> & { id: number };
+	type SimpleWorkspace =  & Pick<Ext.Workspace, "icon" | "name"> & { id: number };
 
 	let defaultWorkspaces: SimpleWorkspace[] = $state([]);
 	let windowWorkspaces: Ext.Workspace[] = $state([]);
 	let dragEnabled = $state(false);
 	let applyingChangesState = $state<'rest' | 'applying' | 'applied' | 'error'>('rest');
 	let mounted = $state(false);
+
+	let homeWorkspace = $state<SimpleWorkspace>({id: -1, icon: "🏠", name: "Home"});
 
 	async function getWorkspaces(): Promise<Ext.Workspace[]> {
 		const windowId = (await Browser.windows.getCurrent()).id!;
@@ -77,7 +79,17 @@
 		}
 	}
 
-	async function applyChanges(){
+	async function applyCurrentWorkspacesChanges() {
+		applyingChangesState = 'applying';
+		await persistCurrentWorkspaces();
+		applyingChangesState = 'applied';
+		setTimeout(() => {
+			applyingChangesState ='rest';
+		}, 4000);
+		updateWindowWorkspaces();
+	}
+
+	async function applyDefaultWorkspacesChanges() {
 		// e.stopImmediatePropagation();
 		applyingChangesState = 'applying';
 		await persistDefaultWorkspaces();
@@ -87,11 +99,23 @@
 		}, 4000);
 	}
 
+	function persistCurrentWorkspaces() {
+		return Browser.runtime.sendMessage({
+			msg: "setCurrentWorkspaces",
+			currentWorkspaces: windowWorkspaces.map((workspace) => (({UUID, name, icon}) => ({UUID, name, icon}))(workspace))
+		});
+	}
+
 	function persistDefaultWorkspaces() {
 		return Browser.runtime.sendMessage({
 			msg: "setDefaultWorkspaces",
+			homeWorkspace: {...homeWorkspace},
 			defaultWorkspaces: defaultWorkspaces.map((workspace) => (({name, icon}) => ({name, icon}))(workspace)),
 		});
+	}
+
+	function removeDefaultWorkspace(workspaceId: number) {
+		defaultWorkspaces = defaultWorkspaces.filter(({id}) => id !== workspaceId);
 	}
 
 	function clearExtensionData(e) {
@@ -101,6 +125,7 @@
 		});
 	}
 
+
 	// const debouncedApplyChanges = debounceFunc(applyChanges, 500);
 
 	// $effect(() => {
@@ -109,6 +134,10 @@
 	// 	debouncedApplyChanges();
 	// });
 
+	async function updateWindowWorkspaces() {
+		windowWorkspaces = (await getWorkspaces()).filter(({UUID}) => UUID !== "HOME");
+	}
+
 	onMount(async () => {
 		const localDefaultWorkspaces = await Browser.runtime.sendMessage({msg: "getDefaultWorkspaces"}) as SimpleWorkspace[];
 		localDefaultWorkspaces?.forEach((workspace, i) => {
@@ -116,8 +145,12 @@
 		});
 
 		if(localDefaultWorkspaces) defaultWorkspaces.push(...localDefaultWorkspaces);
+
+		const { homeWorkspace: localHomeWorkspace } = await Browser.storage.local.get("homeWorkspace") as {homeWorkspace: SimpleWorkspace};
+
+		if(Object.keys(localHomeWorkspace || {})?.length) homeWorkspace = localHomeWorkspace;
 		
-		windowWorkspaces = await getWorkspaces();
+		await updateWindowWorkspaces();
 		mounted = true;
 	});
 </script>
@@ -182,6 +215,11 @@
 				</li>
 				{/each}
 			</ul>
+
+			<button class="flex gap-2 items-center justify-center mt-4 bg-green-100" style:width="-moz-available" onclick={applyCurrentWorkspacesChanges}>
+				<Icon icon="check" />
+				<span class="-mt-1">{i18n.getMessage('apply_changes')}</span>
+			</button>
 		{/snippet}
 		{#snippet Section2Content()}
 			<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('default_workspaces')}</h2>
@@ -192,13 +230,14 @@
 				class="w-max"
 			>
 				<div class="home-workspace flex gap-2 mb-2 mt-4 ml-6">
-					{@render Workspace({id: -1, icon: "🏠", name: "Home"})}
+					{@render Workspace(homeWorkspace)}
 				</div>
 				<ul
 					class="default-workspaces [&:not(:empty)]:!mb-2"
 					use:dndzone={{
 						items: defaultWorkspaces, 
-						dropTargetStyle: {}, 
+						dropTargetStyle: {},
+						zoneTabIndex: -1,
 						dragDisabled: !dragEnabled || defaultWorkspaces.length < 2,
 					}}
 					on:consider={(e: CustomEvent<DndEvent<SimpleWorkspace>>) => {
@@ -215,9 +254,14 @@
 					{#each defaultWorkspaces as workspace, i (workspace.id)}
 						<li class="grid grid-flow-col gap-2 items-stretch">
 							<div class="drag-handle w-4 h-4 self-center" onpointerdown={(e) => {e.preventDefault(); dragEnabled = true}} onpointerup={() => {dragEnabled = false;}} aria-label="drag-handle">
-								<Icon icon="drag-handle" width={18} />
+								<Icon icon="drag-handle" width={18} class="{defaultWorkspaces.length < 2 ? 'hidden' : ''}" />
 							</div>
 							{@render Workspace(workspace)}
+							<div class="self-center flex text-neutral-300">
+								<button class="!bg-transparent !border-none !w-max !p-0" onclick={() => removeDefaultWorkspace(workspace.id)}>
+									<Icon icon="cross" />
+								</button>
+							</div>
 						</li>
 					{/each}
 				</ul>
@@ -228,7 +272,7 @@
 					onclick={addDefaultWorkspace}><Icon icon="add" width={16}/>
 					<span class="-mt-1">{i18n.getMessage('add_default_workspace')}</span>
 				</button>
-				<button class="flex gap-2 items-center justify-center mt-4 bg-green-100" style:width="-moz-available" onclick={applyChanges}>
+				<button class="flex gap-2 items-center justify-center mt-4 bg-green-100" style:width="-moz-available" onclick={applyDefaultWorkspacesChanges}>
 					<Icon icon="check" />
 					<span class="-mt-1">{i18n.getMessage('apply_changes')}</span>
 				</button>
