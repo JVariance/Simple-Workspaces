@@ -527,20 +527,6 @@ browser.runtime.onMessage.addListener((message) => {
 					currentWorkspaces: Ext.Workspace[];
 				};
 
-				// console.info("setCurrentWorkspaces", { currentWorkspaces });
-
-				// const [homeWorkspace, otherWorkspaces] = currentWorkspaces.reduce(
-				// 	(acc, workspace) => {
-				// 		if (workspace.UUID === "HOME") {
-				// 			acc[0] = workspace;
-				// 		} else {
-				// 			acc[1].push(workspace);
-				// 		}
-				// 		return acc;
-				// 	},
-				// 	new Array(2)
-				// ) as [Ext.Workspace, Ext.Workspace[]];
-
 				await Promise.all(
 					currentWorkspaces.map((workspace) =>
 						workspaceStorage.activeWindow.editWorkspace({
@@ -549,6 +535,11 @@ browser.runtime.onMessage.addListener((message) => {
 							name: workspace.name,
 						})
 					)
+				);
+
+				informViews(
+					workspaceStorage.activeWindow.windowId,
+					"updatedWorkspaces"
 				);
 
 				return resolve(true);

@@ -14,6 +14,7 @@
 
 	let searchInput: HTMLInputElement = $state();
 	let selectedIndex = $state(0);
+	// let homeWorkspace: Ext.Workspace = $state();
 	let workspaces: Ext.Workspace[] = $state([]);
 	let activeWorkspace: Ext.Workspace = $state()!;
 	let searchFilteredWorkspaceUUIDS: string[] = $state([]);
@@ -32,6 +33,7 @@
 	$effect(() => {
 		untrack(() => activeWorkspace);
 		// console.info("effect", { activeWorkspace, workspaces });
+		// activeWorkspace = homeWorkspace?.active ? homeWorkspace : workspaces.find(({active}) => active)!;
 		activeWorkspace = workspaces.find(({active}) => active)!;
 		console.info({ activeWorkspace });
 	});
@@ -106,6 +108,11 @@
 		updatedActiveWorkspace({ UUID: workspace.UUID });
 	}
 	
+	async function updatedWorkspaces() {
+		console.info("updatedWorkspaces");
+		initWorkspaces();
+	}
+
 	function movedTabsToNewWorkspace({workspace}: {workspace: Ext.Workspace}){
 		workspaces.push(workspace);
 	}
@@ -137,6 +144,9 @@
 				break;
 			case "addedWorkspace":
 				addedWorkspace(message);
+				break;
+			case "updatedWorkspaces":
+				updatedWorkspaces();
 				break;
 			case "updatedActiveWorkspace":
 				updatedActiveWorkspace(message);
@@ -261,14 +271,31 @@
 		}
 	}
 
+	// async function initWorkspaces() {
+	// 	const localWorkspaces = await getWorkspaces({ windowId });
+	// 	const [_homeWorkspace, _workspaces] = localWorkspaces.reduce((acc, workspace) => {
+	// 		if(workspace.UUID === "HOME") {
+	// 			acc[0] = workspace;
+	// 		} else {
+	// 			if(!acc[1]) acc[1] = [];
+	// 			acc[1].push(workspace);
+	// 		}
+	// 		return acc;
+	// 	}, new Array());
+
+	// 	console.info({_homeWorkspace, _workspaces});
+
+	// 	homeWorkspace = _homeWorkspace;
+	// 	workspaces = _workspaces;
+	// }
+	
 	async function initView() {
 		console.info("initView");
 		windowId = (await Browser.windows.getCurrent()).id!;
 		// console.info({windowId});
 		console.info({ windowId });
-		const localWorkspaces = await getWorkspaces({ windowId });
-		console.info("localWorkspaces", { localWorkspaces });
-		workspaces.push(...localWorkspaces);
+		workspaces = await getWorkspaces({ windowId });
+		// initWorkspaces();
 	}
 
 	async function search(e: InputEvent & { target: HTMLInputElement }) {
@@ -380,6 +407,24 @@
 		{/each}
 	</div> -->
 	<!-- {#if viewWorkspaces.length && activeWorkspace} -->
+	{#snippet SWorkspace([workspace, i])}
+		<Workspace
+			{workspace}
+			active={workspace.active}
+			selected={i === selectedIndex}
+			index={i}
+			editWorkspace={({ icon, name }: {icon: string; name: string;}) => {
+				editWorkspace({ workspace, icon, name });
+			}}
+			switchWorkspace={() => {
+				switchWorkspace(workspace);
+			}}
+			removeWorkspace={() => {
+				removeWorkspace(workspace);
+			}}
+		/>
+	{/snippet}
+
 	<ul
 		class="grid gap-4 w-full @container"
 		use:dndzone={{
@@ -391,29 +436,17 @@
 		on:consider={handleDndConsider}
 		on:finalize={handleDndFinalize}
 	>
-		{#each viewWorkspaces as workspace, i (workspace.UUID)}
-			<li class="item relative max-w-[100cqw]">
-				<Workspace
-					{workspace}
-					active={workspace.active}
-					selected={i === selectedIndex}
-					index={i}
-					editWorkspace={({ icon, name }: {icon: string; name: string;}) => {
-						editWorkspace({ workspace, icon, name });
-					}}
-					switchWorkspace={() => {
-						switchWorkspace(workspace);
-					}}
-					removeWorkspace={() => {
-						removeWorkspace(workspace);
-					}}
-				></Workspace>
-			</li>
-			{:else}
-				{#each [,,,] as _}
-					<Skeleton class="w-full h-16 rounded-md"/>
-				{/each}
-		{/each}
+		{#key viewWorkspaces}
+			{#each viewWorkspaces as workspace, i (workspace.UUID)}
+				<li class="item relative max-w-[100cqw]">
+					{@render SWorkspace([workspace, i])}
+				</li>
+				{:else}
+					{#each [,,,] as _}
+						<Skeleton class="w-full h-16 rounded-md"/>
+					{/each}
+			{/each}
+		{/key}
 	</ul>
 
 	<button
@@ -427,7 +460,7 @@
 				outline-none
 				dark:border-neutral-700 dark:bg-neutral-800 [&.selected]:dark:bg-neutral-700
 			"
-		><span class="w-[2ch] text-2xl text-center"
+		><span class="text-2xl text-center"
 			><Icon icon="add" width={18} /></span
 		>
 		<span class="leading-none -mt-[0.5ch] text-lg">{i18n.getMessage('create_new_workspace')}</span></button

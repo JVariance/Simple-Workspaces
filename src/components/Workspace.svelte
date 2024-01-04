@@ -196,7 +196,7 @@
 				data-focusid={index}
 				bind:this={workspaceButton}
 			>
-				<span class="text-2xl w-[2ch] text-center">{icon}</span>
+				<span class="text-2xl w-[2.5ch] overflow-hidden text-center">{icon}</span>
 				<span class="{active ? 'font-bold' : ''} text-lg">{name}</span>
 				<!-- <span>({tabIds.join(",")})</span> -->
 			</button>

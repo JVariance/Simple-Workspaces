@@ -86,7 +86,6 @@
 		setTimeout(() => {
 			applyingChangesState ='rest';
 		}, 4000);
-		updateWindowWorkspaces();
 	}
 
 	async function applyDefaultWorkspacesChanges() {
@@ -134,10 +133,6 @@
 	// 	debouncedApplyChanges();
 	// });
 
-	async function updateWindowWorkspaces() {
-		windowWorkspaces = (await getWorkspaces()).filter(({UUID}) => UUID !== "HOME");
-	}
-
 	onMount(async () => {
 		const localDefaultWorkspaces = await Browser.runtime.sendMessage({msg: "getDefaultWorkspaces"}) as SimpleWorkspace[];
 		localDefaultWorkspaces?.forEach((workspace, i) => {
@@ -150,7 +145,7 @@
 
 		if(Object.keys(localHomeWorkspace || {})?.length) homeWorkspace = localHomeWorkspace;
 		
-		await updateWindowWorkspaces();
+		windowWorkspaces = (await getWorkspaces()).filter(({UUID}) => UUID !== "HOME");
 		mounted = true;
 	});
 </script>
