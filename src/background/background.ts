@@ -268,7 +268,7 @@ browser.tabs.onRemoved.addListener(async (tabId, info) => {
 
 	await window.removeTab(tabId);
 
-	if (!window.activeWorkspace.tabIds.length) {
+	if (!prevActiveWorkspace.tabIds.length) {
 		console.info("| activeWorkspace has no tabs");
 		manualTabCreationHandling = true;
 		const newTab = await browser.tabs.create({
@@ -285,6 +285,21 @@ browser.tabs.onRemoved.addListener(async (tabId, info) => {
 		prevActiveWorkspace.tabIds.push(newTab.id!);
 		prevActiveWorkspace.activeTabId = newTab.id;
 		await window.switchToPreviousWorkspace();
+
+		if (
+			window.workspaces.findIndex(
+				(w) => w.UUID === prevActiveWorkspace.UUID
+			) === 0
+		) {
+			console.info("?????");
+			// if first tab closed in first workspace hide active tab from different workspace and activate new created tab
+			const activeTab = (
+				await browser.tabs.query({ active: true, windowId: window.windowId })
+			)[0];
+
+			await browser.tabs.update(newTab.id!, { active: true });
+			await browser.tabs.hide(activeTab.id!);
+		}
 
 		informViews(window.windowId, "updatedActiveWorkspace", {
 			UUID: window.activeWorkspace.UUID,

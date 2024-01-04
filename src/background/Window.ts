@@ -478,6 +478,7 @@ export class Window {
 			this.workspaces.findIndex(
 				({ UUID }) => UUID === this.#activeWorkspace.UUID
 			) - 1;
+
 		if (index < 0) return;
 
 		const previousWorkspace = this.#workspaces.at(index)!;
