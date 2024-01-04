@@ -253,6 +253,31 @@ browser.tabs.onCreated.addListener(async (tab) => {
 	tabCreationProcess.resolve();
 });
 
+// async function pinnedTabUpdate(
+// 	tabId: number,
+// 	changeInfo: browser.Tabs.OnUpdatedChangeInfoType,
+// 	tab: browser.Tabs.Tab
+// ) {
+// 	const workspaceUUID = await browser.sessions.getTabValue(
+// 		tabId,
+// 		"workspaceUUID"
+// 	);
+
+// 	if (tab.pinned) {
+// 		if (workspaceUUID) {
+// 			workspaceStorage
+// 				.getWindow(tab.windowId!)
+// 				.removePinnedTab({ tabId, workspaceUUID });
+// 		}
+// 	} else {
+// 		workspaceStorage
+// 			.getWindow(tab.windowId!)
+// 			.addUnpinnedTab({ tabId, workspaceUUID });
+// 	}
+// }
+
+// browser.tabs.onUpdated.addListener(pinnedTabUpdate, { properties: ["pinned"] });
+
 browser.tabs.onRemoved.addListener(async (tabId, info) => {
 	await Promise.all([
 		tabCreationProcess,

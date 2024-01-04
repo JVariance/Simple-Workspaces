@@ -283,6 +283,17 @@ export class Window {
 			(id) => !tabIds.includes(id)
 		);
 
+		this.#workspaces.forEach((workspace) => {
+			if (workspace.activeTabId) {
+				if (tabIds.includes(workspace.activeTabId)) {
+					workspace.tabIds = workspace.tabIds.filter(
+						(id) => !tabIds.includes(id)
+					);
+					workspace.activeTabId = workspace.tabIds?.at(-1);
+				}
+			}
+		});
+
 		// console.log({ activeWorkspace: structuredClone(this.activeWorkspace), workspaces: structuredClone(this.workspaces),});
 
 		// if (this.activeWorkspace.tabIds.length) {
@@ -508,6 +519,51 @@ export class Window {
 		this.#workspaces = newWorkspaces;
 		this.#persist();
 	}
+
+	// async addUnpinnedTab({
+	// 	tabId,
+	// 	workspaceUUID,
+	// }: {
+	// 	tabId: number;
+	// 	workspaceUUID: string;
+	// }) {
+	// 	console.info("addUnpinnedTab");
+
+	// 	const workspace = workspaceUUID
+	// 		? this.workspaces.find(({ UUID }) => UUID === workspaceUUID)
+	// 		: this.#activeWorkspace;
+
+	// 	if (workspace) {
+	// 		workspace.tabIds.push(tabId);
+	// 		await Browser.sessions.setTabValue(
+	// 			tabId,
+	// 			"workspaceUUID",
+	// 			workspace.UUID
+	// 		);
+
+	// 		this.#persist();
+	// 	}
+	// }
+
+	// removePinnedTab({
+	// 	tabId,
+	// 	workspaceUUID,
+	// }: {
+	// 	tabId: number;
+	// 	workspaceUUID: string;
+	// }) {
+	// 	console.info("removedPinnedTab");
+
+	// 	const workspace = this.workspaces.find(
+	// 		({ UUID }) => UUID === workspaceUUID
+	// 	);
+
+	// 	if (workspace) {
+	// 		workspace.tabIds = workspace.tabIds.filter((id) => id !== tabId);
+
+	// 		this.#persist();
+	// 	}
+	// }
 
 	reorderWorkspaces(orderedIds: Ext.Workspace["UUID"][]) {
 		this.workspaces.sort(
