@@ -70,14 +70,14 @@
 	}
 
 	function movedTabs({
-		targetWorkspaceId,
+		targetWorkspaceUUID,
 		tabIds,
 	}: {
-		targetWorkspaceId: string;
+		targetWorkspaceUUID: string;
 		tabIds: number[];
 	}) {
 		const targetWorkspace = workspaces.find(
-			({ UUID }) => UUID === targetWorkspaceId
+			({ UUID }) => UUID === targetWorkspaceUUID
 			)!;
 			
 			activeWorkspace.tabIds = activeWorkspace.tabIds.filter(
@@ -201,7 +201,7 @@
 
 			await Browser.runtime.sendMessage({
 				msg: "removeWorkspace",
-				workspaceId: workspace.UUID,
+				workspaceUUID: workspace.UUID,
 				windowId,
 			});
 		})();
@@ -221,7 +221,7 @@
 		Browser.runtime.sendMessage({
 			msg: "editWorkspace",
 			windowId,
-			workspaceId: workspace.UUID,
+			workspaceUUID: workspace.UUID,
 			icon,
 			name,
 		});

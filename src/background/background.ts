@@ -477,6 +477,7 @@ browser.runtime.onMessage.addListener((message) => {
 			})();
 			break;
 		case "editWorkspace":
+			console.info("editWorkspace", { message });
 			workspaceStorage.getWindow(message.windowId).editWorkspace(message);
 			break;
 		case "getWorkspaces":
@@ -498,7 +499,7 @@ browser.runtime.onMessage.addListener((message) => {
 		case "removeWorkspace":
 			return workspaceStorage
 				.getWindow(message.windowId)
-				.removeWorkspace(message.workspaceId);
+				.removeWorkspace(message.workspaceUUID);
 		case "reorderedWorkspaces":
 			(() => {
 				const { sortedWorkspacesIds, windowId } = message as {

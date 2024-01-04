@@ -124,7 +124,6 @@
 		});
 	}
 
-
 	// const debouncedApplyChanges = debounceFunc(applyChanges, 500);
 
 	// $effect(() => {
@@ -320,7 +319,7 @@
 
 	button {
 		@apply cursor-pointer border border-solid p-2 rounded-md bg-gray-200 border-gray-300 dark:bg-[#33323a] dark:text-white dark:border-neutral-700;
-		@apply hover:bg-gray-300 dark:hover:bg-[#414049] focus-within:bg-gray-300;
+		@apply hover:bg-gray-300 dark:hover:bg-[#414049] focus-within:bg-gray-300 focus:bg-gray-300 dark:focus:bg-[#414049];
 	}
 
 	.loading-spinner {

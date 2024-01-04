@@ -45,6 +45,7 @@
 
 	$effect(() => {
 		if (visible) {
+			searchInput?.focus();
 			setTimeout(() => {
 				emojiPicker.addEventListener("outsideclick", outsideClick);
 			}, 50);
@@ -76,6 +77,9 @@
 
 		picker = emojiPicker.shadowRoot.children[1];
 		searchInput = picker.querySelector("#search");
+
+		console.info("onMount", { searchInput });
+
 		searchInput.focus();
 	});
 </script>
