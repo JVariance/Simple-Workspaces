@@ -6,6 +6,7 @@
 	import { SOURCES, dndzone } from "svelte-dnd-action";
 	import Browser, { i18n } from "webextension-polyfill";
 	import "@root/app.postcss";
+	import Accordion from "@root/components/Accordion.svelte";
 
 	type SimpleWorkspace = Pick<Ext.Workspace, "icon" | "name"> & { id: number };
 
@@ -95,6 +96,9 @@
 
 	function clearExtensionData(e) {
 		e.stopImmediatePropagation();
+		Browser.runtime.sendMessage({
+			msg: "clearExtensionData",
+		});
 	}
 
 	// const debouncedApplyChanges = debounceFunc(applyChanges, 500);
@@ -136,7 +140,7 @@
 {/snippet}
 
 {#snippet Section([content, classes]: [Snippet, string])}
-	<section class="p-2 border border-solid rounded-md border-gray-300 dark:border-neutral-800 bg-gray-100 dark:bg-[#23222b] flex-initial {classes}">
+	<section class="p-2 border border-solid rounded-md border-gray-300 dark:border-neutral-800 bg-gray-100 dark:bg-[#23222b] {classes}">
 		{@render content()}
 	</section>
 {/snippet}
@@ -228,23 +232,24 @@
 					<Icon icon="check" />
 					<span class="-mt-1">{i18n.getMessage('apply_changes')}</span>
 				</button>
-				<details class="mt-4 rounded-md open:border group">
-					<summary class="flex items-center gap-2 px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded-md list-none cursor-pointer group-open:border-0">
-						<Icon icon="chevron-right" width={20} />
+				<Accordion detailsClasses="mt-4">
+					{#snippet summary()}
 						<span class="-mt-[0.125rem]">{i18n.getMessage('reset')}</span>
-					</summary>
-					<div class="content p-2 pt-0">
-						<button class="flex items-center justify-center gap-2 mt-4" style:width="-moz-available" onclick={(e) => {defaultWorkspaces = [];}}><Icon icon="reset"/><span class="-mt-0">{i18n.getMessage('reset_default_workspaces')}</span></button>
-					</div>
-				</details>
+					{/snippet}
+					<button class="flex items-center justify-center gap-2 mt-4" style:width="-moz-available" onclick={(e) => {defaultWorkspaces = [];}}><Icon icon="reset"/><span class="-mt-0">{i18n.getMessage('reset_default_workspaces')}</span></button>
+				</Accordion>
 			</div>
 		{/snippet}
 		{#snippet Section3Content()}
-			<h2 class="m-0 mb-4 text-lg flex gap-2 items-center font-semibold first-letter:uppercase">
-				<Icon icon="clear" />
-				<span class="-mt-1">{i18n.getMessage('clear')}</span>
-			</h2>
-			<button onclick={clearExtensionData}>{i18n.getMessage('clear')}</button>
+			<Accordion summaryClasses="border-none" detailsClasses="border-none" contentClasses="mt-4">
+				{#snippet summary()}
+					<h2 class="m-0 text-lg flex gap-2 items-center font-semibold first-letter:uppercase">
+						<Icon icon="clear" />
+						<span class="-mt-1">{i18n.getMessage('clear')}</span>
+					</h2>
+				{/snippet}
+				<button onclick={clearExtensionData}>{i18n.getMessage('clear')}</button>
+			</Accordion>
 		{/snippet}
 
 		{@render Section([Section1Content, "flex-0"])}

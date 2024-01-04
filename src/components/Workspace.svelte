@@ -142,46 +142,52 @@
 	<div
 		class:active
 		class:selected
-		class="workspace grid gap-8 p-4 {editMode
-			? 'grid-cols-[max-content_1fr_max-content]'
-			: 'grid-cols-[1fr_max-content]'} justify-items-start items-center p-1 rounded-md {classes} focus-within:bg-neutral-200 focus-within:dark:bg-neutral-700 [&.active]:bg-[#5021ff] [&.active]:text-white"
+		class="workspace flex gap-2 @[360px]:gap-8 justify-center @[244px]:justify-start items-center p-2 py-3 rounded-md {classes} focus-within:bg-neutral-200 focus-within:dark:bg-neutral-700 [&.active]:bg-[#5021ff] [&.active]:text-white"
 	>
 		{#if editMode}
+			<div
+				class="@[244px]:hidden text-2xl rounded-full flex-grow-0 flex-shrink basis-0"
+			>
+				{iconValue}
+			</div>
 			<button
 				title="pick emoji"
 				onclick={openEmojiPicker}
-				class="text-2xl rounded-full">{iconValue}</button
-			>
-			<input
-				class="bg-transparent border-b disabled:border-transparent outline-none"
-				id={UUID}
-				type="text"
-				disabled={!editMode}
-				onkeydown={onKeyDown}
-				bind:this={nameInput}
-				bind:value={nameValue}
-			/>
-			<div class="flex gap-2">
-				<button
-					title="remove"
-					onclick={showRemovalDialog}
-					class="rounded-full outline-none focus:bg-white/25"
-					><Icon icon="bin" width={16} /></button
-				>
-				<button
-					title="apply"
-					onclick={_editWorkspace}
-					class="rounded-full outline-none focus:bg-white/25"
-				>
-					<Icon icon="check" width={18} />
-				</button>
-				<button
-					title="cancel"
-					onclick={cancelEditing}
-					class="rounded-full outline-none focus:bg-white/25"
-				>
-					<Icon icon="cross" width={18} />
-				</button>
+				class="hidden @[244px]:[display:initial] text-2xl rounded-full flex-grow-0 flex-shrink basis-0"
+				>{iconValue}
+			</button>
+			<div class="hidden @[244px]:contents">
+				<input
+					class="bg-transparent border-b disabled:border-transparent outline-none w-full flex-1"
+					id={UUID}
+					type="text"
+					disabled={!editMode}
+					onkeydown={onKeyDown}
+					bind:this={nameInput}
+					bind:value={nameValue}
+				/>
+				<div class="flex gap-2 flex-grow-0 flex-shrink basis-0">
+					<button
+						title="remove"
+						onclick={showRemovalDialog}
+						class="rounded-full outline-none focus:bg-white/25"
+						><Icon icon="bin" width={16} /></button
+					>
+					<button
+						title="apply"
+						onclick={_editWorkspace}
+						class="rounded-full outline-none focus:bg-white/25"
+					>
+						<Icon icon="check" width={18} />
+					</button>
+					<button
+						title="cancel"
+						onclick={cancelEditing}
+						class="rounded-full outline-none focus:bg-white/25"
+					>
+						<Icon icon="cross" width={18} />
+					</button>
+				</div>
 			</div>
 		{:else}
 			<button

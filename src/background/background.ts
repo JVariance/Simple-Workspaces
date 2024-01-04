@@ -535,6 +535,12 @@ browser.runtime.onMessage.addListener((message) => {
 				);
 				return resolve(defaultWorkspaces);
 			});
+		case "clearExtensionData":
+			return new Promise(async (resolve) => {
+				await browser.storage.local.clear();
+				browser.runtime.reload();
+				return resolve(true);
+			});
 		default:
 			break;
 	}

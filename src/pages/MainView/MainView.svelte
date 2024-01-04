@@ -392,7 +392,7 @@
 		on:finalize={handleDndFinalize}
 	>
 		{#each viewWorkspaces as workspace, i (workspace.UUID)}
-			<li class="item relative">
+			<li class="item relative max-w-[100cqw]">
 				<Workspace
 					{workspace}
 					active={workspace.active}

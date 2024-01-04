@@ -16,7 +16,7 @@
 		"description": ""
 	},
 	"search": {
-		"message": "suchen",
+		"message": "Tabs suchen",
 		"description": "search field placeholder"
 	},
 	"reset_default_workspaces": {
