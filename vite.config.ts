@@ -34,6 +34,7 @@ export default defineConfig({
 			manifest: generateManifest,
 			browser: "firefox",
 			watchFilePaths: ["package.json", "manifest.json"],
+			additionalInputs: ["src/pages/Welcome/welcome.html", "src/pages/Welcome/welcome.ts"],
 			webExtConfig: {
 				startUrl: "https://excalidraw.com",
 			},

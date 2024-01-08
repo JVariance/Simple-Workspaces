@@ -84,20 +84,25 @@ export function clickOutside(node: HTMLElement) {
 	adapted for TypeScript support
 */
 export class DeferredPromise<T> {
-	promise: Promise<T>;
-	resolve!: (value: T | PromiseLike<T>) => void;
+	self!: DeferredPromise<T>;
+	promise!: Promise<T>;
+	resolve!: (value: T | PromiseLike<T> | void) => void;
 	reject!: (reason?: any) => void;
-	then: (typeof Promise)["prototype"]["then"];
-	catch: (typeof Promise)["prototype"]["catch"];
-	finally: (typeof Promise)["prototype"]["finally"];
+	then!: (typeof Promise)["prototype"]["then"];
+	catch!: (typeof Promise)["prototype"]["catch"];
+	finally!: (typeof Promise)["prototype"]["finally"];
 	[Symbol.toStringTag]!: string;
 	#state: "pending" | "fulfilled" = "pending";
 
 	constructor() {
+		this.#init();
+	}
+
+	#init() {
 		this.promise = new Promise((resolve, reject) => {
 			// assign the resolve and reject functions to `this`
 			// making them usable on the class instance
-			this.resolve = resolve;
+			this.resolve = resolve as (value: T | PromiseLike<T> | void) => void;
 			this.reject = reject;
 		});
 		this.promise.finally(() => (this.#state = "fulfilled"));
@@ -106,6 +111,14 @@ export class DeferredPromise<T> {
 		this.catch = this.promise.catch.bind(this.promise);
 		this.finally = this.promise.finally.bind(this.promise);
 		this[Symbol.toStringTag] = "Promise";
+	}
+
+	start() {
+		this.#init();
+	}
+
+	finish() {
+		this.resolve();
 	}
 
 	get state() {

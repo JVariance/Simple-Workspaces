@@ -66,6 +66,19 @@ browser.runtime.onInstalled.addListener(async (details) => {
 	console.info("onInstalled");
 	await browser.storage.local.clear();
 	if (!workspaceStorage) await initExtension();
+
+	switch (details.reason) {
+		case "install":
+			browser.tabs.create({
+				url: browser.runtime.getURL("src/pages/Welcome/welcome.html"),
+				active: true,
+			});
+			break;
+		case "update":
+			break;
+		default:
+			break;
+	}
 });
 
 browser.runtime.onStartup.addListener(async () => {
@@ -177,14 +190,16 @@ browser.menus.onClicked.addListener(async (info, tab) => {
  */
 
 function updateIcon(scheme: "dark" | "light") {
-	browser.sidebarAction.setIcon({
+	const paths = {
 		path: {
 			16: `icon/icon-${scheme}.svg`,
 			32: `icon/icon-${scheme}.svg`,
 			48: `icon/icon-${scheme}.svg`,
 			96: `icon/icon-${scheme}.svg`,
 		},
-	});
+	};
+	browser.browserAction.setIcon(paths);
+	browser.sidebarAction.setIcon(paths);
 }
 
 const darkThemeMq = window.matchMedia("(prefers-color-scheme: dark)");
@@ -212,6 +227,7 @@ browser.windows.onRemoved.addListener(async (windowId) => {
 });
 
 browser.windows.onCreated.addListener(async (window) => {
+	if (window.type !== "normal") return;
 	await tabCreationProcess;
 	windowCreationProcess = new DeferredPromise();
 	console.info("windows.onCreated");
@@ -225,7 +241,8 @@ browser.windows.onCreated.addListener(async (window) => {
 
 browser.tabs.onCreated.addListener(async (tab) => {
 	console.info("browser.tabs.onCreated", { manualTabCreationHandling });
-	if (manualTabCreationHandling) return;
+	const window = await browser.windows.get(tab.windowId!);
+	if (window?.type !== "normal" || manualTabCreationHandling) return;
 	if (windowCreationProcess.state === "pending") return;
 	await windowCreationProcess;
 	tabCreationProcess = new DeferredPromise();
