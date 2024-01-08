@@ -1,6 +1,7 @@
 import { promisedDebounceFunc } from "@root/utils";
 import Browser from "webextension-polyfill";
 import { Window } from "./Window";
+import { hideTabs, updateTabs } from "@root/browserAPI";
 
 enum StorageKeys {
 	windowUUIDs = "windowIds",
@@ -61,26 +62,18 @@ export class WorkspaceStorage {
 			const activeWorkspace = workspaces.find(({ active }) => active)!;
 
 			console.info({ activeWorkspace });
-			try {
-				await Browser.tabs.update(
-					activeWorkspace.activeTabId || activeWorkspace.tabIds[0],
-					{
+			updateTabs([
+				{
+					id: activeWorkspace.activeTabId || activeWorkspace.tabIds[0],
+					props: {
 						active: true,
-					}
-				);
-			} catch (e) {
-				console.error({ e });
-			}
+					},
+				},
+			]);
 
 			const inactiveWorkspaces = workspaces.filter(({ active }) => !active);
 			console.info({ inactiveWorkspaces });
-			try {
-				await Browser.tabs.hide(
-					inactiveWorkspaces.flatMap(({ tabIds }) => tabIds)
-				);
-			} catch (e) {
-				console.error({ e });
-			}
+			hideTabs(inactiveWorkspaces.flatMap(({ tabIds }) => tabIds));
 		}
 
 		this.#persistWindows();

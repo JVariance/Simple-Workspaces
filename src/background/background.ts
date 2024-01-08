@@ -1,11 +1,8 @@
-import {
-	DeferredPromise,
-	promisedDebounceFunc,
-	promisedDebounceFuncWithCollectedArgs,
-} from "@root/utils";
-import browser, { extension } from "webextension-polyfill";
+import { promisedDebounceFunc } from "@root/utils";
+import browser from "webextension-polyfill";
 import { TabMenu } from "./TabMenu";
 import { WorkspaceStorage } from "./WorkspaceStorage";
+import { Processes } from "./Processes";
 
 let workspaceStorage: WorkspaceStorage;
 let tabMenu: TabMenu;
@@ -13,25 +10,14 @@ let tabMenu: TabMenu;
 let extensionIsInitialized = false;
 let manualTabCreationHandling = false;
 
-let extensionInitializationProcess = new DeferredPromise<void>();
-extensionInitializationProcess.resolve();
-let windowCreationProcess = new DeferredPromise<void>();
-windowCreationProcess.resolve();
-let tabCreationProcess = new DeferredPromise<void>();
-tabCreationProcess.resolve();
-let tabAttachmentProcess = new DeferredPromise<void>();
-tabAttachmentProcess.resolve();
-let tabDetachmentProcess = new DeferredPromise<void>();
-tabDetachmentProcess.resolve();
-
 console.info("MOINSEN MOINSEN MOINSEN MOINSEN MOINSEN MOINSEN MOINSEN");
 
 async function initExtension() {
 	console.info("initExtension 0");
-	// await extensionInitializationProcess;
-	if (extensionInitializationProcess.state === "pending") return;
+	// await Processes.ExtensionInitialization;
+	if (Processes.ExtensionInitialization.state === "pending") return;
 	console.info("initExtension 1");
-	extensionInitializationProcess = new DeferredPromise();
+	Processes.ExtensionInitialization.start();
 	console.info("initExtension 2");
 
 	// await browser.storage.local.clear();
@@ -46,7 +32,7 @@ async function initExtension() {
 	console.info("initExtension 6");
 	extensionIsInitialized = true;
 	console.info("initExtension 7");
-	extensionInitializationProcess.resolve();
+	Processes.ExtensionInitialization.finish();
 }
 
 async function initTabMenu() {
@@ -87,7 +73,7 @@ browser.runtime.onStartup.addListener(async () => {
 });
 
 browser.runtime.onConnect.addListener(async (port) => {
-	extensionInitializationProcess.then(() => {
+	Processes.ExtensionInitialization.then(() => {
 		port.postMessage({ msg: "connected" });
 	});
 });
@@ -228,24 +214,24 @@ browser.windows.onRemoved.addListener(async (windowId) => {
 
 browser.windows.onCreated.addListener(async (window) => {
 	if (window.type !== "normal") return;
-	await tabCreationProcess;
-	windowCreationProcess = new DeferredPromise();
+	await Processes.TabCreation;
+	Processes.WindowCreation.start();
 	console.info("windows.onCreated");
 
 	const newWindow = await workspaceStorage.getOrCreateWindow(window.id!);
 	const windowId = newWindow.windowId;
 	await browser.sessions.setWindowValue(windowId, "windowUUID", newWindow.UUID);
 
-	windowCreationProcess.resolve();
+	Processes.WindowCreation.finish();
 });
 
 browser.tabs.onCreated.addListener(async (tab) => {
 	console.info("browser.tabs.onCreated", { manualTabCreationHandling });
 	const window = await browser.windows.get(tab.windowId!);
 	if (window?.type !== "normal" || manualTabCreationHandling) return;
-	if (windowCreationProcess.state === "pending") return;
-	await windowCreationProcess;
-	tabCreationProcess = new DeferredPromise();
+	if (Processes.WindowCreation.state === "pending") return;
+	await Processes.WindowCreation;
+	Processes.TabCreation.start();
 	const windowIsNew = !workspaceStorage.windows.has(tab.windowId!);
 
 	console.info("createdTab", { tab: structuredClone(tab) });
@@ -267,7 +253,7 @@ browser.tabs.onCreated.addListener(async (tab) => {
 		informViews(tab.windowId!, "createdTab", { tabId: tab.id });
 	}
 
-	tabCreationProcess.resolve();
+	Processes.TabCreation.finish();
 });
 
 // async function pinnedTabUpdate(
@@ -297,9 +283,9 @@ browser.tabs.onCreated.addListener(async (tab) => {
 
 browser.tabs.onRemoved.addListener(async (tabId, info) => {
 	await Promise.all([
-		tabCreationProcess,
-		tabAttachmentProcess,
-		tabDetachmentProcess,
+		Processes.TabCreation,
+		Processes.TabAttachment,
+		Processes.TabDetachment,
 	]);
 
 	console.info("tab removed");
@@ -362,16 +348,16 @@ let collectedAttachedTabs: number[] = [],
 
 async function _handleAttachedTabs(tabIds: number[], targetWindowId: number) {
 	console.info("_handleAttachedTabs");
-	await Promise.all([windowCreationProcess, tabDetachmentProcess]);
+	await Promise.all([Processes.WindowCreation, Processes.TabDetachment]);
 	console.info("handleAttachedTabs", { tabIds, targetWindowId });
 
-	tabAttachmentProcess = new DeferredPromise();
+	Processes.TabAttachment.start();
 	const activeWorkspace = await workspaceStorage.moveAttachedTabs({
 		tabIds,
 		targetWindowId,
 	});
 	collectedAttachedTabs = [];
-	tabAttachmentProcess.resolve();
+	Processes.TabAttachment.finish();
 
 	informViews(targetWindowId, "updatedActiveWorkspace", {
 		UUID: activeWorkspace.UUID,
@@ -379,10 +365,10 @@ async function _handleAttachedTabs(tabIds: number[], targetWindowId: number) {
 }
 
 async function _handleDetachedTabs(tabIds: number[], currentWindowId: number) {
-	await windowCreationProcess;
+	await Processes.WindowCreation;
 	console.info("handleDetachedTabs", { tabIds, currentWindowId });
 
-	tabDetachmentProcess = new DeferredPromise();
+	Processes.TabDetachment.start();
 	const activeWorkspace = await workspaceStorage.moveDetachedTabs({
 		tabIds,
 		currentWindowId,
@@ -390,14 +376,14 @@ async function _handleDetachedTabs(tabIds: number[], currentWindowId: number) {
 	collectedDetachedTabs = [];
 
 	if (!activeWorkspace) {
-		tabDetachmentProcess.resolve();
+		Processes.TabDetachment.finish();
 		return;
 	}
 
 	informViews(currentWindowId, "updatedActiveWorkspace", {
 		UUID: activeWorkspace.UUID,
 	});
-	tabDetachmentProcess.resolve();
+	Processes.TabDetachment.finish();
 }
 
 const handleAttachedTabs = promisedDebounceFunc(_handleAttachedTabs, 200);
@@ -501,11 +487,11 @@ browser.runtime.onMessage.addListener((message) => {
 			console.info("bg - getWorkspaces");
 			return new Promise(async (resolve) => {
 				await Promise.all([
-					extensionInitializationProcess,
-					windowCreationProcess,
-					tabCreationProcess,
-					tabDetachmentProcess,
-					tabAttachmentProcess,
+					Processes.ExtensionInitialization,
+					Processes.WindowCreation,
+					Processes.TabCreation,
+					Processes.TabDetachment,
+					Processes.TabAttachment,
 				]);
 
 				const workspaces = workspaceStorage.getWindow(
