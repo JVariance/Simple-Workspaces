@@ -1,7 +1,8 @@
 import Browser from "webextension-polyfill";
 import { extractNumbersFromString } from "../utils";
+import { getTab } from "./getTab";
 
-export async function batchShowTabs(tabIds: number[]) {
+async function batchShowTabs(tabIds: number[]) {
 	// tested
 	if (!tabIds?.length) return { shownIds: [], errorIds: [] };
 
@@ -9,7 +10,7 @@ export async function batchShowTabs(tabIds: number[]) {
 
 	async function _showTabs(tabIds: number[]) {
 		try {
-			const shownIds = await Browser.tabs.hide(tabIds);
+			const shownIds = await Browser.tabs.show(tabIds);
 			return shownIds;
 		} catch (e) {
 			const error = e as Error;
@@ -24,4 +25,29 @@ export async function batchShowTabs(tabIds: number[]) {
 	const shownIds = await _showTabs(tabIds);
 
 	return { shownIds, errorIds };
+}
+
+async function batchShowTabs3(tabIds: number[]) {
+	if (!tabIds?.length) return { shownIds: [], errorIds: [] };
+
+	const [shownIds, errorIds] = (
+		await Promise.all(tabIds.map((tabId) => getTab(tabId)))
+	).reduce(
+		(acc, tab, i) => {
+			tab ? acc[0].push(tab.id!) : acc[1].push(tabIds[i]);
+			return acc;
+		},
+		[[], []] as [number[], number[]]
+	);
+
+	await Browser.tabs.show(shownIds);
+
+	return {
+		shownIds,
+		errorIds,
+	};
+}
+
+export function showTabs(tabIds: number[]) {
+	return batchShowTabs3(tabIds);
 }

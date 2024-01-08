@@ -94,7 +94,6 @@ export class DeferredPromise<T> {
 	#state: "idle" | "pending" | "fulfilled" = "idle";
 
 	constructor() {
-		this.#init();
 		return this;
 	}
 

@@ -1,3 +1,4 @@
+import * as API from "@root/browserAPI";
 import { debounceFunc, promisedDebounceFunc } from "@root/utils";
 import Browser from "webextension-polyfill";
 
@@ -38,9 +39,8 @@ export class Window {
 		const { [this.#storageKey]: localWindow }: Record<string, Ext.Window> =
 			await Browser.storage.local.get(this.#storageKey);
 
-		const tabs = (await Browser.tabs.query({
-			windowId: this.#windowId,
-		})) as EnhancedTab[];
+		// const tabs = (await Browser.tabs.query({ windowId: this.#windowId, })) as EnhancedTab[];
+		const { tabs } = await API.queryTabs({ windowId: this.#windowId });
 
 		console.info({ localWindow, tabs });
 
@@ -110,11 +110,8 @@ export class Window {
 			this.#workspaces.push(homeWorkspace);
 
 			const blankTab = (
-				await Browser.tabs.query({
-					windowId: this.windowId,
-					index: 0,
-				})
-			)[0];
+				await API.queryTabs({ windowId: this.#windowId, index: 0 })
+			).tabs?.at(0)!; // }) // 	index: 0, // 	windowId: this.windowId, // await Browser.tabs.query{
 
 			if (blankTab.url === "about:blank") {
 				const newTab = await Browser.tabs.create({
@@ -122,7 +119,9 @@ export class Window {
 					windowId: this.#windowId,
 				});
 
-				await Browser.tabs.remove(blankTab.id!);
+				//TODO: API.removeTab
+				await API.removeTabs([blankTab.id!]);
+				// await Browser.tabs.remove(blankTab.id!);
 				tabIds = tabIds.filter((id) => id !== blankTab.id!);
 				homeWorkspace.tabIds = homeWorkspace.tabIds.filter(
 					(id) => id !== blankTab.id!
@@ -144,7 +143,7 @@ export class Window {
 					active: false,
 					windowId: this.#windowId,
 				});
-				await Browser.tabs.hide(newTab.id!);
+				await API.hideTab(newTab.id!);
 
 				const newWorkspaceData = this.#getNewWorkspace();
 
@@ -229,7 +228,7 @@ export class Window {
 				await Browser.tabs.update(this.#activeWorkspace.tabIds.at(-1), {
 					active: true,
 				});
-				await Browser.tabs.hide(tabId);
+				await API.hideTab(tabId);
 			}
 		}
 
@@ -359,7 +358,7 @@ export class Window {
 
 			await this.switchWorkspace(targetWorkspace);
 		} else {
-			await Browser.tabs.hide(tabIds);
+			await API.hideTabs(tabIds);
 		}
 
 		for (let tabId of tabIds) {
@@ -440,7 +439,8 @@ export class Window {
 			await this.switchToPreviousWorkspace();
 		}
 
-		await Browser.tabs.remove(workspace.tabIds);
+		await API.removeTabs(workspace.tabIds);
+		//await Browser.tabs.remove(workspace.tabIds);
 
 		this.#workspaces = this.#workspaces.filter(
 			(workspace) => workspace.UUID !== UUID
@@ -462,9 +462,11 @@ export class Window {
 
 		const activeTabId = workspace?.activeTabId || nextTabIds[0];
 
-		await Browser.tabs.show(nextTabIds);
-		await Browser.tabs.update(activeTabId, { active: true });
-		if (currentTabIds.length) await Browser.tabs.hide(currentTabIds);
+		await API.showTabs(nextTabIds);
+		// await Browser.tabs.show(nextTabIds);
+		//TODO: API.updateTab
+		await API.updateTabs([{ id: activeTabId, props: { active: true } }]);
+		if (currentTabIds.length) await API.hideTabs(currentTabIds);
 
 		this.#activeWorkspace = workspace;
 		this.#switchingWorkspace = false;

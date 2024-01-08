@@ -12,6 +12,8 @@
 	import {overrideItemIdKeyNameBeforeInitialisingDndZones} from "svelte-dnd-action";
 	overrideItemIdKeyNameBeforeInitialisingDndZones("UUID");
 
+	console.info("?????");
+
 	let searchInput: HTMLInputElement = $state();
 	let selectedIndex = $state(0);
 	// let homeWorkspace: Ext.Workspace = $state();
@@ -20,16 +22,16 @@
 	let searchFilteredWorkspaceUUIDS: string[] = $state([]);
 	let viewWorkspaces: Ext.Workspace[] = $derived((() => {
 
-		searchFilteredWorkspaceUUIDS;
-		const filteredWorkspaces = workspaces.filter(({UUID}) => !searchFilteredWorkspaceUUIDS.includes(UUID));
-		return filteredWorkspaces.length ? filteredWorkspaces : searchInput?.value.length ? [] : workspaces;
-		// const filteredWorkspaces = searchFilteredWorkspaceUUIDS.reduce((_workspaces, uuid) => {
-		// 	const workspace = workspaces.find(({ UUID }) => UUID === uuid);
-		// 	if(workspace) _workspaces.push(workspace);
-		// 	return _workspaces;
-		// }, []);
-
+		// searchFilteredWorkspaceUUIDS;
+		// const filteredWorkspaces = workspaces.filter(({UUID}) => searchFilteredWorkspaceUUIDS.includes(UUID));
 		// return filteredWorkspaces.length ? filteredWorkspaces : searchInput?.value.length ? [] : workspaces;
+		const filteredWorkspaces = searchFilteredWorkspaceUUIDS.reduce((_workspaces, uuid) => {
+			const workspace = workspaces.find(({ UUID }) => UUID === uuid);
+			if(workspace) _workspaces.push(workspace);
+			return _workspaces;
+		}, []);
+
+		return filteredWorkspaces.length ? filteredWorkspaces : searchInput?.value.length ? [] : workspaces;
 	})());
 
 	let windowId: number;
@@ -114,7 +116,7 @@
 	
 	async function updatedWorkspaces() {
 		console.info("updatedWorkspaces");
-		initWorkspaces();
+		// initWorkspaces();
 	}
 
 	function movedTabsToNewWorkspace({workspace}: {workspace: Ext.Workspace}){

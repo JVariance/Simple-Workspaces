@@ -15,9 +15,15 @@ console.info("MOINSEN MOINSEN MOINSEN MOINSEN MOINSEN MOINSEN MOINSEN");
 async function initExtension() {
 	console.info("initExtension 0");
 	// await Processes.ExtensionInitialization;
+	console.info({
+		"ExtensionIsInitialized.state": Processes.ExtensionInitialization.state,
+	});
 	if (Processes.ExtensionInitialization.state === "pending") return;
 	console.info("initExtension 1");
 	Processes.ExtensionInitialization.start();
+	console.info({
+		"ExtensionIsInitialized.state": Processes.ExtensionInitialization.state,
+	});
 	console.info("initExtension 2");
 
 	// await browser.storage.local.clear();
