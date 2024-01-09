@@ -15,15 +15,27 @@ export class Window {
 	#UUID: string;
 	#windowId!: number;
 	#workspaces: Ext.Workspace[] = $state([]);
-	#activeWorkspaceIndex: number = $derived(
+	#activeWorkspace: Ext.Workspace = $derived(
 		(() => {
 			this.#persist();
-			return Math.max(
-				0,
-				this.#workspaces.findIndex(({ active }) => active)
+			return (
+				this.#workspaces.find(({ active }) => active) || this.#workspaces.at(0)!
 			);
+			// return Math.max(
+			// 	0,
+			// 	this.#workspaces.findIndex(({ active }) => active)
+			// );
 		})()
 	);
+	// #activeWorkspaceIndex: number = $derived(
+	// 	(() => {
+	// 		this.#persist();
+	// 		return Math.max(
+	// 			0,
+	// 			this.#workspaces.findIndex(({ active }) => active)
+	// 		);
+	// 	})()
+	// );
 
 	constructor(
 		UUID: string | undefined = undefined,
@@ -178,8 +190,12 @@ export class Window {
 		return this.#windowId;
 	}
 
+	// get activeWorkspace(): Ext.Workspace {
+	// 	return this.#workspaces.at(this.#activeWorkspaceIndex)!;
+	// }
+
 	get activeWorkspace(): Ext.Workspace {
-		return this.#workspaces.at(this.#activeWorkspaceIndex)!;
+		return this.#activeWorkspace;
 	}
 
 	setActiveTab(tabId: number) {

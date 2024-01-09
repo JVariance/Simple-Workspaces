@@ -12,17 +12,10 @@ enum StorageKeys {
 export class WorkspaceStorage {
 	#windows: Map<number, Window> = new Map();
 	#focusedWindowId!: number;
-	#movingTabs = false;
 
 	constructor() {}
 
 	async init() {
-		// this.clearDB();
-		// const { [StorageKeys.windowUUIDs]: localWindowUUIDs } =
-		// 	(await Browser.storage.local.get(StorageKeys.windowUUIDs)) as {
-		// 		[StorageKeys.windowUUIDs]: string[];
-		// 	};
-
 		const currentWindows = await Browser.windows.getAll();
 		const currentWindowsObjs: { windowId: number; uuid: string | undefined }[] =
 			[];
@@ -95,11 +88,6 @@ export class WorkspaceStorage {
 	#persistWindows = promisedDebounceFunc<void>(this.#_persistWindows, 500);
 
 	#_persistWindows() {
-		// return Browser.storage.local.set({
-		// 	[StorageKeys.windowIds]: Array.from(this.#windows).flatMap(
-		// 		([key, _]) => key
-		// 	),
-		// });
 		const windowUUIDs = Array.from(this.#windows).flatMap(
 			({ 1: win }) => win.UUID
 		);
@@ -115,8 +103,6 @@ export class WorkspaceStorage {
 			StorageKeys.workspaces,
 			StorageKeys.activeWorkspace,
 		]);
-		// Browser.storage.local.set({[StorageKeys.workspaces]: []});
-		// Browser.storage.local.set({[StorageKeys.activeWorkspace]: });
 	}
 
 	getWindow(windowId: number): Window {
@@ -166,12 +152,6 @@ export class WorkspaceStorage {
 
 		if (window && !currentTabIds?.length) {
 			console.info("keine tabs mehr im workspace");
-			// const activeTab = (
-			// 	await Browser.tabs.query({
-			// 		active: true,
-			// 		windowId: window.windowId,
-			// 	})
-			// )?.at(0);
 			const activeTab = (
 				await API.queryTabs({
 					active: true,
