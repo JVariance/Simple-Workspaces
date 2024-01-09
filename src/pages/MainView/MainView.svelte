@@ -276,32 +276,12 @@
 				break;
 		}
 	}
-
-	// async function initWorkspaces() {
-	// 	const localWorkspaces = await getWorkspaces({ windowId });
-	// 	const [_homeWorkspace, _workspaces] = localWorkspaces.reduce((acc, workspace) => {
-	// 		if(workspace.UUID === "HOME") {
-	// 			acc[0] = workspace;
-	// 		} else {
-	// 			if(!acc[1]) acc[1] = [];
-	// 			acc[1].push(workspace);
-	// 		}
-	// 		return acc;
-	// 	}, new Array());
-
-	// 	console.info({_homeWorkspace, _workspaces});
-
-	// 	homeWorkspace = _homeWorkspace;
-	// 	workspaces = _workspaces;
-	// }
 	
 	async function initView() {
 		console.info("initView");
 		windowId = (await Browser.windows.getCurrent()).id!;
-		// console.info({windowId});
 		console.info({ windowId });
 		workspaces = await getWorkspaces({ windowId });
-		// initWorkspaces();
 	}
 
 	async function search(e: InputEvent & { target: HTMLInputElement }) {
@@ -351,7 +331,7 @@
 
 <div class="w-[100dvw] p-2 box-border">
 	<!-- <h1 class="mb-4">Workspaces</h1> -->
-	{#if true || import.meta.env.DEV}
+	{#if false && import.meta.env.DEV}
 		<div class="flex flex-wrap gap-1 absolute top-0 right-0">
 			<details class="bg-neutral-950 p-1 rounded-md">
 				<summary></summary>
@@ -402,7 +382,7 @@
 				placeholder="{i18n.getMessage('search')}..."
 			/>
 		</search>
-		<button on:click={openOptionsPage}
+		<button class="ghost" on:click={openOptionsPage}
 			><Icon icon="settings" width={18} /></button
 		>
 	</section>
@@ -463,8 +443,7 @@
 		class:selected={selectedIndex === viewWorkspaces.length}
 		class="
 				p-4 items-center flex gap-4 rounded-md text-left border mt-4 w-full
-				outline-none
-				dark:border-neutral-700 dark:bg-neutral-800 [&.selected]:dark:bg-neutral-700
+				outline-none [&.selected]:dark:bg-neutral-700
 			"
 		><span class="text-2xl text-center"
 			><Icon icon="add" width={18} /></span

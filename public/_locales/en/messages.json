@@ -82,5 +82,33 @@
 	"create_new_workspace": {
 		"message": "create new workspace",
 		"description": ""
+	},
+	"command._execute_browser_action": {
+		"message": "Toggle toolbar popup",
+		"description": ""
+	},
+	"command._execute_sidebar_action": {
+		"message": "Toggle sidebar",
+		"description": ""
+	},
+	"command.next-workspace": {
+		"message": "Switch to next workspace",
+		"description": ""
+	},
+	"command.previous-workspace": {
+		"message": "Switch to previous workspace",
+		"description": ""
+	},
+	"command.new-workspace": {
+		"message": "Create new workspace",
+		"description": ""
+	},
+	"shortcuts": {
+		"message": "shortcuts",
+		"description": ""
+	},
+	"you_can_set_shortcuts_for_commands_in_the_addons_page": {
+		"message": "You can set shortcuts for commands via the add-ons page.",
+		"description": ""
 	}
 }

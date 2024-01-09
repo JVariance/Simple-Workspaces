@@ -82,5 +82,33 @@
 	"create_new_workspace": {
 		"message": "neuen Arbeitsbereich erstellen",
 		"description": ""
+	},
+	"command._execute_browser_action": {
+		"message": "Symbolleisten-Popup ein-/ausblenden",
+		"description": ""
+	},
+	"command._execute_sidebar_action": {
+		"message": "Seitenleiste ein-/ausblenden",
+		"description": ""
+	},
+	"command.next-workspace": {
+		"message": "Nächster Arbeitsbereich",
+		"description": ""
+	},
+	"command.previous-workspace": {
+		"message": "Vorheriger Arbeitsbereich",
+		"description": ""
+	},
+	"command.new-workspace": {
+		"message": "Neuer Arbeitsbereich",
+		"description": ""
+	},
+	"shortcuts": {
+		"message": "Tastaturkürzel",
+		"description": ""
+	},
+	"you_can_set_shortcuts_for_commands_in_the_addons_page": {
+		"message": "Du kannst Tastaturkürzel für die Befehle über die Add-Ons-Seite festlegen.",
+		"description": ""
 	}
 }

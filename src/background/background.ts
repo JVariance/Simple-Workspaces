@@ -387,14 +387,6 @@ browser.tabs.onActivated.addListener((activeInfo) => {
 
 browser.commands.onCommand.addListener((command) => {
 	switch (command) {
-		case "open-popup":
-			browser.browserAction.openPopup({
-				windowId: workspaceStorage.activeWindow.windowId,
-			});
-			break;
-		case "toggle-sidebar":
-			browser.sidebarAction.toggle();
-			break;
 		case "next-workspace":
 			(async () => {
 				const activeWorkspace =

@@ -9,6 +9,8 @@ enum StorageKeys {
 	activeWorkspace = "activeWorkspace",
 }
 
+// TODO: make windows state as soon as Map is supported
+
 export class WorkspaceStorage {
 	#windows: Map<number, Window> = new Map();
 	#focusedWindowId!: number;

@@ -5,3 +5,15 @@
 body {
 	@apply dark:bg-neutral-900 dark:text-white min-h-[24rem] p-0 m-0;
 }
+
+button {
+	@apply bg-[#eeeeef] dark:border-neutral-700 dark:bg-neutral-800 hover:bg-neutral-100 focus-within:bg-neutral-100 hover:dark:bg-neutral-700 focus-within:dark:bg-neutral-700;
+
+	&.ghost {
+		@apply bg-transparent hover:bg-transparent focus-within:border-transparent;
+	}
+}
+
+kbd {
+	@apply bg-[#eee] rounded-[3px] border-[1px] border-solid border-[#b4b4b4] shadow-[0_1px_1px_rgba(0,0,0,0.2),0_2px_0_0_rgba(255,255,255,0.7)_inset] text-[#333] inline-block text-[0.85em] font-bold leading-none px-[4px] py-[2px] whitespace-nowrap;
+}

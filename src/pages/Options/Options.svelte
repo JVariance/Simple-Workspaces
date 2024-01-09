@@ -172,6 +172,12 @@
 	</section>
 {/snippet}
 
+{#snippet Info(message: string)}
+	<p class="py-1 px-2 flex gap-2 w-max items-center rounded-md">
+		<Icon icon="info" width={20}/> <span class="-mt-1">{message}</span>
+	</p>
+{/snippet}
+
 <div class="p-8">
 	<h2 class="flex items-center gap-2 m-0 mb-4 text-lg first-letter:uppercase">
 		<img src="/icon/icon-dark.svg" alt="logo" width="40" class="[filter:_invert()] dark:[filter:_invert(0)]"/>
@@ -217,9 +223,7 @@
 		{/snippet}
 		{#snippet Section2Content()}
 			<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('default_workspaces')}</h2>
-			<p class="py-1 px-2 flex gap-2 w-max rounded-md">
-				<Icon icon="info"/> {i18n.getMessage('will_apply_for_new_windows')}
-			</p>
+			{@render Info(i18n.getMessage('will_apply_for_new_windows'))}
 			<div 
 				class="w-max"
 			>
@@ -279,6 +283,22 @@
 			</div>
 		{/snippet}
 		{#snippet Section3Content()}
+			<h2 class="m-0 mb-4 text-lg flex gap-2 items-center font-semibold first-letter:uppercase">{i18n.getMessage('shortcuts')}</h2>
+			{@render Info(i18n.getMessage('you_can_set_shortcuts_for_commands_in_the_addons_page'))}
+			<div class="mt-4">
+				{#await Browser.commands.getAll()}
+					...
+					{:then commands}
+						<dl class="grid grid-cols-[max-content_max-content] gap-4">
+							{#each commands as command}
+								<dt>{i18n.getMessage(`command.${command.name}`)}</dt>
+								<dd><kbd>{command.shortcut}</kbd></dd>
+							{/each}
+						</dl>
+				{/await}	
+			</div>
+		{/snippet}
+		{#snippet Section4Content()}
 			<Accordion summaryClasses="border-none" detailsClasses="border-none" contentClasses="mt-4">
 				{#snippet summary()}
 					<h2 class="m-0 text-lg flex gap-2 items-center font-semibold first-letter:uppercase">
@@ -290,9 +310,11 @@
 			</Accordion>
 		{/snippet}
 
+
 		{@render Section([Section1Content, "flex-0"])}
 		{@render Section([Section2Content, "flex-1"])}
 		{@render Section([Section3Content, "basis-full"])}
+		{@render Section([Section4Content, "basis-full"])}
 	</div>
 </div>
 

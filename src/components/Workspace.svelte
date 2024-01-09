@@ -142,18 +142,18 @@
 	<div
 		class:active
 		class:selected
-		class="workspace flex gap-2 @[360px]:gap-8 justify-center @[244px]:justify-start items-center p-2 py-3 rounded-md {classes} focus-within:bg-neutral-200 focus-within:dark:bg-neutral-700 [&.active]:bg-[#5021ff] [&.active]:text-white"
+		class="workspace flex gap-2 @[360px]:gap-8 justify-center @[244px]:justify-start items-center p-2 py-3 rounded-md {classes} focus-within:bg-neutral-100 hover:bg-neutral-100 focus-within:dark:bg-neutral-700 hover:dark:bg-neutral-700 [&.active]:bg-[#5021ff] [&.active]:text-white"
 	>
 		{#if editMode}
 			<div
-				class="@[244px]:hidden text-2xl rounded-full flex-grow-0 flex-shrink basis-0"
+				class="@[244px]:hidden ghost text-2xl rounded-full flex-grow-0 flex-shrink basis-0"
 			>
 				{iconValue}
 			</div>
 			<button
 				title="pick emoji"
 				onclick={openEmojiPicker}
-				class="hidden @[244px]:[display:initial] text-2xl rounded-full flex-grow-0 flex-shrink basis-0"
+				class="hidden @[244px]:[display:initial] ghost text-2xl rounded-full flex-grow-0 flex-shrink basis-0"
 				>{iconValue}
 			</button>
 			<div class="hidden @[244px]:contents">
@@ -170,20 +170,20 @@
 					<button
 						title="remove"
 						onclick={showRemovalDialog}
-						class="rounded-full outline-none focus:bg-white/25"
+						class="ghost rounded-full outline-none focus:bg-white/25"
 						><Icon icon="bin" width={16} /></button
 					>
 					<button
 						title="apply"
 						onclick={_editWorkspace}
-						class="rounded-full outline-none focus:bg-white/25"
+						class="ghost rounded-full outline-none focus:bg-white/25"
 					>
 						<Icon icon="check" width={18} />
 					</button>
 					<button
 						title="cancel"
 						onclick={cancelEditing}
-						class="rounded-full outline-none focus:bg-white/25"
+						class="ghost rounded-full outline-none focus:bg-white/25"
 					>
 						<Icon icon="cross" width={18} />
 					</button>
@@ -192,15 +192,17 @@
 		{:else}
 			<button
 				onclick={_switchWorkspace}
-				class="w-full outline-transparent outline-none flex items-center gap-4"
+				class="ghost w-full outline-transparent outline-none flex items-center gap-4"
 				data-focusid={index}
 				bind:this={workspaceButton}
 			>
-				<span class="text-2xl w-[2.5ch] overflow-hidden text-center">{icon}</span>
+				<span class="text-2xl w-[2.5ch] overflow-hidden text-center"
+					>{icon}</span
+				>
 				<span class="{active ? 'font-bold' : ''} text-lg">{name}</span>
 				<!-- <span>({tabIds.join(",")})</span> -->
 			</button>
-			<button title="edit" onclick={toggleEditMode}>
+			<button class="ghost" title="edit" onclick={toggleEditMode}>
 				<Icon icon="edit" width={14} />
 			</button>
 		{/if}
@@ -208,6 +210,11 @@
 {/if}
 
 <style lang="postcss">
+	/*
+		Opera One:
+			Sidebar: #252835
+			Workspace-hover: #484d64
+	*/
 	.workspace {
 		@media screen and (width < 260px) {
 			@apply aspect-square grid-cols-1 h-12 p-0 justify-items-center justify-self-center;

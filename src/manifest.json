@@ -22,29 +22,29 @@
 		"tabs"
 	],
 	"commands": {
-		"open-popup": {
+		"_execute_browser_action": {
 			"suggested_key": {
 				"default": "Ctrl+Alt+W"
 			},
 			"description": "Opens the toolbar popup."
 		},
-		"toggle-sidebar": {
+		"_execute_sidebar_action": {
 			"suggested_key": {
 				"default": "Ctrl+Alt+S"
 			},
 			"description": "Toggles the sidebar."
-		},
-		"next-workspace": {
-			"suggested_key": {
-				"default": "Ctrl+Alt+X"
-			},
-			"description": "Switches to the next workspace."
 		},
 		"previous-workspace": {
 			"suggested_key": {
 				"default": "Ctrl+Alt+Y"
 			},
 			"description": "Switches to the previous workspace."
+		},
+		"next-workspace": {
+			"suggested_key": {
+				"default": "Ctrl+Alt+X"
+			},
+			"description": "Switches to the next workspace."
 		},
 		"new-workspace": {
 			"suggested_key": {
