@@ -48,6 +48,13 @@ async function batchShowTabs3(tabIds: number[]) {
 	};
 }
 
+export async function showTab(tabId: number) {
+	return Browser.tabs
+		.show(tabId)
+		.then(() => tabId)
+		.catch(() => undefined);
+}
+
 export function showTabs(tabIds: number[]) {
 	return batchShowTabs3(tabIds);
 }

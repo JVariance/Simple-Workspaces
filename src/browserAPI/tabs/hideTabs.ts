@@ -1,9 +1,9 @@
 import Browser from "webextension-polyfill";
 import { extractNumbersFromString } from "../utils";
 
-export function hideTab(tabId: number) {
-	return hideTabs([tabId]);
-}
+// export function hideTab(tabId: number) {
+// 	return hideTabs([tabId]);
+// }
 
 async function batchHideTabs(tabIds: number[]) {
 	// tested
@@ -33,6 +33,14 @@ async function batchHideTabs(tabIds: number[]) {
 	return { hiddenIds, errorIds, ignoredIds };
 }
 
-export function hideTabs(tabIds: number[]) {
+export async function hideTab(tabId: number) {
+	return Browser.tabs
+		.hide(tabId)
+		.then((tabs) => tabs?.at(0))
+		.catch(() => undefined);
+}
+
+export function hideTabs(tabIds: number | number[]) {
+	typeof tabIds === "number" && (tabIds = [tabIds]);
 	return batchHideTabs(tabIds);
 }

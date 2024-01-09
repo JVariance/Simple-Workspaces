@@ -25,6 +25,17 @@ async function sequentialSetWindowValues(windows: WindowValueObj[]) {
 	return { setWindowIds, errorIds };
 }
 
+export async function setWindowValue(
+	windowId: number,
+	key: string,
+	value: string
+) {
+	return Browser.sessions
+		.setWindowValue(windowId, key, value)
+		.then(() => value)
+		.catch(() => undefined);
+}
+
 export function setWindowValues(windows: WindowValueObj[]) {
 	return sequentialSetWindowValues(windows);
 }

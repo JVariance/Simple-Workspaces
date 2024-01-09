@@ -1,5 +1,6 @@
 import Browser from "webextension-polyfill";
 import { extractNumbersFromString } from "../utils";
+import { getTab } from "./getTab";
 
 async function sequentialRemoveTabs(tabIds: number[]) {
 	if (!tabIds?.length) return { removedIds: [], errorIds: [] };
@@ -49,6 +50,35 @@ async function batchRemoveTabs(tabIds: number[]) {
 	return { removedIds, errorIds };
 }
 
-export function removeTabs(tabIds: number[], batch = false) {
-	return batch ? batchRemoveTabs(tabIds) : sequentialRemoveTabs(tabIds);
+async function batchRemoveTabs3(tabIds: number[]) {
+	if (!tabIds?.length) return { removedIds: [], errorIds: [] };
+
+	const [removedIds, errorIds] = (
+		await Promise.all(tabIds.map((tabId) => getTab(tabId)))
+	).reduce(
+		(acc, tab, i) => {
+			tab ? acc[0].push(tab.id!) : acc[1].push(tabIds[i]);
+			return acc;
+		},
+		[[], []] as [number[], number[]]
+	);
+
+	await Browser.tabs.remove(removedIds);
+
+	return {
+		removedIds,
+		errorIds,
+	};
+}
+
+export async function removeTab(tabId: number) {
+	return Browser.tabs
+		.remove(tabId)
+		.then(() => tabId)
+		.catch(() => undefined);
+}
+
+export function removeTabs(tabIds: number | number[], batch = true) {
+	typeof tabIds === "number" && (tabIds = [tabIds]);
+	return batch ? batchRemoveTabs3(tabIds) : sequentialRemoveTabs(tabIds);
 }

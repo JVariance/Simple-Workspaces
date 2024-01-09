@@ -1,7 +1,7 @@
 import { promisedDebounceFunc } from "@root/utils";
 import Browser from "webextension-polyfill";
 import { Window } from "./Window";
-import { hideTabs, updateTabs } from "@root/browserAPI";
+import * as API from "@root/browserAPI";
 
 enum StorageKeys {
 	windowUUIDs = "windowIds",
@@ -30,10 +30,7 @@ export class WorkspaceStorage {
 		for (let currentWindow of currentWindows) {
 			currentWindowsObjs.push({
 				windowId: currentWindow.id!,
-				uuid: await Browser.sessions.getWindowValue(
-					currentWindow.id!,
-					"windowUUID"
-				),
+				uuid: await API.getWindowValue(currentWindow.id!, "windowUUID"),
 			});
 		}
 
@@ -45,7 +42,7 @@ export class WorkspaceStorage {
 			await newWindowInstance.init();
 			this.windows.set(currentWindow.windowId, newWindowInstance);
 			if (!currentWindow.uuid)
-				await Browser.sessions.setWindowValue(
+				await API.setWindowValue(
 					currentWindow.windowId,
 					"windowUUID",
 					newWindowInstance.UUID
@@ -62,7 +59,7 @@ export class WorkspaceStorage {
 			const activeWorkspace = workspaces.find(({ active }) => active)!;
 
 			console.info({ activeWorkspace });
-			updateTabs([
+			API.updateTabs([
 				{
 					id: activeWorkspace.activeTabId || activeWorkspace.tabIds[0],
 					props: {
@@ -73,7 +70,7 @@ export class WorkspaceStorage {
 
 			const inactiveWorkspaces = workspaces.filter(({ active }) => !active);
 			console.info({ inactiveWorkspaces });
-			hideTabs(inactiveWorkspaces.flatMap(({ tabIds }) => tabIds));
+			API.hideTabs(inactiveWorkspaces.flatMap(({ tabIds }) => tabIds));
 		}
 
 		this.#persistWindows();
@@ -141,7 +138,7 @@ export class WorkspaceStorage {
 		const window = this.getWindow(targetWindowId);
 		await window?.addTabs(tabIds);
 		for (let tabId of tabIds) {
-			await Browser.sessions.setTabValue(
+			await API.setTabValue(
 				tabId,
 				"workspaceUUID",
 				window.activeWorkspace.UUID
@@ -169,12 +166,18 @@ export class WorkspaceStorage {
 
 		if (window && !currentTabIds?.length) {
 			console.info("keine tabs mehr im workspace");
+			// const activeTab = (
+			// 	await Browser.tabs.query({
+			// 		active: true,
+			// 		windowId: window.windowId,
+			// 	})
+			// )?.at(0);
 			const activeTab = (
-				await Browser.tabs.query({
+				await API.queryTabs({
 					active: true,
 					windowId: window.windowId,
 				})
-			)?.at(0);
+			).tabs?.at(0);
 
 			if (activeTab) {
 				console.info({ activeTab, window, workspaces: window.workspaces });
@@ -184,10 +187,16 @@ export class WorkspaceStorage {
 
 				console.info({ workspaceOfActiveTab });
 
-				const newTab = await Browser.tabs.create({
-					active: false,
-					windowId: window.windowId,
-				});
+				// const newTab = await Browser.tabs.create({
+				// 	active: false,
+				// 	windowId: window.windowId,
+				// });
+				const newTab = (
+					await API.createTabs({
+						active: false,
+						windowId: window.windowId,
+					})
+				).createdTabs[0];
 
 				await window.addTab(newTab.id!);
 				console.info("ADDED TAB");

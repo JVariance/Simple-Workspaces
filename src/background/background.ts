@@ -3,11 +3,10 @@ import browser from "webextension-polyfill";
 import { TabMenu } from "./TabMenu";
 import { WorkspaceStorage } from "./WorkspaceStorage";
 import { Processes } from "./Processes";
+import * as API from "@root/browserAPI";
 
 let workspaceStorage: WorkspaceStorage;
 let tabMenu: TabMenu;
-
-let extensionIsInitialized = false;
 let manualTabCreationHandling = false;
 
 console.info("MOINSEN MOINSEN MOINSEN MOINSEN MOINSEN MOINSEN MOINSEN");
@@ -15,15 +14,9 @@ console.info("MOINSEN MOINSEN MOINSEN MOINSEN MOINSEN MOINSEN MOINSEN");
 async function initExtension() {
 	console.info("initExtension 0");
 	// await Processes.ExtensionInitialization;
-	console.info({
-		"ExtensionIsInitialized.state": Processes.ExtensionInitialization.state,
-	});
 	if (Processes.ExtensionInitialization.state === "pending") return;
 	console.info("initExtension 1");
 	Processes.ExtensionInitialization.start();
-	console.info({
-		"ExtensionIsInitialized.state": Processes.ExtensionInitialization.state,
-	});
 	console.info("initExtension 2");
 
 	// await browser.storage.local.clear();
@@ -36,8 +29,6 @@ async function initExtension() {
 	}
 	// informViews("initialized");
 	console.info("initExtension 6");
-	extensionIsInitialized = true;
-	console.info("initExtension 7");
 	Processes.ExtensionInitialization.finish();
 }
 
@@ -61,7 +52,7 @@ browser.runtime.onInstalled.addListener(async (details) => {
 
 	switch (details.reason) {
 		case "install":
-			browser.tabs.create({
+			API.createTab({
 				url: browser.runtime.getURL("src/pages/Welcome/welcome.html"),
 				active: true,
 			});
@@ -123,15 +114,17 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 
 	if (menuItemId.toString().startsWith("workspace") || newWorkspaceDemanded) {
 		const highlightedTabIds = (
-			await browser.tabs.query({
+			await API.queryTabs({
 				windowId: tab!.windowId!,
 				highlighted: true,
 			})
-		).map((tab) => tab.id!);
+		).tabs?.map((tab) => tab.id!);
 
 		let newWorkspace;
 		const tabIds =
-			highlightedTabIds.length > 1 ? highlightedTabIds : [tab!.id!];
+			highlightedTabIds && highlightedTabIds.length > 1
+				? highlightedTabIds
+				: [tab!.id!];
 
 		if (menuItemId.toString().startsWith("workspace-menu")) {
 			targetWorkspaceUUID = menuItemId.split("_").at(1)!;
@@ -146,18 +139,20 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 
 		if (!tab?.windowId) return;
 
-		await workspaceStorage.getWindow(tab!.windowId!).moveTabs({
-			tabIds,
-			targetWorkspaceUUID,
-		});
+		tabIds &&
+			(await workspaceStorage.getWindow(tab!.windowId!).moveTabs({
+				tabIds,
+				targetWorkspaceUUID,
+			}));
 
-		if (newWorkspaceDemanded)
+		if (newWorkspaceDemanded) {
 			informViews(tab.windowId, "movedTabsToNewWorkspace", {
 				workspace: newWorkspace,
 				tabIds,
 			});
-		else
+		} else {
 			informViews(tab.windowId!, "movedTabs", { targetWorkspaceUUID, tabIds });
+		}
 
 		if (
 			targetWorkspaceUUID === workspaceStorage.activeWindow.activeWorkspace.UUID
@@ -226,7 +221,7 @@ browser.windows.onCreated.addListener(async (window) => {
 
 	const newWindow = await workspaceStorage.getOrCreateWindow(window.id!);
 	const windowId = newWindow.windowId;
-	await browser.sessions.setWindowValue(windowId, "windowUUID", newWindow.UUID);
+	await API.setWindowValue(windowId, "windowUUID", newWindow.UUID);
 
 	Processes.WindowCreation.finish();
 });
@@ -242,7 +237,7 @@ browser.tabs.onCreated.addListener(async (tab) => {
 
 	console.info("createdTab", { tab: structuredClone(tab) });
 	if (!windowIsNew) {
-		const tabSessionWorkspaceUUID = await browser.sessions.getTabValue(
+		const tabSessionWorkspaceUUID = await API.getTabValue(
 			tab.id!,
 			"workspaceUUID"
 		);
@@ -262,31 +257,6 @@ browser.tabs.onCreated.addListener(async (tab) => {
 	Processes.TabCreation.finish();
 });
 
-// async function pinnedTabUpdate(
-// 	tabId: number,
-// 	changeInfo: browser.Tabs.OnUpdatedChangeInfoType,
-// 	tab: browser.Tabs.Tab
-// ) {
-// 	const workspaceUUID = await browser.sessions.getTabValue(
-// 		tabId,
-// 		"workspaceUUID"
-// 	);
-
-// 	if (tab.pinned) {
-// 		if (workspaceUUID) {
-// 			workspaceStorage
-// 				.getWindow(tab.windowId!)
-// 				.removePinnedTab({ tabId, workspaceUUID });
-// 		}
-// 	} else {
-// 		workspaceStorage
-// 			.getWindow(tab.windowId!)
-// 			.addUnpinnedTab({ tabId, workspaceUUID });
-// 	}
-// }
-
-// browser.tabs.onUpdated.addListener(pinnedTabUpdate, { properties: ["pinned"] });
-
 browser.tabs.onRemoved.addListener(async (tabId, info) => {
 	await Promise.all([
 		Processes.TabCreation,
@@ -295,7 +265,6 @@ browser.tabs.onRemoved.addListener(async (tabId, info) => {
 	]);
 
 	console.info("tab removed");
-	// if (!this.workspaces.flatMap(({ tabIds }) => tabIds).length) {}
 
 	const window = workspaceStorage.getWindow(info.windowId);
 	const prevActiveWorkspace = window.activeWorkspace;
@@ -305,12 +274,12 @@ browser.tabs.onRemoved.addListener(async (tabId, info) => {
 	if (!prevActiveWorkspace.tabIds.length) {
 		console.info("| activeWorkspace has no tabs");
 		manualTabCreationHandling = true;
-		const newTab = await browser.tabs.create({
+		const newTab = (await API.createTab({
 			active: false,
 			windowId: window.windowId,
-		});
+		}))!;
 
-		await browser.sessions.setTabValue(
+		await API.setTabValue(
 			newTab.id!,
 			"workspaceUUID",
 			window.activeWorkspace.UUID
@@ -328,11 +297,11 @@ browser.tabs.onRemoved.addListener(async (tabId, info) => {
 			console.info("?????");
 			// if first tab closed in first workspace hide active tab from different workspace and activate new created tab
 			const activeTab = (
-				await browser.tabs.query({ active: true, windowId: window.windowId })
-			)[0];
+				await API.queryTabs({ active: true, windowId: window.windowId })
+			).tabs?.at(0);
 
-			await browser.tabs.update(newTab.id!, { active: true });
-			await browser.tabs.hide(activeTab.id!);
+			await API.updateTab(newTab.id!, { active: true });
+			activeTab && (await API.hideTab(activeTab.id!));
 		}
 
 		informViews(window.windowId, "updatedActiveWorkspace", {
@@ -528,32 +497,33 @@ browser.runtime.onMessage.addListener((message) => {
 		case "reloadAllTabs":
 			(async () => {
 				const tabIds = (
-					await browser.tabs.query({
+					await API.queryTabs({
 						windowId: (await browser.windows.getCurrent()).id,
 					})
-				).map((tab) => tab.id!);
+				).tabs?.map((tab) => tab.id!);
 
-				tabIds.forEach((tabId) => browser.tabs.reload(tabId));
+				tabIds?.forEach((tabId) => browser.tabs.reload(tabId));
 			})();
 			break;
 		case "showAllTabs":
 			(async () => {
 				const tabIds = (
-					await browser.tabs.query({
+					await API.queryTabs({
 						windowId: (await browser.windows.getCurrent()).id,
 					})
-				).map((tab) => tab.id!);
+				).tabs?.map((tab) => tab.id!);
 
-				browser.tabs.show(tabIds);
+				tabIds && browser.tabs.show(tabIds);
 			})();
 			break;
 		case "getCurrentTabIds":
 			return new Promise(async (resolve) => {
-				const tabIds = (
-					await browser.tabs.query({
-						windowId: (await browser.windows.getCurrent()).id,
-					})
-				).map((tab) => tab.id);
+				const tabIds =
+					(
+						await API.queryTabs({
+							windowId: (await browser.windows.getCurrent()).id,
+						})
+					).tabs?.map((tab) => tab.id!) || [];
 				return resolve(tabIds);
 			});
 		case "switchWorkspace":

@@ -40,7 +40,8 @@ export class Window {
 			await Browser.storage.local.get(this.#storageKey);
 
 		// const tabs = (await Browser.tabs.query({ windowId: this.#windowId, })) as EnhancedTab[];
-		const { tabs } = await API.queryTabs({ windowId: this.#windowId });
+		const tabs = (await API.queryTabs({ windowId: this.#windowId }))
+			.tabs! as EnhancedTab[];
 
 		console.info({ localWindow, tabs });
 
@@ -56,15 +57,16 @@ export class Window {
 			const sortedTabsInWorkspaces = new Map<string, EnhancedTab[]>();
 
 			for (let tab of tabs) {
-				const workspaceSessionUUID: string = await Browser.sessions.getTabValue(
+				const workspaceSessionUUID = await API.getTabValue<string>(
 					tab.id!,
 					"workspaceUUID"
 				);
+
 				tab.workspaceUUID = workspaceSessionUUID || "HOME";
 				if (!workspaceSessionUUID)
-					await Browser.sessions.setTabValue(tab.id!, "workspaceUUID", "HOME");
+					await API.setTabValue(tab.id!, "workspaceUUID", "HOME");
 
-				sortedTabsInWorkspaces.has(workspaceSessionUUID)
+				workspaceSessionUUID && sortedTabsInWorkspaces.has(workspaceSessionUUID)
 					? sortedTabsInWorkspaces.get(workspaceSessionUUID)!.push(tab)
 					: sortedTabsInWorkspaces.set(workspaceSessionUUID || "HOME", [tab]);
 			}
@@ -114,13 +116,16 @@ export class Window {
 			).tabs?.at(0)!; // }) // 	index: 0, // 	windowId: this.windowId, // await Browser.tabs.query{
 
 			if (blankTab.url === "about:blank") {
-				const newTab = await Browser.tabs.create({
+				const newTab = (await API.createTab({
 					active: true,
 					windowId: this.#windowId,
-				});
+				}))!;
+				// const newTab = await Browser.tabs.create({
+				// 	active: true,
+				// 	windowId: this.#windowId,
+				// });
 
-				//TODO: API.removeTab
-				await API.removeTabs([blankTab.id!]);
+				await API.removeTabs(blankTab.id!);
 				// await Browser.tabs.remove(blankTab.id!);
 				tabIds = tabIds.filter((id) => id !== blankTab.id!);
 				homeWorkspace.tabIds = homeWorkspace.tabIds.filter(
@@ -129,20 +134,20 @@ export class Window {
 
 				homeWorkspace.tabIds.push(newTab.id!);
 				homeWorkspace.activeTabId = newTab.id!;
-				await Browser.sessions.setTabValue(
-					newTab.id!,
-					"workspaceUUID",
-					homeWorkspace.UUID
-				);
+				await API.setTabValue(newTab.id!, "workspaceUUID", homeWorkspace.UUID);
 			}
 
 			for (let _defaultWorkspace of _defaultWorkspaces || []) {
 				const { id, ...defaultWorkspace } = _defaultWorkspace;
 
-				const newTab = await Browser.tabs.create({
+				const newTab = (await API.createTab({
 					active: false,
 					windowId: this.#windowId,
-				});
+				}))!;
+				// const newTab = await Browser.tabs.create({
+				// 	active: false,
+				// 	windowId: this.#windowId,
+				// });
 				await API.hideTab(newTab.id!);
 
 				const newWorkspaceData = this.#getNewWorkspace();
@@ -155,7 +160,7 @@ export class Window {
 					tabIds: [newTab.id!],
 				});
 
-				await Browser.sessions.setTabValue(
+				await API.setTabValue(
 					newTab.id!,
 					"workspaceUUID",
 					newWorkspaceData.UUID
@@ -166,11 +171,7 @@ export class Window {
 
 			for (let tabId of tabIds) {
 				try {
-					await Browser.sessions.setTabValue(
-						tabId!,
-						"workspaceUUID",
-						homeWorkspace.UUID
-					);
+					await API.setTabValue(tabId!, "workspaceUUID", homeWorkspace.UUID);
 				} catch (err) {
 					// if (err instanceof Error) {
 					// 	const errTabId = err.message.match("[0-9]+$")?.at(0);
@@ -258,11 +259,7 @@ export class Window {
 		this.activeWorkspace.tabIds.push(...tabIds);
 
 		for (let tabId of tabIds) {
-			await Browser.sessions.setTabValue(
-				tabId,
-				"workspaceUUID",
-				this.activeWorkspace.UUID
-			);
+			await API.setTabValue(tabId, "workspaceUUID", this.activeWorkspace.UUID);
 		}
 
 		this.#persist();
@@ -349,10 +346,14 @@ export class Window {
 		}
 
 		if (!this.activeWorkspace.tabIds.length) {
-			const newTab = await Browser.tabs.create({
+			const newTab = (await API.createTab({
 				windowId: this.#windowId,
 				active: false,
-			});
+			}))!;
+			// const newTab = await Browser.tabs.create({
+			// 	windowId: this.#windowId,
+			// 	active: false,
+			// });
 			this.activeWorkspace.tabIds.push(newTab.id!);
 			this.activeWorkspace.activeTabId = newTab.id!;
 
@@ -362,11 +363,7 @@ export class Window {
 		}
 
 		for (let tabId of tabIds) {
-			await Browser.sessions.setTabValue(
-				tabId,
-				"workspaceUUID",
-				targetWorkspace.UUID
-			);
+			await API.setTabValue(tabId, "workspaceUUID", targetWorkspace.UUID);
 		}
 
 		this.#persist();
@@ -409,15 +406,12 @@ export class Window {
 			newWorkspace.tabIds = tabIds;
 			newWorkspace.activeTabId = tabIds.at(-1);
 		} else {
-			const tabId: number = (await Browser.tabs.create({ active: false })).id!;
+			// const tabId: number = (await Browser.tabs.create({ active: false })).id!;
+			const tabId: number = (await API.createTab({ active: false }))!.id!;
 			newWorkspace.tabIds = [tabId!];
 			newWorkspace.activeTabId = tabId;
 
-			await Browser.sessions.setTabValue(
-				tabId,
-				"workspaceUUID",
-				newWorkspace.UUID
-			);
+			await API.setTabValue(tabId, "workspaceUUID", newWorkspace.UUID);
 		}
 
 		this.#workspaces = [...this.#workspaces, newWorkspace];
@@ -537,7 +531,7 @@ export class Window {
 
 	// 	if (workspace) {
 	// 		workspace.tabIds.push(tabId);
-	// 		await Browser.sessions.setTabValue(
+	// 		await API.setTabValue(
 	// 			tabId,
 	// 			"workspaceUUID",
 	// 			workspace.UUID

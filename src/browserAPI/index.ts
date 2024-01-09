@@ -1,3 +1,4 @@
+export * from "./tabs/createTabs";
 export * from "./tabs/getTab";
 export * from "./tabs/hideTabs";
 export * from "./tabs/highlightTabs";
@@ -8,5 +9,7 @@ export * from "./tabs/updateTabs";
 export * from "./windows/createWindows";
 export * from "./windows/removeWindows";
 export * from "./windows/updateWindows";
+export * from "./sessions/getTabValues";
 export * from "./sessions/setTabValues";
+export * from "./sessions/getWindowValues";
 export * from "./sessions/setWindowValues";

@@ -91,14 +91,29 @@ export async function batchHighlightTabs3(
 	};
 }
 
+export async function highlightTab({
+	tabIndex,
+	windowId = undefined,
+	populate = false,
+}: {
+	tabIndex: number;
+	windowId?: number;
+	populate?: boolean;
+}) {
+	return Browser.tabs
+		.highlight({ tabs: [tabIndex], ...(windowId && { windowId }), populate })
+		.then((window) => window)
+		.catch(() => undefined);
+}
+
 export function highlightTabs({
-	tabIds,
+	tabIndices,
 	windowId,
 	populate = false,
 }: {
-	tabIds: number[];
+	tabIndices: number[];
 	windowId: number;
 	populate: boolean;
 }) {
-	return batchHighlightTabs3(tabIds, windowId, populate);
+	return batchHighlightTabs3(tabIndices, windowId, populate);
 }

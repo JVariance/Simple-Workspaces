@@ -23,6 +23,13 @@ async function sequentialGetWindowValues(windows: WindowValueObj[]) {
 	return { gottenValues, errorIds };
 }
 
+export async function getWindowValue<T = any>(windowId: number, key: string) {
+	return Browser.sessions
+		.getWindowValue(windowId, key)
+		.then((value) => value as T)
+		.catch(() => undefined);
+}
+
 export function getWindowValues(windows: WindowValueObj[]) {
 	return sequentialGetWindowValues(windows);
 }

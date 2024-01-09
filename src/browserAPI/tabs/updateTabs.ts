@@ -54,6 +54,16 @@ async function sequentialUpdateTabs(tabs: TabUpdateObj[]) {
 	return { updatedTabs, updatedIds, errorIds };
 }
 
+export async function updateTab(
+	tabId: number,
+	props: Browser.Tabs.UpdateUpdatePropertiesType
+) {
+	return Browser.tabs
+		.update(tabId, props)
+		.then((tab) => tab)
+		.catch(() => undefined);
+}
+
 export function updateTabs(tabs: TabUpdateObj[]) {
 	return sequentialUpdateTabs(tabs);
 }

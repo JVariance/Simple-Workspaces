@@ -25,6 +25,13 @@ async function sequentialSetTabValues(tabs: TabValueObj[]) {
 	return { setTabIds, errorIds };
 }
 
+export async function setTabValue(id: number, key: string, value: string) {
+	return Browser.sessions
+		.setTabValue(id, key, value)
+		.then(() => value)
+		.catch(() => undefined);
+}
+
 export function setTabValues(tabs: TabValueObj[]) {
 	return sequentialSetTabValues(tabs);
 }
