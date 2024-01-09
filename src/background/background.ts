@@ -4,6 +4,7 @@ import { TabMenu } from "./TabMenu";
 import { WorkspaceStorage } from "./WorkspaceStorage";
 import { Processes } from "./Processes";
 import * as API from "@root/browserAPI";
+import { unstate } from "svelte";
 
 let workspaceStorage: WorkspaceStorage;
 let tabMenu: TabMenu;
@@ -472,7 +473,7 @@ browser.runtime.onMessage.addListener((message) => {
 				const workspaces = workspaceStorage.getWindow(
 					message.windowId
 				).workspaces;
-				return resolve(workspaces);
+				return resolve(unstate(workspaces));
 			});
 		case "removeWorkspace":
 			return workspaceStorage

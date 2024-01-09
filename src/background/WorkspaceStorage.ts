@@ -1,6 +1,6 @@
 import { promisedDebounceFunc } from "@root/utils";
 import Browser from "webextension-polyfill";
-import { Window } from "./Window";
+import { Window } from "./Window.svelte";
 import * as API from "@root/browserAPI";
 
 enum StorageKeys {
@@ -187,36 +187,18 @@ export class WorkspaceStorage {
 
 				console.info({ workspaceOfActiveTab });
 
-				// const newTab = await Browser.tabs.create({
-				// 	active: false,
-				// 	windowId: window.windowId,
-				// });
-				const newTab = (
-					await API.createTabs({
-						active: false,
-						windowId: window.windowId,
-					})
-				).createdTabs[0];
+				const newTab = (await API.createTab({
+					active: false,
+					windowId: window.windowId,
+				}))!;
 
 				await window.addTab(newTab.id!);
 				console.info("ADDED TAB");
 
 				if (workspaceOfActiveTab) {
-					// workspaceOfActiveTab.activeTabId = undefined;
 					await window.switchWorkspace(workspaceOfActiveTab);
-					// window.setActiveTab(newTab.id!);
 					currentActiveWorkspace.activeTabId = newTab.id!;
 				}
-
-				// window. = workspaceOfActiveTab;
-				// window.setActiveTab(activeTab.id!);
-
-				console.log({
-					activeTab: structuredClone(activeTab),
-					workspaces: structuredClone(window.workspaces),
-					activeWorkspace: structuredClone(window?.activeWorkspace),
-					workspaceOfActiveTab: structuredClone(workspaceOfActiveTab),
-				});
 			}
 		}
 
