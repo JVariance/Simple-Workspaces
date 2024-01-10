@@ -11,8 +11,6 @@
 	};
 	type State = "rest" | "success" | "error" | "loading";
 
-	let toast: HTMLDivElement;
-
 	let {
 		class: classes = "",
 		state: _state,
@@ -27,9 +25,6 @@
 		if (["success", "error"].includes(_state)) {
 			setTimeout(() => {
 				visible = false;
-				setTimeout(() => {
-					toast.remove();
-				}, 2000);
 			}, 4000);
 		}
 	});
@@ -43,7 +38,6 @@
 	<div
 		id="toast"
 		class="{classes} {_state}"
-		bind:this={toast}
 		in:fly={{ x: -200, duration: 500 }}
 		out:fly={{ x: -200, duration: 500 }}
 	>

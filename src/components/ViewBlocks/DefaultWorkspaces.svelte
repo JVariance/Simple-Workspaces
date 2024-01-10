@@ -1,21 +1,19 @@
 <script lang="ts">
 	import Browser, { i18n } from "webextension-polyfill";
 	import Info from "../Info.svelte";
-	import { createRoot, onMount } from "svelte";
+	import { onMount } from "svelte";
 	import Icon from "../Icon.svelte";
 	import Accordion from "../Accordion.svelte";
 	import SimpleWorkspace from "../SimpleWorkspace.svelte";
 	import { SOURCES, dndzone } from "svelte-dnd-action";
-	import Toast from "../Toast.svelte";
 	import { createToast } from "../createToast";
+	import { immediateDebounceFunc } from "@root/utils";
 
-	type ToastState ='rest' | 'loading' |'success' | 'error';
 	type Props = {dndFinish?: Function};
 
 	let {dndFinish = () => {} } = $props<Props>();
 	
-
-	let applyingChangesState = $state<ToastState>('rest');
+	let changesMade = $state(false);
 	let dragEnabled = $state(false);
 	let homeWorkspace = $state<Ext.SimpleWorkspace>({id: -1, icon: "🏠", name: "Home"});		
 	let defaultWorkspaces: Ext.SimpleWorkspace[] = $state([]);
@@ -32,6 +30,7 @@
 		e.stopImmediatePropagation();
 		defaultWorkspaces.push(getNewWorkspace());
 		console.info({defaultWorkspaces});
+		changesMade = true;
 	}
 
 	function removeDefaultWorkspace(workspaceId: number) {
@@ -46,8 +45,9 @@
 		});
 	}
 
-	async function applyDefaultWorkspacesChanges() {
+	async function _applyDefaultWorkspacesChanges() {
 		// e.stopImmediatePropagation();
+		console.info("applyDefaultWorkspacesChanges");
 		const toast = createToast({
 				errorMessage: "Something went wrong", 
 				successMessage: i18n.getMessage("applied_changes"),
@@ -56,7 +56,15 @@
 
 		await persistDefaultWorkspaces();
 		toast.$set({state: "success"});
+		changesMade = false;
 	}
+
+	const applyDefaultWorkspacesChanges = immediateDebounceFunc(_applyDefaultWorkspacesChanges, 500);
+
+	$effect(() => {
+		defaultWorkspaces; homeWorkspace; 
+		changesMade = true;
+	});
 
 	onMount(async () => {
 		const localDefaultWorkspaces = await Browser.runtime.sendMessage({msg: "getDefaultWorkspaces"}) as Ext.SimpleWorkspace[];
@@ -107,7 +115,7 @@
 				<div class="drag-handle w-4 h-4 self-center" onpointerdown={(e) => {e.preventDefault(); dragEnabled = true}} onpointerup={() => {dragEnabled = false;}} aria-label="drag-handle">
 					<Icon icon="drag-handle" width={18} class="{defaultWorkspaces.length < 2 ? 'hidden' : ''}" />
 				</div>
-				<SimpleWorkspace {workspace} updatedIcon={(icon) => {workspace.icon = icon;}} updatedName={(name) => {workspace.name = name;}}/>
+				<SimpleWorkspace {workspace} updatedIcon={(icon) => {workspace.icon = icon; changesMade = true;}} updatedName={(name) => {workspace.name = name; changesMade = true;}}/>
 				<div class="self-center flex text-neutral-300">
 					<button class="!bg-transparent !border-none !w-max !p-0" onclick={() => removeDefaultWorkspace(workspace.id)}>
 						<Icon icon="cross" />
@@ -123,7 +131,7 @@
 		onclick={addDefaultWorkspace}><Icon icon="add" width={16}/>
 		<span class="-mt-1">{i18n.getMessage('add_default_workspace')}</span>
 	</button>
-	<button class="flex gap-2 items-center justify-center mt-4" style:width="-moz-available" onclick={applyDefaultWorkspacesChanges}>
+	<button class="flex gap-2 items-center justify-center mt-4" style:width="-moz-available" disabled={!changesMade} onclick={applyDefaultWorkspacesChanges}>
 		<Icon icon="check" />
 		<span class="-mt-1">{i18n.getMessage('apply_changes')}</span>
 	</button>

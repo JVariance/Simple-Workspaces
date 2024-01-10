@@ -14,6 +14,21 @@ export const debounceFunc = (func: Function, delay: number) => {
 	};
 };
 
+/**
+ * - source: https://stackoverflow.com/a/34552145
+ * - license: CC BY-SA 3.0
+ * - modified by adding TypeScript support
+ */
+export function immediateDebounceFunc(func: Function, delay: number) {
+	var timer = 0;
+	return function debouncedFn() {
+		if (Date.now() - timer > delay) {
+			func();
+		}
+		timer = Date.now();
+	};
+}
+
 export const promisedDebounceFunc = <T>(
 	func: Function,
 	delay: number
