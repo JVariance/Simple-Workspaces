@@ -128,7 +128,7 @@
 {#snippet ViewStart()}
 	<section
 		id="view-1"
-		class="swipe-item dark:bg-[#23222b] rounded-xl w-[100cqw] p-8 aspect-square"
+		class="swipe-item dark:bg-[#23222b] rounded-xl w-[100cqw] p-8 aspect-square overflow-auto"
 	>
 		<h2
 			class="flex flex-wrap items-center gap-2 m-0 mb-12 text-lg first-letter:uppercase w-full justify-center"
@@ -167,9 +167,18 @@
 {#snippet ViewDefaultWorkspaces()}
 	<section
 		id="view-2"
-		class="swipe-item dark:bg-[#23222b] rounded-xl w-[100cqw] h-full p-8"
+		class="swipe-item dark:bg-[#23222b] rounded-xl w-[100cqw] h-full p-8 justify-center overflow-auto grid"
 	>
-	<DefaultWorkspaces dndFinish={() => {swiping = false; scrollViewIntoView();}} />
+		<div class="h-max self-center flex flex-wrap">
+			<p class="mb-8 basis-full">
+				If you want to, you can set some default workspaces that will open with every window. 
+				You can change them at any time in the settings page which is accessible via the 'cog' symbol next to the search bar inside the extension pages
+				or via Firefox' Add-On Manager.
+			</p>
+			<div>
+				<DefaultWorkspaces dndFinish={() => {swiping = false; scrollViewIntoView();}} />
+			</div>
+		</div>
 	</section>
 {/snippet}
 
@@ -180,7 +189,7 @@
 				id="wrapper"
 				class:swiping
 				class="
-				w-full h-full grid grid-cols-[100%] grid-flow-col gap-2 p-0 justify-items-center overflow-auto content-center
+				w-full h-full grid grid-cols-[100%] grid-flow-col gap-2 p-0 justify-items-center items-center overflow-auto content-center
 				scroll-smooth snap-both snap-mandatory overscroll-x-contain @container mx-auto
 				[&.swiping]:cursor-grabbing
 				[&.swiping]:select-none
