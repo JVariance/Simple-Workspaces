@@ -1,17 +1,21 @@
 <script lang="ts">
 	import Browser, { i18n } from "webextension-polyfill";
 	import Info from "../Info.svelte";
-	import { onMount } from "svelte";
+	import { createRoot, onMount } from "svelte";
 	import Icon from "../Icon.svelte";
 	import Accordion from "../Accordion.svelte";
 	import SimpleWorkspace from "../SimpleWorkspace.svelte";
 	import { SOURCES, dndzone } from "svelte-dnd-action";
+	import Toast from "../Toast.svelte";
+	import { createToast } from "../createToast";
 
 	type ToastState ='rest' | 'loading' |'success' | 'error';
-	type Props = {applyingChangesState?: ToastState, dndFinish?: Function};
+	type Props = {dndFinish?: Function};
 
-	let { applyingChangesState, dndFinish = () => {} } = $props<Props>();
+	let {dndFinish = () => {} } = $props<Props>();
 	
+
+	let applyingChangesState = $state<ToastState>('rest');
 	let dragEnabled = $state(false);
 	let homeWorkspace = $state<Ext.SimpleWorkspace>({id: -1, icon: "🏠", name: "Home"});		
 	let defaultWorkspaces: Ext.SimpleWorkspace[] = $state([]);
@@ -44,12 +48,14 @@
 
 	async function applyDefaultWorkspacesChanges() {
 		// e.stopImmediatePropagation();
-		applyingChangesState = 'loading';
+		const toast = createToast({
+				errorMessage: "Something went wrong", 
+				successMessage: i18n.getMessage("applied_changes"),
+				loadingMessage: i18n.getMessage("applying_changes"),
+		});
+
 		await persistDefaultWorkspaces();
-		applyingChangesState = 'success';
-		setTimeout(() => {
-			applyingChangesState ='rest';
-		}, 4000);
+		toast.$set({state: "success"});
 	}
 
 	onMount(async () => {
@@ -74,7 +80,7 @@
 	class="w-max"
 >
 	<div class="home-workspace flex gap-2 mb-2 mt-4 ml-6">
-		<SimpleWorkspace workspace={homeWorkspace}></SimpleWorkspace>
+		<SimpleWorkspace workspace={homeWorkspace} updatedIcon={(icon) => {homeWorkspace.icon = icon;}} updatedName={(name) => {homeWorkspace.name = name;}}></SimpleWorkspace>
 	</div>
 	<ul
 		class="default-workspaces grid gap-2 [&:not(:empty)]:!mb-2"
@@ -101,7 +107,7 @@
 				<div class="drag-handle w-4 h-4 self-center" onpointerdown={(e) => {e.preventDefault(); dragEnabled = true}} onpointerup={() => {dragEnabled = false;}} aria-label="drag-handle">
 					<Icon icon="drag-handle" width={18} class="{defaultWorkspaces.length < 2 ? 'hidden' : ''}" />
 				</div>
-				<SimpleWorkspace {workspace}/>
+				<SimpleWorkspace {workspace} updatedIcon={(icon) => {workspace.icon = icon;}} updatedName={(name) => {workspace.name = name;}}/>
 				<div class="self-center flex text-neutral-300">
 					<button class="!bg-transparent !border-none !w-max !p-0" onclick={() => removeDefaultWorkspace(workspace.id)}>
 						<Icon icon="cross" />

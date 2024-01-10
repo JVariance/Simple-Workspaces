@@ -3,8 +3,9 @@
 	import Icon from "@root/components/Icon.svelte";
 	import DefaultWorkspaces from "@root/components/ViewBlocks/DefaultWorkspaces.svelte";
 	import { onMount } from "svelte";
-	import Browser from "webextension-polyfill";
+	import Browser, { i18n } from "webextension-polyfill";
 	import Layout from "../Special_Pages/Layout.svelte";
+	import Toast from "@root/components/Toast.svelte";
 
 	const viewCount = 2;
 	let js_enabled = $state(false);

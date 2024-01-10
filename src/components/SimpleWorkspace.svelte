@@ -2,16 +2,19 @@
 	import { createRoot } from "svelte";
 	import EmojiPicker from "./EmojiPicker.svelte";
 
-	type Props = { workspace: Ext.SimpleWorkspace };
-	let { workspace } = $props<Props>();
+	type Props = {
+		workspace: Ext.SimpleWorkspace;
+		updatedIcon: (icon: string) => void;
+		updatedName: (name: string) => void;
+	};
+	let { workspace, updatedIcon, updatedName } = $props<Props>();
 
 	let picker;
 
 	function openEmojiPicker(
 		e: MouseEvent & {
 			currentTarget: EventTarget & HTMLButtonElement;
-		},
-		workspace: Ext.SimpleWorkspace
+		}
 	) {
 		e.stopImmediatePropagation();
 
@@ -26,7 +29,7 @@
 					y,
 					visible: true,
 					picked: ({ unicode }: { unicode: string }) => {
-						workspace.icon = unicode;
+						updatedIcon(unicode);
 					},
 				},
 			});
@@ -40,7 +43,7 @@
 				y,
 				visible: true,
 				picked: ({ unicode }: { unicode: string }) => {
-					workspace.icon = unicode;
+					updatedIcon(unicode);
 				},
 			});
 		}
@@ -51,7 +54,7 @@
 	title="choose icon"
 	class="w-12 h-auto aspect-square flex justify-center items-center"
 	onclick={(e) => {
-		openEmojiPicker(e, workspace);
+		openEmojiPicker(e);
 	}}
 >
 	{workspace.icon}
@@ -59,5 +62,8 @@
 <input
 	class="bg-transparent border border-solid dark:border-neutral-700 rounded-md dark:text-white p-2"
 	type="text"
-	bind:value={workspace.name}
+	on:input={(e) => {
+		updatedName(e.target.value);
+	}}
+	value={workspace.name}
 />

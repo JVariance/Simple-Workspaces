@@ -1,53 +1,77 @@
 <script lang="ts">
-	import type { Snippet } from "svelte";
+	import { onMount } from "svelte";
+	import { fly } from "svelte/transition";
 
 	type Props = {
 		state: State;
-		loadingMessage: Snippet;
-		successMessage: Snippet;
-		errorMessage: Snippet;
+		loadingMessage: string;
+		successMessage: string;
+		errorMessage: string;
 		class?: string;
-		updateState?: (state: State) => {};
 	};
 	type State = "rest" | "success" | "error" | "loading";
 
+	let toast: HTMLDivElement;
+
 	let {
 		class: classes = "",
-		state,
-		updateState = () => {},
+		state: _state,
 		loadingMessage,
 		successMessage,
 		errorMessage,
 	} = $props<Props>();
 
+	let visible = $state(false);
+
 	$effect(() => {
-		updateState(state);
+		if (["success", "error"].includes(_state)) {
+			setTimeout(() => {
+				visible = false;
+				setTimeout(() => {
+					toast.remove();
+				}, 2000);
+			}, 4000);
+		}
+	});
+
+	onMount(() => {
+		visible = true;
 	});
 </script>
 
-<div id="toast" class="{classes} {state}">
-	<span class="loading-spinner">&#9692;</span>
-	<span class="checkmark">&#10003;</span>
-	<span>
-		{#if state === "loading"}
-			{loadingMessage}
-		{:else if state === "success"}
-			{successMessage}
-		{:else if state === "error"}
-			{errorMessage}
-		{/if}
-	</span>
-</div>
+{#if visible}
+	<div
+		id="toast"
+		class="{classes} {_state}"
+		bind:this={toast}
+		in:fly={{ x: -200, duration: 500 }}
+		out:fly={{ x: -200, duration: 500 }}
+	>
+		<span class="loading-spinner">&#9692;</span>
+		<span class="checkmark">&#10003;</span>
+		<span>
+			{#if _state === "loading"}
+				{loadingMessage}
+			{:else if _state === "success"}
+				{successMessage}
+			{:else if _state === "error"}
+				{errorMessage}
+			{/if}
+		</span>
+	</div>
+{/if}
 
 <style lang="postcss">
 	#toast {
 		@apply flex items-center justify-center w-max gap-2 text-xl p-8 rounded-md;
 		@apply text-neutral-950 bg-neutral-300;
-		@apply fixed bottom-4 left-4 transition-opacity duration-200;
+		@apply transition-opacity duration-200;
 
 		&.rest {
 			@apply opacity-0;
-			.loading-spinner {
+
+			.loading-spinner,
+			.checkmark {
 				@apply hidden;
 			}
 		}

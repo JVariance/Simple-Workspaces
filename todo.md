@@ -1,4 +1,5 @@
 **Today**
+[] if extension fresh installed apply default workspaces to current window if set in welcome page
 [] handle highlighted tab from Firefox' search tabs feature
 [] search improvements
 [] emoji picker improvements

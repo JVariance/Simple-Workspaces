@@ -3,6 +3,7 @@
 </script>
 
 {@render children()}
+<div id="toaster" class="grid gap-2 fixed bottom-4 left-4"/>
 
 <style lang="postcss">
 	:global(html) {

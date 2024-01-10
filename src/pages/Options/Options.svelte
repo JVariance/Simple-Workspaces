@@ -14,7 +14,6 @@
 	import Toast from "@root/components/Toast.svelte";
 
 	let windowWorkspaces: Ext.Workspace[] = $state([]);
-	let applyingChangesState = $state<'rest' | 'loading' | 'success' | 'error'>('rest');
 	let mounted = $state(false);
 
 	async function getWorkspaces(): Promise<Ext.Workspace[]> {
@@ -23,12 +22,17 @@
 	}
 
 	async function applyCurrentWorkspacesChanges() {
-		applyingChangesState = 'loading';
+		const toast = createRoot(Toast, {
+			target: document.body,
+			props: {
+			state: "loading",
+			loadingMessage: i18n.getMessage("applying_changes"),
+			successMessage: i18n.getMessage("applied_changes"),
+			errorMessage: "something went wrong",
+		}});
+
 		await persistCurrentWorkspaces();
-		applyingChangesState = 'success';
-		setTimeout(() => {
-			applyingChangesState ='rest';
-		}, 4000);
+		toast.$set({state: 'success'});
 	}
 
 	function persistCurrentWorkspaces() {
@@ -73,18 +77,6 @@
 		</h2>
 		<!-- <h1 class="first-letter:uppercase mb-2">{i18n.getMessage('options')}</h1> -->
 
-		<Toast bind:state={applyingChangesState}>
-			{#snippet loadingMessage()}
-				{i18n.getMessage("applying_changes")}
-			{/snippet}
-			{#snippet successMessage()}
-				{i18n.getMessage("applied_changes")}
-			{/snippet}
-			{#snippet errorMessage()}
-				Something went wrong
-			{/snippet}
-		</Toast>
-
 		<div class="flex flex-wrap gap-4 mt-16">
 			<!-- <section>
 				<h2 class="m-0 mb-4 text-lg first-letter:uppercase">🌍 {i18n.getMessage('language')}</h2>
@@ -110,7 +102,7 @@
 				</button>
 			{/snippet}
 			{#snippet Section2Content()}
-				<DefaultWorkspaces bind:applyingChangesState />
+				<DefaultWorkspaces />
 			{/snippet}
 			{#snippet Section3Content()}
 				<h2 class="m-0 mb-4 text-lg flex gap-2 items-center font-semibold first-letter:uppercase">{i18n.getMessage('shortcuts')}</h2>
