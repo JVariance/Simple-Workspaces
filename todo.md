@@ -1,4 +1,5 @@
 **Today**
+[] handle highlighted tab from Firefox' search tabs feature
 [] search improvements
 [] emoji picker improvements
 [] options page - current workspaces

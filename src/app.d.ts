@@ -14,6 +14,8 @@ namespace Ext {
 		UUID: string;
 		workspaces: Workspace[];
 	};
+
+	type SimpleWorkspace = Pick<Ext.Workspace, "icon" | "name"> & { id: number };
 }
 
 declare type Item = import("svelte-dnd-action").Item;

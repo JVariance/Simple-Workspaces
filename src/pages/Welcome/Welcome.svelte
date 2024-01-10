@@ -4,6 +4,7 @@
 	import DefaultWorkspaces from "@root/components/ViewBlocks/DefaultWorkspaces.svelte";
 	import { onMount } from "svelte";
 	import Browser from "webextension-polyfill";
+	import Layout from "../Special_Pages/Layout.svelte";
 
 	const viewCount = 2;
 	let js_enabled = $state(false);
@@ -18,7 +19,6 @@
 		event: PointerEvent & { currentTarget: EventTarget & HTMLDivElement }
 	) {
 		const target = event.target as HTMLElement;
-
 		if (
 			!target.classList.contains("swipe-item") &&
 			!target.closest(".swipe-item")
@@ -127,7 +127,7 @@
 {#snippet ViewStart()}
 	<section
 		id="view-1"
-		class="swipe-item dark:bg-neutral-800 rounded-xl w-[100cqw] p-8 aspect-square"
+		class="swipe-item dark:bg-[#23222b] rounded-xl w-[100cqw] p-8 aspect-square"
 	>
 		<h2
 			class="flex flex-wrap items-center gap-2 m-0 mb-12 text-lg first-letter:uppercase w-full justify-center"
@@ -151,7 +151,7 @@
 		> -->
 		You may want to enable the "open previous windows and tabs" option in preferences.
 		<button
-			class="bg-neutral-900 px-2 py-1 rounded-md mt-2"
+			class="px-2 py-1 rounded-md mt-2"
 			onclick={(e) => {
 				window.navigator.clipboard.writeText(
 					"about:preferences#browserRestoreSession"
@@ -166,68 +166,70 @@
 {#snippet ViewDefaultWorkspaces()}
 	<section
 		id="view-2"
-		class="swipe-item dark:bg-neutral-800 rounded-xl w-[100cqw] h-full p-8"
+		class="swipe-item dark:bg-[#23222b] rounded-xl w-[100cqw] h-full p-8"
 	>
-	<!-- <DefaultWorkspaces /> -->
+	<DefaultWorkspaces dndFinish={() => {swiping = false; scrollViewIntoView();}} />
 	</section>
 {/snippet}
 
-<div class="w-full h-full p-4">
-	<div class="relative h-full max-w-3xl mx-auto">
-		<div
-			id="wrapper"
-			class:swiping
-			class="
-			w-full h-full grid grid-cols-[100%] grid-flow-col gap-2 p-0 justify-items-center overflow-auto content-center
-			scroll-smooth snap-both snap-mandatory overscroll-x-contain @container mx-auto
-			[&.swiping]:cursor-grabbing
-			[&.swiping]:select-none
-		"
-			on:pointerdown={swipeStart}
-			on:pointermove={swipeMove}
-			on:pointerup={swipeEnd}
-			on:pointerleave={cancelSwipe}
-		>
-			{@render ViewStart()}
-			{@render ViewDefaultWorkspaces()}
-		</div>
-		<button
-			onclick={previousSection}
-			disabled={activeView <= 1}
-			class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 p-1 flex gap-2 rounded-full h-max disabled:hidden"
-		>
-			<Icon icon="next-filled" class="rotate-180" />
-		</button>
-		<button
-			onclick={nextSection}
-			disabled={activeView >= 2}
-			class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 p-1 flex gap-2 rounded-full h-max disabled:hidden"
-		>
-			<Icon icon="next-filled" />
-		</button>
-		<div
-			id="view-buttons"
-			class="fixed bottom-8 left-1/2 -translate-x-1/2 flex gap-2"
-		>
-			{#each Array(viewCount) as _, i}
-				{@const viewNum = i + 1}
-				<button
-					class:active={activeView === viewNum}
-					class="rounded-full w-3 h-3 [&.active]:bg-[#fde9ff]"
-					onclick={() => {
-						activeView = viewNum;
-					}}
-				>
-				</button>
-			{/each}
+<Layout>
+	<div class="w-full h-full p-4">
+		<div class="relative h-full max-w-3xl mx-auto">
+			<div
+				id="wrapper"
+				class:swiping
+				class="
+				w-full h-full grid grid-cols-[100%] grid-flow-col gap-2 p-0 justify-items-center overflow-auto content-center
+				scroll-smooth snap-both snap-mandatory overscroll-x-contain @container mx-auto
+				[&.swiping]:cursor-grabbing
+				[&.swiping]:select-none
+			"
+				onpointerdown={swipeStart}
+				onpointermove={swipeMove}
+				onpointerup={swipeEnd}
+				onpointerleave={cancelSwipe}
+			>
+				{@render ViewStart()}
+				{@render ViewDefaultWorkspaces()}
+			</div>
+			<button
+				onclick={previousSection}
+				disabled={activeView <= 1}
+				class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 p-1 flex gap-2 rounded-full h-max disabled:hidden"
+			>
+				<Icon icon="next-filled" class="rotate-180" />
+			</button>
+			<button
+				onclick={nextSection}
+				disabled={activeView >= 2}
+				class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 p-1 flex gap-2 rounded-full h-max disabled:hidden"
+			>
+				<Icon icon="next-filled" />
+			</button>
+			<div
+				id="view-buttons"
+				class="fixed bottom-8 left-1/2 -translate-x-1/2 flex gap-2"
+			>
+				{#each Array(viewCount) as _, i}
+					{@const viewNum = i + 1}
+					<button
+						class:active={activeView === viewNum}
+						class="rounded-full w-3 h-3 [&.active]:bg-[#fde9ff]"
+						onclick={() => {
+							activeView = viewNum;
+						}}
+					>
+					</button>
+				{/each}
+			</div>
 		</div>
 	</div>
-</div>
+</Layout>
 
 <style lang="postcss">
-	:global(body) {
-		@apply m-0 p-0 w-[100dvw] h-[100dvh];
-	}
+	/* :global(body) {
+		@apply m-0 p-0 w-[100dvw] h-[100dvh] dark:bg-[#1c1b22];
+	} */
 
 	:global(body.js-enabled #wrapper) {
 		scrollbar-width: none;
