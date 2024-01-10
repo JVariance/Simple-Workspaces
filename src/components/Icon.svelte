@@ -26,6 +26,7 @@
 		"drag-handle": "radix-icons:drag-handle-dots-2",
 		edit: "fluent:edit-24-filled",
 		info: "material-symbols:info",
+		"next-filled": "carbon:next-filled",
 		reset: "radix-icons:reset",
 		remove: "ic:round-remove-circle",
 		search: "tabler:search",
