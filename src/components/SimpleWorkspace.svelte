@@ -52,7 +52,7 @@
 
 <button
 	title="choose icon"
-	class="w-12 h-auto aspect-square flex justify-center items-center"
+	class="btn w-12 h-auto aspect-square justify-center"
 	onclick={(e) => {
 		openEmojiPicker(e);
 	}}
@@ -60,7 +60,7 @@
 	{workspace.icon}
 </button>
 <input
-	class="bg-transparent border border-solid dark:border-neutral-700 rounded-md dark:text-white p-2"
+	class="grow bg-transparent border border-solid dark:border-neutral-700 rounded-md dark:text-white p-2"
 	type="text"
 	on:input={(e) => {
 		updatedName(e.target.value);

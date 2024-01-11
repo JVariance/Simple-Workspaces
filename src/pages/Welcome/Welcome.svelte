@@ -152,7 +152,7 @@
 		> -->
 		You may want to enable the "open previous windows and tabs" option in preferences.
 		<button
-			class="px-2 py-1 rounded-md mt-2"
+			class="btn px-2 py-1 mt-2"
 			onclick={(e) => {
 				window.navigator.clipboard.writeText(
 					"about:preferences#browserRestoreSession"
@@ -169,15 +169,17 @@
 		id="view-2"
 		class="swipe-item dark:bg-[#23222b] rounded-xl w-[100cqw] h-full p-8 justify-center overflow-auto grid"
 	>
-		<div class="h-max self-center flex flex-wrap">
+		<div class="h-max flex flex-wrap">
+			<h2 class="m-0 mb-4 text-xl font-semibold first-letter:uppercase">{i18n.getMessage('default_workspaces')}</h2>
+			<!-- <Info>
+				{i18n.getMessage('will_apply_for_new_windows')}
+			</Info> -->
 			<p class="mb-8 basis-full">
 				If you want to, you can set some default workspaces that will open with every window. 
 				You can change them at any time in the settings page which is accessible via the 'cog' symbol next to the search bar inside the extension pages
 				or via Firefox' Add-On Manager.
 			</p>
-			<div>
-				<DefaultWorkspaces dndFinish={() => {swiping = false; scrollViewIntoView();}} />
-			</div>
+			<DefaultWorkspaces dndFinish={() => {swiping = false; scrollViewIntoView();}} />
 		</div>
 	</section>
 {/snippet}

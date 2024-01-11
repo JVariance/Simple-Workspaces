@@ -1,20 +1,17 @@
 <script lang="ts">
 	import Icon from "@root/components/Icon.svelte";
-	import { debounceFunc } from "@root/utils";
-	import { createRoot, onMount, unstate, type Snippet} from "svelte";
-	import { SOURCES, dndzone } from "svelte-dnd-action";
+	import { createRoot, onMount, type Snippet} from "svelte";
 	import Browser, { i18n } from "webextension-polyfill";
 	import "@root/app.postcss";
 	import Accordion from "@root/components/Accordion.svelte";
 	import DefaultWorkspaces from "@root/components/ViewBlocks/DefaultWorkspaces.svelte";
-	import Workspace from "@root/components/Workspace.svelte";
 	import Info from "@root/components/Info.svelte";
 	import SimpleWorkspace from "@root/components/SimpleWorkspace.svelte";
 	import Layout from "../Special_Pages/Layout.svelte";
 	import Toast from "@root/components/Toast.svelte";
+	import ButtonLink from "@root/components/ButtonLink.svelte";
 
 	let windowWorkspaces: Ext.Workspace[] = $state([]);
-	let mounted = $state(false);
 
 	async function getWorkspaces(): Promise<Ext.Workspace[]> {
 		const windowId = (await Browser.windows.getCurrent()).id!;
@@ -49,17 +46,8 @@
 		});
 	}
 
-	// const debouncedApplyChanges = debounceFunc(applyChanges, 500);
-
-	// $effect(() => {
-	// 	if(!mounted) return;
-	// 	// console.info({defaultWorkspaces});
-	// 	debouncedApplyChanges();
-	// });
-
 	onMount(async () => {
 		windowWorkspaces = (await getWorkspaces()).filter(({UUID}) => UUID !== "HOME");
-		mounted = true;
 	});
 </script>
 
@@ -86,7 +74,7 @@
 					{/each}
 				</select>
 			</section> -->
-			{#snippet Section1Content()}
+			{#snippet Section_CurrentWorkspaces()}
 				<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('current_workspaces')}</h2>
 				<ul class="current-workspaces grid gap-4">
 					{#each windowWorkspaces as workspace}
@@ -96,16 +84,24 @@
 					{/each}
 				</ul>
 
-				<button class="flex gap-2 items-center justify-center mt-4" style:width="-moz-available" onclick={applyCurrentWorkspacesChanges}>
+				<button class="btn justify-center mt-4" style:width="-moz-available" onclick={applyCurrentWorkspacesChanges}>
 					<Icon icon="check" />
 					<span class="-mt-1">{i18n.getMessage('apply_changes')}</span>
 				</button>
 			{/snippet}
-			{#snippet Section2Content()}
-				<DefaultWorkspaces />
+			{#snippet Section_DefaultWorkspaces()}
+				<div class="w-max">
+					<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('default_workspaces')}</h2>
+					<Info>
+						{i18n.getMessage('will_apply_for_new_windows')}
+					</Info>
+					<DefaultWorkspaces />
+				</div>
 			{/snippet}
-			{#snippet Section3Content()}
-				<h2 class="m-0 mb-4 text-lg flex gap-2 items-center font-semibold first-letter:uppercase">{i18n.getMessage('shortcuts')}</h2>
+			{#snippet Section_Shortcuts()}
+				<h2 class="m-0 mb-4 text-lg flex gap-2 items-center font-semibold">
+					<span class="first-letter:uppercase">{i18n.getMessage('shortcuts')}</span>
+				</h2>
 				<Info>
 					{i18n.getMessage('you_can_set_shortcuts_for_commands_in_the_addons_page')}
 				</Info>
@@ -122,22 +118,35 @@
 					{/await}	
 				</div>
 			{/snippet}
-			{#snippet Section4Content()}
+			{#snippet Section_ClearExtensionData()}
 				<Accordion summaryClasses="border-none" detailsClasses="border-none" contentClasses="mt-4">
 					{#snippet summary()}
-						<h2 class="m-0 text-lg flex gap-2 items-center font-semibold first-letter:uppercase">
+						<h2 class="m-0 text-lg flex gap-2 items-center font-semibold">
 							<Icon icon="clear" />
-							<span class="-mt-1">{i18n.getMessage('clear')}</span>
+							<span class="-mt-[0rem] first-letter:uppercase">{i18n.getMessage('clear')}</span>
 						</h2>
 					{/snippet}
-					<button onclick={clearExtensionData}>{i18n.getMessage('clear')}</button>
+					<button class="btn" onclick={clearExtensionData}>{i18n.getMessage('clear')}</button>
 				</Accordion>
 			{/snippet}
+			{#snippet Section_WelcomePage()}
+				<h2 class="m-0 mb-4 text-lg flex gap-2 items-center font-semibold first-letter:uppercase">Want to see the Welcome Page again?</h2>
+				<ButtonLink class="btn" href="{Browser.runtime.getURL('src/pages/Welcome/welcome.html')}" target="_blank">Open Welcome Page</ButtonLink>
+			{/snippet}
+			{#snippet Section_FurtherLinks()}
+				<h2 class="m-0 mb-4 text-lg flex gap-2 items-center font-semibold first-letter:uppercase">Feedback and Feature Requests?</h2>
+				<ButtonLink href="https://github.com/JVariance/Simple-Workspaces" target="_blank">
+					<img src="/images/github-mark/github-mark-white.svg" alt="GitHub Logo" class="w-8 aspect-square">
+					GitHub Repository
+				</ButtonLink>
+			{/snippet}
 
-			{@render Section([Section1Content, "flex-0"])}
-			{@render Section([Section2Content, "flex-1"])}
-			{@render Section([Section3Content, "basis-full"])}
-			{@render Section([Section4Content, "basis-full"])}
+			{@render Section([Section_CurrentWorkspaces, "flex-0"])}
+			{@render Section([Section_DefaultWorkspaces, "flex-1"])}
+			{@render Section([Section_Shortcuts, "basis-full"])}
+			{@render Section([Section_ClearExtensionData, "basis-full"])}
+			{@render Section([Section_WelcomePage, "flex-0"])}
+			{@render Section([Section_FurtherLinks, "flex-0"])}
 		</div>
 	</div>
 </Layout>

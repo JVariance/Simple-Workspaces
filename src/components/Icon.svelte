@@ -25,6 +25,7 @@
 		cross: "iconoir:cancel",
 		"drag-handle": "radix-icons:drag-handle-dots-2",
 		edit: "fluent:edit-24-filled",
+		external: "octicon:link-external-24",
 		info: "material-symbols:info",
 		"next-filled": "carbon:next-filled",
 		reset: "radix-icons:reset",
