@@ -6,8 +6,10 @@
 	import Browser, { i18n } from "webextension-polyfill";
 	import Layout from "../Special_Pages/Layout.svelte";
 	import Toast from "@root/components/Toast.svelte";
+	import Shortcuts from "@root/components/ViewBlocks/Shortcuts.svelte";
+	import Info from "@root/components/Info.svelte";
 
-	const viewCount = 2;
+	const viewCount = 3;
 	let js_enabled = $state(false);
 	let activeView = $state(1);
 	let swiping = $state(false);
@@ -128,7 +130,7 @@
 {#snippet ViewStart()}
 	<section
 		id="view-1"
-		class="swipe-item dark:bg-[#23222b] rounded-xl w-[100cqw] p-8 aspect-square overflow-auto"
+		class="swipe-item dark:bg-[#23222b] rounded-xl w-[100cqw] p-8 aspect-square overflow-auto relative"
 	>
 		<h2
 			class="flex flex-wrap items-center gap-2 m-0 mb-12 text-lg first-letter:uppercase w-full justify-center"
@@ -162,6 +164,10 @@
 		>
 			copy link and open new tab
 		</button>
+
+		<div class="touch-icon absolute bottom-4 left-1/2 -translate-x-1/2 opacity-50">
+			<Icon icon="touch" width={42} />
+		</div>
 	</section>
 {/snippet}
 {#snippet ViewDefaultWorkspaces()}
@@ -183,6 +189,20 @@
 		</div>
 	</section>
 {/snippet}
+{#snippet ViewShortcuts()}
+	<section
+		id="view-3"
+		class="swipe-item dark:bg-[#23222b] rounded-xl w-[100cqw] h-full p-8 justify-center overflow-auto"
+	>
+	<h2 class="m-0 mb-4 text-xl flex gap-2 items-center font-semibold">
+		<span class="first-letter:uppercase">{i18n.getMessage('shortcuts')}</span>
+	</h2>
+	<Info>
+		{i18n.getMessage('you_can_edit_shortcuts_for_commands_in_the_addons_page')}
+	</Info>
+	<Shortcuts />
+</section>
+{/snippet}
 
 <Layout>
 	<div class="w-full h-full p-4">
@@ -203,6 +223,7 @@
 			>
 				{@render ViewStart()}
 				{@render ViewDefaultWorkspaces()}
+				{@render ViewShortcuts()}
 			</div>
 			<button
 				onclick={previousSection}
@@ -213,7 +234,7 @@
 			</button>
 			<button
 				onclick={nextSection}
-				disabled={activeView >= 2}
+				disabled={activeView >= viewCount}
 				class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 p-1 flex gap-2 rounded-full h-max disabled:hidden"
 			>
 				<Icon icon="next-filled" />
@@ -251,5 +272,16 @@
 		#view-buttons {
 			@apply !hidden;
 		}
+	}
+
+	@keyframes rotate {
+  	0% { transform: translateX(calc(-50% - 10px)) rotate(-10deg) }
+  	20% { transform: translateX(calc(-50% + 10px)) rotate(10deg) }
+		80% { transform: translateX(calc(-50% + 10px)) rotate(10deg) }
+		100% { transform: translateX(calc(-50% - 10px)) rotate(-10deg) }
+	}
+
+	.touch-icon {
+		animation: rotate 6s infinite;
 	}
 </style>

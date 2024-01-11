@@ -10,6 +10,7 @@
 	import Layout from "../Special_Pages/Layout.svelte";
 	import Toast from "@root/components/Toast.svelte";
 	import ButtonLink from "@root/components/ButtonLink.svelte";
+	import Shortcuts from "@root/components/ViewBlocks/Shortcuts.svelte";
 
 	let windowWorkspaces: Ext.Workspace[] = $state([]);
 
@@ -103,20 +104,9 @@
 					<span class="first-letter:uppercase">{i18n.getMessage('shortcuts')}</span>
 				</h2>
 				<Info>
-					{i18n.getMessage('you_can_set_shortcuts_for_commands_in_the_addons_page')}
+					{i18n.getMessage('you_can_edit_shortcuts_for_commands_in_the_addons_page')}
 				</Info>
-				<div class="mt-4">
-					{#await Browser.commands.getAll()}
-						...
-						{:then commands}
-							<dl class="grid grid-cols-[max-content_max-content] gap-4">
-								{#each commands as command}
-									<dt>{i18n.getMessage(`command.${command.name}`)}</dt>
-									<dd><kbd>{command.shortcut}</kbd></dd>
-								{/each}
-							</dl>
-					{/await}	
-				</div>
+				<Shortcuts />
 			{/snippet}
 			{#snippet Section_ClearExtensionData()}
 				<Accordion summaryClasses="border-none" detailsClasses="border-none" contentClasses="mt-4">

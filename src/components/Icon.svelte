@@ -32,6 +32,7 @@
 		remove: "ic:round-remove-circle",
 		search: "tabler:search",
 		settings: "material-symbols:settings",
+		touch: "carbon:touch-1-filled",
 	};
 </script>
 

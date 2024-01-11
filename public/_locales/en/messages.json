@@ -107,8 +107,8 @@
 		"message": "shortcuts",
 		"description": ""
 	},
-	"you_can_set_shortcuts_for_commands_in_the_addons_page": {
-		"message": "You can set shortcuts for commands via the add-ons page.",
+	"you_can_edit_shortcuts_for_commands_in_the_addons_page": {
+		"message": "You can edit shortcuts for commands via the add-ons page.",
 		"description": ""
 	}
 }

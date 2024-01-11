@@ -107,7 +107,7 @@
 		"message": "Tastaturkürzel",
 		"description": ""
 	},
-	"you_can_set_shortcuts_for_commands_in_the_addons_page": {
+	"you_can_edit_shortcuts_for_commands_in_the_addons_page": {
 		"message": "Du kannst Tastaturkürzel für die Befehle über die Add-Ons-Seite festlegen.",
 		"description": ""
 	}
