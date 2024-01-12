@@ -359,6 +359,7 @@ export class Window {
 		this.#initializing = true;
 		// const { homeWorkspace } = await BrowserStorage.getHomeWorkspace();
 		const { defaultWorkspaces } = await BrowserStorage.getDefaultWorkspaces();
+		if (!defaultWorkspaces?.length) return;
 
 		for (let [index, _defaultWorkspace] of defaultWorkspaces.entries() ||
 			[].entries()) {
@@ -394,9 +395,12 @@ export class Window {
 					"workspaceUUID",
 					newWorkspaceData.UUID
 				);
+
+				console.info("lollilollo");
 			}
 		}
 
+		console.info("forceApply end");
 		this.#initializing = false;
 	}
 

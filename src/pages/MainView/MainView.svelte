@@ -283,18 +283,18 @@
 		windowId = (await Browser.windows.getCurrent()).id!;
 		console.info({ windowId });
 		const _workspaces = await getWorkspaces({ windowId });
-		const [_homeWorkspace, _viewWorkspaces] = _workspaces.reduce((acc, workspace, i) => {
-			if(i === 0) acc[1] = [];
-			if(workspace.UUID === "HOME") 
-			{
-				acc[0] = workspace;
-			} else {
-				acc[1].push(workspace);
-			}
-			return acc;
-		}, new Array(2) as [Ext.Workspace, Ext.Workspace[]]);
-		homeWorkspace = _homeWorkspace;
-		workspaces = _viewWorkspaces;
+		// const [_homeWorkspace, _viewWorkspaces] = _workspaces.reduce((acc, workspace, i) => {
+		// 	if(i === 0) acc[1] = [];
+		// 	if(workspace.UUID === "HOME") 
+		// 	{
+		// 		acc[0] = workspace;
+		// 	} else {
+		// 		acc[1].push(workspace);
+		// 	}
+		// 	return acc;
+		// }, new Array(2) as [Ext.Workspace, Ext.Workspace[]]);
+		homeWorkspace = _workspaces[0];
+		workspaces = _workspaces.slice(1);
 
 		console.info({homeWorkspace, workspaces});
 	}

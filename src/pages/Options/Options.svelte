@@ -12,6 +12,7 @@
 	import ButtonLink from "@root/components/ButtonLink.svelte";
 	import Shortcuts from "@root/components/ViewBlocks/Shortcuts.svelte";
 	import Logo from "@root/components/Logo.svelte";
+	import HomeWorkspace from "@root/components/ViewBlocks/HomeWorkspace.svelte";
 
 	let windowWorkspaces: Ext.Workspace[] = $state([]);
 
@@ -49,7 +50,8 @@
 	}
 
 	onMount(async () => {
-		windowWorkspaces = (await getWorkspaces()).filter(({UUID}) => UUID !== "HOME");
+		const workspaces = await getWorkspaces();
+		windowWorkspaces = workspaces.slice(1);
 	});
 </script>
 
@@ -76,6 +78,10 @@
 					{/each}
 				</select>
 			</section> -->
+			{#snippet Section_HomeWorkspace()}
+				<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('home_workspace') || 'Home Workspace'}</h2>
+				<HomeWorkspace />
+			{/snippet}
 			{#snippet Section_CurrentWorkspaces()}
 				<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('current_workspaces')}</h2>
 				<ul class="current-workspaces grid gap-4">
@@ -102,7 +108,7 @@
 			{#snippet Section_DefaultWorkspaces()}
 				<div class="w-max">
 					<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('default_workspaces')}</h2>
-					<Info>
+					<Info class="mb-4">
 						{i18n.getMessage('will_apply_for_new_windows')}
 					</Info>
 					<DefaultWorkspaces />
@@ -141,6 +147,7 @@
 				</ButtonLink>
 			{/snippet}
 
+			{@render Section([Section_HomeWorkspace, "basis-full flex-1"])}
 			{@render Section([Section_CurrentWorkspaces, "flex-0"])}
 			{@render Section([Section_DefaultWorkspaces, "flex-1 w-full overflow-auto [scrollbar-gutter:_stable] sm:[scrollbar-gutter:_unset]"])}
 			{@render Section([Section_Shortcuts, "basis-full"])}

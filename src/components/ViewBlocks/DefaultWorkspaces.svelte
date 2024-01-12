@@ -14,7 +14,6 @@
 	
 	let changesMade = $state(false);
 	let dragEnabled = $state(false);
-	let homeWorkspace = $state<Ext.SimpleWorkspace>({id: -1, icon: "🏠", name: "Home"});		
 	let defaultWorkspaces: Ext.SimpleWorkspace[] = $state([]);
 
 	function getNewWorkspace(){
@@ -39,7 +38,6 @@
 	function persistDefaultWorkspaces() {
 		return Browser.runtime.sendMessage({
 			msg: "setDefaultWorkspaces",
-			homeWorkspace: {...homeWorkspace},
 			defaultWorkspaces: defaultWorkspaces.map((workspace) => (({name, icon}) => ({name, icon}))(workspace)),
 		});
 	}
@@ -61,7 +59,7 @@
 	const applyDefaultWorkspacesChanges = immediateDebounceFunc(_applyDefaultWorkspacesChanges, 500);
 
 	$effect(() => {
-		defaultWorkspaces; homeWorkspace; 
+		defaultWorkspaces; 
 		changesMade = true;
 	});
 
@@ -72,10 +70,6 @@
 		});
 
 		if(localDefaultWorkspaces) defaultWorkspaces.push(...localDefaultWorkspaces);
-
-		const { homeWorkspace: localHomeWorkspace } = await Browser.storage.local.get("homeWorkspace") as {homeWorkspace: Ext.SimpleWorkspace};
-
-		if(Object.keys(localHomeWorkspace || {})?.length) homeWorkspace = localHomeWorkspace;
 	});
 
 
@@ -107,9 +101,6 @@
 	<div 
 		class="w-full"
 	>
-		<div class="home-workspace flex gap-2 mb-2 mt-4 ml-6">
-			<SimpleWorkspace workspace={homeWorkspace} updatedIcon={(icon) => {homeWorkspace.icon = icon;}} updatedName={(name) => {homeWorkspace.name = name;}}></SimpleWorkspace>
-		</div>
 		<ul
 			class="default-workspaces grid gap-2 [&:not(:empty)]:!mb-2"
 			use:dndzone={{
@@ -150,7 +141,7 @@
 		</ul>
 		<button
 			title="add default workspace"
-			class="btn ml-6 w-full"
+			class="btn ml-6 w-full mt-2"
 			style:width="-moz-available"
 			onclick={addDefaultWorkspace}><Icon icon="add" width={16}/>
 			<span class="-mt-1">{i18n.getMessage('add_default_workspace')}</span>

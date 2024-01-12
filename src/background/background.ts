@@ -589,11 +589,15 @@ browser.runtime.onMessage.addListener((message) => {
 
 				return resolve();
 			});
+		case "setHomeWorkspace":
+			return new Promise<void>(async (resolve) => {
+				console.info("setHomeWorkspace to " + message.homeWorkspace);
+				await BrowserStorage.setHomeWorkspace(message.homeWorkspace);
+				return resolve();
+			});
 		case "setDefaultWorkspaces":
 			return new Promise<void>(async (resolve) => {
-				await BrowserStorage.setHomeWorkspace(message.homeWorspace);
 				await BrowserStorage.setDefaultWorkspaces(message.defaultWorkspaces);
-
 				if (
 					workspaceStorage.windows.size < 2 &&
 					workspaceStorage.activeWindow.workspaces.length < 2
@@ -615,9 +619,13 @@ browser.runtime.onMessage.addListener((message) => {
 				return resolve(defaultWorkspaces);
 			});
 		case "forceApplyDefaultWorkspacesOnCurrentWindow":
-			return new Promise<void>(async (resolve) => {
+			return new Promise<boolean>(async (resolve) => {
 				await workspaceStorage.activeWindow.forceApplyDefaultWorkspaces();
-				return resolve();
+				informViews(
+					workspaceStorage.activeWindow.windowId,
+					"updatedWorkspaces"
+				);
+				return resolve(true);
 			});
 		case "forceApplyDefaultWorkspacesOnAllWindows":
 			return new Promise<void>(async (resolve) => {
