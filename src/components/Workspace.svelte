@@ -75,6 +75,7 @@
 	}
 
 	function _switchWorkspace() {
+		if (active) return;
 		switchWorkspace();
 	}
 
@@ -200,7 +201,9 @@
 		{:else}
 			<button
 				onclick={_switchWorkspace}
-				class="ghost w-full outline-transparent outline-none flex items-center gap-4"
+				class="ghost w-full outline-transparent outline-none flex items-center gap-4 {active
+					? '!cursor-default'
+					: ''}"
 				data-focusid={index}
 				bind:this={workspaceButton}
 			>
@@ -210,9 +213,13 @@
 				<span class="{active ? 'font-bold' : ''} text-lg">{name}</span>
 				<!-- <span>({tabIds.join(",")})</span> -->
 			</button>
-			<button class="ghost" title="edit" onclick={toggleEditMode}>
-				<Icon icon="edit" width={14} />
-			</button>
+			{#if UUID === "HOME"}
+				<button class="invisible" />
+			{:else}
+				<button class="ghost" title="edit" onclick={toggleEditMode}>
+					<Icon icon="edit" width={14} />
+				</button>
+			{/if}
 		{/if}
 	</div>
 {/if}
