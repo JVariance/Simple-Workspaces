@@ -11,7 +11,7 @@
 	}
 
 	:global(body){
-		@apply dark:bg-[#1c1b22] m-0 p-0 w-[100dvw] h-[100dvh];
+		@apply dark:bg-[#1c1b22] m-0 p-0;
 	}
 
 	p {

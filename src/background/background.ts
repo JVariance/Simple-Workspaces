@@ -177,25 +177,25 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 	2. browser.windows.onRemoved
  */
 
-function updateIcon(scheme: "dark" | "light") {
-	const paths = {
-		path: {
-			16: `icon/icon-${scheme}.svg`,
-			32: `icon/icon-${scheme}.svg`,
-			48: `icon/icon-${scheme}.svg`,
-			96: `icon/icon-${scheme}.svg`,
-		},
-	};
-	browser.browserAction.setIcon(paths);
-	browser.sidebarAction.setIcon(paths);
-}
+// function updateIcon(scheme: "dark" | "light") {
+// 	const paths = {
+// 		path: {
+// 			16: `icon/icon-${scheme}.svg`,
+// 			32: `icon/icon-${scheme}.svg`,
+// 			48: `icon/icon-${scheme}.svg`,
+// 			96: `icon/icon-${scheme}.svg`,
+// 		},
+// 	};
+// 	browser.browserAction.setIcon(paths);
+// 	browser.sidebarAction.setIcon(paths);
+// }
 
-const darkThemeMq = window.matchMedia("(prefers-color-scheme: dark)");
-updateIcon(darkThemeMq.matches ? "dark" : "light");
-darkThemeMq.addEventListener("change", (e) => {
-	const theme = e.matches ? "dark" : "light";
-	updateIcon(theme);
-});
+// const darkThemeMq = window.matchMedia("(prefers-color-scheme: dark)");
+// updateIcon(darkThemeMq.matches ? "dark" : "light");
+// darkThemeMq.addEventListener("change", (e) => {
+// 	const theme = e.matches ? "dark" : "light";
+// 	updateIcon(theme);
+// });
 
 // browser.management.onEnabled.addListener(async () => {
 // 	await browser.storage.local.clear();

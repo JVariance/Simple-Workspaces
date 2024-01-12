@@ -4,12 +4,12 @@
 	"version": "0.0.1",
 	"description": "Simple Workspaces is a Firefox extension that allows you to organize your tabs into workspaces.",
 	"icons": {
-		"16": "icon/icon-dark.svg",
-		"32": "icon/icon-dark.svg",
-		"48": "icon/icon-dark.svg",
-		"96": "icon/icon-dark.svg",
-		"128": "icon/icon-dark.svg",
-		"256": "icon/icon-dark.svg"
+		"16": "icon/icon-light.svg",
+		"32": "icon/icon-light.svg",
+		"48": "icon/icon-light.svg",
+		"96": "icon/icon-light.svg",
+		"128": "icon/icon-light.svg",
+		"256": "icon/icon-light.svg"
 	},
 	"{{firefox}}.permissions": [
 		"<all_urls>",
@@ -58,49 +58,17 @@
 		"default_title": "Workspaces",
 		"open_at_install": true,
 		"default_icon": {
-			"16": "icon/icon-dark.svg",
-			"32": "icon/icon-dark.svg",
-			"48": "icon/icon-dark.svg",
-			"96": "icon/icon-dark.svg",
-			"128": "icon/icon-dark.svg",
-			"256": "icon/icon-dark.svg"
+			"16": "icon/icon-light.svg",
+			"32": "icon/icon-light.svg",
+			"48": "icon/icon-light.svg",
+			"96": "icon/icon-light.svg",
+			"128": "icon/icon-light.svg",
+			"256": "icon/icon-light.svg"
 		}
 	},
 	"{{firefox}}.browser_action": {
 		"default_popup": "src/pages/Popup/popup.html",
-		"default_title": "Workspaces",
-		"theme_icons": [
-			{
-				"light": "icon/icon-dark.svg",
-				"dark": "icon/icon-light.svg",
-				"size": 16
-			},
-			{
-				"light": "icon/icon-dark.svg",
-				"dark": "icon/icon-light.svg",
-				"size": 32
-			},
-			{
-				"light": "icon/icon-dark.svg",
-				"dark": "icon/icon-light.svg",
-				"size": 48
-			},
-			{
-				"light": "icon/icon-dark.svg",
-				"dark": "icon/icon-light.svg",
-				"size": 96
-			},
-			{
-				"light": "icon/icon-dark.svg",
-				"dark": "icon/icon-light.svg",
-				"size": 128
-			},
-			{
-				"light": "icon/icon-dark.svg",
-				"dark": "icon/icon-light.svg",
-				"size": 256
-			}
-		]
+		"default_title": "Workspaces"
 	},
 	"{{firefox}}.default_locale": "en",
 	"{{firefox}}.options_ui": {

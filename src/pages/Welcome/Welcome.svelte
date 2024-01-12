@@ -8,6 +8,7 @@
 	import Toast from "@root/components/Toast.svelte";
 	import Shortcuts from "@root/components/ViewBlocks/Shortcuts.svelte";
 	import Info from "@root/components/Info.svelte";
+	import Logo from "@root/components/Logo.svelte";
 
 	const viewCount = 3;
 	let js_enabled = $state(false);
@@ -135,11 +136,8 @@
 		<h2
 			class="flex flex-wrap items-center gap-2 m-0 mb-12 text-lg first-letter:uppercase w-full justify-center"
 		>
-			<img
-				src="/icon/icon-dark.svg"
-				alt="logo"
-				width="40"
-				class="[filter:_invert()] dark:[filter:_invert(0)] w-40"
+			<Logo
+				class="w-40"
 				draggable="false"
 			/>
 			<!-- <span class="basis-full w-full text-center text-2xl"
@@ -197,7 +195,7 @@
 	<h2 class="m-0 mb-4 text-xl flex gap-2 items-center font-semibold">
 		<span class="first-letter:uppercase">{i18n.getMessage('shortcuts')}</span>
 	</h2>
-	<Info>
+	<Info class="w-full">
 		{i18n.getMessage('you_can_edit_shortcuts_for_commands_in_the_addons_page')}
 	</Info>
 	<Shortcuts />

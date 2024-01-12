@@ -11,6 +11,7 @@
 	import Toast from "@root/components/Toast.svelte";
 	import ButtonLink from "@root/components/ButtonLink.svelte";
 	import Shortcuts from "@root/components/ViewBlocks/Shortcuts.svelte";
+	import Logo from "@root/components/Logo.svelte";
 
 	let windowWorkspaces: Ext.Workspace[] = $state([]);
 
@@ -61,12 +62,12 @@
 <Layout>
 	<div class="p-8">
 		<h2 class="flex items-center gap-2 m-0 mb-4 text-lg first-letter:uppercase">
-			<img src="/icon/icon-dark.svg" alt="logo" width="40" class="[filter:_invert()] dark:[filter:_invert(0)]"/>
+			<Logo />
 			Simple Workspaces
 		</h2>
 		<!-- <h1 class="first-letter:uppercase mb-2">{i18n.getMessage('options')}</h1> -->
 
-		<div class="flex flex-wrap gap-4 mt-16">
+		<div class="flex flex-wrap gap-4 mt-16 flex-col sm:flex-row">
 			<!-- <section>
 				<h2 class="m-0 mb-4 text-lg first-letter:uppercase">🌍 {i18n.getMessage('language')}</h2>
 				<select id="selectLanguage">
@@ -126,13 +127,14 @@
 			{#snippet Section_FurtherLinks()}
 				<h2 class="m-0 mb-4 text-lg flex gap-2 items-center font-semibold first-letter:uppercase">Feedback and Feature Requests?</h2>
 				<ButtonLink href="https://github.com/JVariance/Simple-Workspaces" target="_blank">
-					<img src="/images/github-mark/github-mark-white.svg" alt="GitHub Logo" class="w-8 aspect-square">
+					<img src="/images/github-mark/github-mark-white.svg" alt="GitHub Logo" class="w-8 aspect-square [@media_(prefers-color-scheme:_light)]:hidden">
+					<img src="/images/github-mark/github-mark.svg" alt="GitHub Logo" class="w-8 aspect-square dark:hidden">
 					GitHub Repository
 				</ButtonLink>
 			{/snippet}
 
 			{@render Section([Section_CurrentWorkspaces, "flex-0"])}
-			{@render Section([Section_DefaultWorkspaces, "flex-1"])}
+			{@render Section([Section_DefaultWorkspaces, "flex-1 w-full overflow-auto [scrollbar-gutter:_stable]"])}
 			{@render Section([Section_Shortcuts, "basis-full"])}
 			{@render Section([Section_ClearExtensionData, "basis-full"])}
 			{@render Section([Section_WelcomePage, "flex-0"])}
