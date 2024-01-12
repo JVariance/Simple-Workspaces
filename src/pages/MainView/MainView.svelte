@@ -116,6 +116,7 @@
 	
 	async function updatedWorkspaces() {
 		console.info("updatedWorkspaces");
+		workspaces = await getWorkspaces({ windowId });
 		// initWorkspaces();
 	}
 

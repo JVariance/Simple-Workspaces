@@ -2,6 +2,7 @@ import * as API from "@root/browserAPI";
 import { promisedDebounceFunc } from "@root/utils";
 import { unstate } from "svelte";
 import Browser from "webextension-polyfill";
+import { BrowserStorage } from "./Storage";
 
 type EnhancedTab = Browser.Tabs.Tab & { workspaceUUID?: string };
 
@@ -101,10 +102,8 @@ export class Window {
 			this.#addingWorkspace = true;
 			let tabIds = tabs.map((tab) => tab.id!);
 
-			const { defaultWorkspaces: _defaultWorkspaces } =
-				(await Browser.storage.local.get("defaultWorkspaces")) as {
-					defaultWorkspaces: Ext.Workspace[] & { id: string };
-				};
+			// const { defaultWorkspaces: _defaultWorkspaces } =
+			// 	await BrowserStorage.getDefaultWorkspaces();
 
 			const { homeWorkspace: localHomeWorkspace } =
 				await Browser.storage.local.get("homeWorkspace");
@@ -143,31 +142,7 @@ export class Window {
 				await API.setTabValue(newTab.id!, "workspaceUUID", homeWorkspace.UUID);
 			}
 
-			for (let _defaultWorkspace of _defaultWorkspaces || []) {
-				const { id, ...defaultWorkspace } = _defaultWorkspace;
-
-				const newTab = (await API.createTab({
-					active: false,
-					windowId: this.#windowId,
-				}))!;
-				await API.hideTab(newTab.id!);
-
-				const newWorkspaceData = this.#getNewWorkspace();
-
-				this.#workspaces.push({
-					...newWorkspaceData,
-					...defaultWorkspace,
-					active: false,
-					activeTabId: newTab.id!,
-					tabIds: [newTab.id!],
-				});
-
-				await API.setTabValue(
-					newTab.id!,
-					"workspaceUUID",
-					newWorkspaceData.UUID
-				);
-			}
+			await this.addDefaultWorkspaces();
 
 			console.info("nach defaultworkspaces loop");
 
@@ -344,6 +319,85 @@ export class Window {
 
 	get workspaces(): Ext.Workspace[] {
 		return this.#workspaces;
+	}
+
+	/**
+	 * If the extension has been newly installed and no workspaces have been added to the window yet, apply the set default workspaces.
+	 */
+	async addDefaultWorkspaces() {
+		this.#initializing = true;
+		// const { homeWorkspace } = await BrowserStorage.getHomeWorkspace();
+		const { defaultWorkspaces } = await BrowserStorage.getDefaultWorkspaces();
+
+		for (let _defaultWorkspace of defaultWorkspaces || []) {
+			const { id, ...defaultWorkspace } = _defaultWorkspace;
+
+			const newTab = (await API.createTab({
+				active: false,
+				windowId: this.#windowId,
+			}))!;
+			await API.hideTab(newTab.id!);
+
+			const newWorkspaceData = this.#getNewWorkspace();
+
+			this.#workspaces.push({
+				...newWorkspaceData,
+				...defaultWorkspace,
+				active: false,
+				activeTabId: newTab.id!,
+				tabIds: [newTab.id!],
+			});
+
+			await API.setTabValue(newTab.id!, "workspaceUUID", newWorkspaceData.UUID);
+		}
+
+		this.#initializing = false;
+	}
+
+	async forceApplyDefaultWorkspaces() {
+		console.info("Window - forceApplyDefaultWorkspaces");
+		this.#initializing = true;
+		// const { homeWorkspace } = await BrowserStorage.getHomeWorkspace();
+		const { defaultWorkspaces } = await BrowserStorage.getDefaultWorkspaces();
+
+		for (let [index, _defaultWorkspace] of defaultWorkspaces.entries() ||
+			[].entries()) {
+			const { id, ...defaultWorkspace } = _defaultWorkspace;
+
+			let presentWorkspace = this.workspaces
+				.filter(({ UUID }) => UUID !== "HOME")
+				?.at(index);
+
+			if (presentWorkspace) {
+				console.info({ presentWorkspace, defaultWorkspace });
+				presentWorkspace = { ...presentWorkspace, ...defaultWorkspace };
+				console.info({ presentWorkspace });
+			} else {
+				const newTab = (await API.createTab({
+					active: false,
+					windowId: this.#windowId,
+				}))!;
+				await API.hideTab(newTab.id!);
+
+				const newWorkspaceData = this.#getNewWorkspace();
+
+				this.#workspaces.push({
+					...newWorkspaceData,
+					...defaultWorkspace,
+					active: false,
+					activeTabId: newTab.id!,
+					tabIds: [newTab.id!],
+				});
+
+				await API.setTabValue(
+					newTab.id!,
+					"workspaceUUID",
+					newWorkspaceData.UUID
+				);
+			}
+		}
+
+		this.#initializing = false;
 	}
 
 	async addWorkspaceAndSwitch() {

@@ -54,7 +54,7 @@
 </script>
 
 {#snippet Section([content, classes]: [Snippet, string])}
-	<section class="p-2 border border-solid rounded-md border-gray-300 dark:border-neutral-800 bg-gray-100 dark:bg-[#23222b] {classes}">
+	<section class="p-2 border border-solid rounded-md border-gray-100 dark:border-neutral-800 bg-neutral-50/30 dark:bg-[#23222b] {classes}">
 		{@render content()}
 	</section>
 {/snippet}
@@ -81,15 +81,23 @@
 				<ul class="current-workspaces grid gap-4">
 					{#each windowWorkspaces as workspace}
 						<li class="flex items-stretch gap-2">
-							<SimpleWorkspace {workspace}/>
+							<SimpleWorkspace 
+								{workspace} 
+								updatedName={(name) => {workspace.name = name;}}
+								updatedIcon={(icon) => {workspace.icon = icon;}}
+							/>
 						</li>
 					{/each}
 				</ul>
 
-				<button class="btn justify-center mt-4" style:width="-moz-available" onclick={applyCurrentWorkspacesChanges}>
-					<Icon icon="check" />
-					<span class="-mt-1">{i18n.getMessage('apply_changes')}</span>
-				</button>
+				{#if windowWorkspaces.length}
+					<button class="btn justify-center mt-4" style:width="-moz-available" onclick={applyCurrentWorkspacesChanges}>
+						<Icon icon="check" />
+						<span class="-mt-1">{i18n.getMessage('apply_changes')}</span>
+					</button>
+					{:else}
+					There are no current worspaces in this window.
+				{/if}
 			{/snippet}
 			{#snippet Section_DefaultWorkspaces()}
 				<div class="w-max">
@@ -134,7 +142,7 @@
 			{/snippet}
 
 			{@render Section([Section_CurrentWorkspaces, "flex-0"])}
-			{@render Section([Section_DefaultWorkspaces, "flex-1 w-full overflow-auto [scrollbar-gutter:_stable]"])}
+			{@render Section([Section_DefaultWorkspaces, "flex-1 w-full overflow-auto [scrollbar-gutter:_stable] sm:[scrollbar-gutter:_unset]"])}
 			{@render Section([Section_Shortcuts, "basis-full"])}
 			{@render Section([Section_ClearExtensionData, "basis-full"])}
 			{@render Section([Section_WelcomePage, "flex-0"])}

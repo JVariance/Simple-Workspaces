@@ -205,4 +205,10 @@ export class WorkspaceStorage {
 
 		return newWindow;
 	}
+
+	async forceApplyDefaultWorkspacesOnAllWindows() {
+		for (let window of this.#windows.values()) {
+			await window.forceApplyDefaultWorkspaces();
+		}
+	}
 }

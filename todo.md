@@ -1,11 +1,7 @@
 **Today**
-[] if extension fresh installed apply default workspaces to current window if set in welcome page
-[] handle highlighted tab from Firefox' search tabs feature
+[] if extension has been newly installed, apply default workspaces to current window if set in welcome page
 [] search improvements
 [] emoji picker improvements
-[] options page - current workspaces
-[] options page - remove single default workspace
-[] options page - impl clear functionality
 
 
 # Scenarios

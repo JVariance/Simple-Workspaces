@@ -77,6 +77,26 @@
 
 		if(Object.keys(localHomeWorkspace || {})?.length) homeWorkspace = localHomeWorkspace;
 	});
+
+
+	async function forceApplyOnCurrentWindow(event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement; }) {
+		await Browser.runtime.sendMessage({msg: "forceApplyDefaultWorkspacesOnCurrentWindow"});
+		createToast({
+			loadingMessage: i18n.getMessage("applying_changes"),
+			successMessage: i18n.getMessage("applied_changes"),
+			errorMessage: "Something went wrong", 
+		});
+	}
+	
+	
+	async function forceApplyOnAllWindows(event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement; }) {
+		await Browser.runtime.sendMessage({msg: "forceApplyDefaultWorkspacesOnAllWindows"});
+		createToast({
+			loadingMessage: i18n.getMessage("applying_changes"),
+			successMessage: i18n.getMessage("applied_changes"),
+			errorMessage: "Something went wrong", 
+		});
+	}
 </script>
 
 <div class="w-full">
@@ -139,6 +159,17 @@
 			<Icon icon="check" />
 			<span class="-mt-1">{i18n.getMessage('apply_changes')}</span>
 		</button>
+		<Accordion detailsClasses="mt-4">
+			{#snippet summary()}
+				<span>{i18n.getMessage('force_apply')}</span>
+			{/snippet}
+			<button class="btn justify-center mt-4" style:width="-moz-available" onclick={forceApplyOnCurrentWindow}>
+				force apply on current window
+			</button>
+			<button class="btn justify-center mt-4" style:width="-moz-available" onclick={forceApplyOnAllWindows}>
+				force apply on all open windows
+			</button>
+		</Accordion>
 		<Accordion detailsClasses="mt-4">
 			{#snippet summary()}
 				<span class="-mt-[0.125rem]">{i18n.getMessage('reset')}</span>

@@ -171,12 +171,16 @@
 					bind:value={nameValue}
 				/>
 				<div class="flex gap-2 flex-grow-0 flex-shrink basis-0">
-					<button
-						title="remove"
-						onclick={showRemovalDialog}
-						class="ghost rounded-full outline-none focus:bg-white/25"
-						><Icon icon="bin" width={16} /></button
-					>
+					{#if UUID === "HOME"}
+						<button class="invisible" />
+					{:else}
+						<button
+							title="remove"
+							onclick={showRemovalDialog}
+							class="ghost rounded-full outline-none focus:bg-white/25"
+							><Icon icon="bin" width={16} /></button
+						>
+					{/if}
 					<button
 						title="apply"
 						onclick={_editWorkspace}

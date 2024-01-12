@@ -5,6 +5,7 @@ import { WorkspaceStorage } from "./WorkspaceStorage";
 import { Processes } from "./Processes";
 import * as API from "@root/browserAPI";
 import { unstate } from "svelte";
+import { BrowserStorage } from "./Storage";
 
 let workspaceStorage: WorkspaceStorage;
 let tabMenu: TabMenu;
@@ -566,7 +567,7 @@ browser.runtime.onMessage.addListener((message) => {
 			Processes.WorkspaceSwitch.finish();
 			break;
 		case "setCurrentWorkspaces":
-			return new Promise(async (resolve) => {
+			return new Promise<void>(async (resolve) => {
 				const { currentWorkspaces } = message as {
 					currentWorkspaces: Ext.Workspace[];
 				};
@@ -586,30 +587,48 @@ browser.runtime.onMessage.addListener((message) => {
 					"updatedWorkspaces"
 				);
 
-				return resolve(true);
+				return resolve();
 			});
 		case "setDefaultWorkspaces":
-			return new Promise(async (resolve) => {
-				await browser.storage.local.set({
-					homeWorkspace: message.homeWorkspace,
-				});
-				await browser.storage.local.set({
-					defaultWorkspaces: message.defaultWorkspaces,
-				});
-				return resolve(true);
+			return new Promise<void>(async (resolve) => {
+				await BrowserStorage.setHomeWorkspace(message.homeWorspace);
+				await BrowserStorage.setDefaultWorkspaces(message.defaultWorkspaces);
+
+				if (
+					workspaceStorage.windows.size < 2 &&
+					workspaceStorage.activeWindow.workspaces.length < 2
+				) {
+					await workspaceStorage.activeWindow.addDefaultWorkspaces();
+					console.info("added default workspaces and now informviews");
+					informViews(
+						workspaceStorage.activeWindow.windowId,
+						"updatedWorkspaces"
+					);
+				}
+
+				return resolve();
 			});
 		case "getDefaultWorkspaces":
 			return new Promise(async (resolve) => {
-				const { defaultWorkspaces } = await browser.storage.local.get(
-					"defaultWorkspaces"
-				);
+				const { defaultWorkspaces } =
+					await BrowserStorage.getDefaultWorkspaces();
 				return resolve(defaultWorkspaces);
 			});
+		case "forceApplyDefaultWorkspacesOnCurrentWindow":
+			return new Promise<void>(async (resolve) => {
+				await workspaceStorage.activeWindow.forceApplyDefaultWorkspaces();
+				return resolve();
+			});
+		case "forceApplyDefaultWorkspacesOnAllWindows":
+			return new Promise<void>(async (resolve) => {
+				await workspaceStorage.forceApplyDefaultWorkspacesOnAllWindows();
+				return resolve();
+			});
 		case "clearExtensionData":
-			return new Promise(async (resolve) => {
+			return new Promise<void>(async (resolve) => {
 				await browser.storage.local.clear();
 				browser.runtime.reload();
-				return resolve(true);
+				return resolve();
 			});
 		default:
 			break;
