@@ -227,6 +227,35 @@ browser.windows.onCreated.addListener(async (window) => {
 	Processes.WindowCreation.finish();
 });
 
+browser.tabs.onActivated.addListener(async (activeInfo) => {
+	await Processes.WorkspaceSwitch;
+	const tabId = activeInfo.tabId;
+	if (!tabId) return;
+	const workspaceUUID = await API.getTabValue<string>(tabId, "workspaceUUID");
+	if (workspaceUUID) {
+		const workspace = workspaceStorage.activeWindow.workspaces.find(
+			({ UUID }) => UUID === workspaceUUID
+		);
+
+		if (workspace) {
+			const isActiveWorkspace =
+				workspace.UUID === workspaceStorage.activeWindow.activeWorkspace.UUID;
+
+			if (!isActiveWorkspace) {
+				await workspaceStorage.activeWindow.switchWorkspace(workspace);
+				informViews(
+					workspaceStorage.activeWindow.windowId,
+					"updatedActiveWorkspace",
+					{ UUID: workspace.UUID }
+				);
+				await API.updateTab(tabId, { active: true });
+			} else {
+				workspaceStorage.activeWindow.setActiveTab(tabId);
+			}
+		}
+	}
+});
+
 browser.tabs.onCreated.addListener(async (tab) => {
 	console.info("browser.tabs.onCreated", { manualTabCreationHandling });
 	const window = await browser.windows.get(tab.windowId!);
@@ -377,13 +406,13 @@ browser.tabs.onDetached.addListener((tabId, detachInfo) => {
 	handleDetachedTabs(collectedDetachedTabs, oldWindowId);
 });
 
-browser.tabs.onActivated.addListener((activeInfo) => {
-	if (workspaceStorage.windows.has(activeInfo.windowId)) {
-		workspaceStorage
-			.getWindow(activeInfo.windowId)
-			.setActiveTab(activeInfo.tabId);
-	}
-});
+// browser.tabs.onActivated.addListener((activeInfo) => {
+// 	if (workspaceStorage.windows.has(activeInfo.windowId)) {
+// 		workspaceStorage
+// 			.getWindow(activeInfo.windowId)
+// 			.setActiveTab(activeInfo.tabId);
+// 	}
+// });
 
 browser.commands.onCommand.addListener((command) => {
 	switch (command) {
@@ -520,6 +549,7 @@ browser.runtime.onMessage.addListener((message) => {
 				return resolve(tabIds);
 			});
 		case "switchWorkspace":
+			Processes.WorkspaceSwitch.start();
 			const { workspaceUUID } = message as { workspaceUUID: string };
 			const nextWorkspace = workspaceStorage.windows
 				.get(workspaceStorage.focusedWindowId)!
@@ -533,6 +563,7 @@ browser.runtime.onMessage.addListener((message) => {
 					{ UUID: nextWorkspace.UUID }
 				);
 			})();
+			Processes.WorkspaceSwitch.finish();
 			break;
 		case "setCurrentWorkspaces":
 			return new Promise(async (resolve) => {

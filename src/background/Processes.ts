@@ -10,6 +10,7 @@ export class Processes {
 	static TabRemoval = new DeferredPromise<void>();
 	static WindowCreation = new DeferredPromise<void>();
 	static WindowRemoval = new DeferredPromise<void>();
+	static WorkspaceSwitch = new DeferredPromise<void>();
 
 	constructor() {
 		Processes.ExtensionInitialization.finish();
@@ -19,5 +20,6 @@ export class Processes {
 		Processes.TabRemoval.finish();
 		Processes.WindowCreation.finish();
 		Processes.WindowRemoval.finish();
+		Processes.WorkspaceSwitch.finish();
 	}
 }

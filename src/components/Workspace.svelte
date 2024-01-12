@@ -139,6 +139,10 @@
 </dialog>
 {#if workspace}
 	{@const { UUID, name, icon, tabIds, windowId } = workspace}
+	<!--
+			Opera One: #5021ff
+			darker purple: #8786a7
+	-->
 	<div
 		class:active
 		class:selected

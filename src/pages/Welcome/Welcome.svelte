@@ -245,7 +245,7 @@
 					{@const viewNum = i + 1}
 					<button
 						class:active={activeView === viewNum}
-						class="rounded-full w-3 h-3 [&.active]:bg-[#fde9ff]"
+						class="rounded-full w-3 h-3 [&.active]:bg-[#c6c4f4]"
 						onclick={() => {
 							activeView = viewNum;
 						}}

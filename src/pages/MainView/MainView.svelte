@@ -331,7 +331,7 @@
 
 <div class="w-[100dvw] p-2 box-border">
 	<!-- <h1 class="mb-4">Workspaces</h1> -->
-	{#if false && import.meta.env.DEV}
+	{#if true && import.meta.env.DEV}
 		<div class="flex flex-wrap gap-1 absolute top-0 right-0">
 			<details class="bg-neutral-950 p-1 rounded-md">
 				<summary></summary>
