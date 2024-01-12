@@ -7,7 +7,7 @@
 	import Icon from "@root/components/Icon.svelte";
 	import { debounceFunc } from "@root/utils";
 	import Skeleton from "@root/components/Skeleton.svelte";
-	import { unstate, untrack } from "svelte";
+	import { untrack } from "svelte";
 
 	import {overrideItemIdKeyNameBeforeInitialisingDndZones} from "svelte-dnd-action";
 	overrideItemIdKeyNameBeforeInitialisingDndZones("UUID");
@@ -16,12 +16,11 @@
 
 	let searchInput: HTMLInputElement = $state();
 	let selectedIndex = $state(0);
-	// let homeWorkspace: Ext.Workspace = $state();
+	let homeWorkspace: Ext.Workspace = $state();
 	let workspaces: Ext.Workspace[] = $state([]);
 	let activeWorkspace: Ext.Workspace = $state()!;
 	let searchFilteredWorkspaceUUIDS: string[] = $state([]);
 	let viewWorkspaces: Ext.Workspace[] = $derived((() => {
-
 		// searchFilteredWorkspaceUUIDS;
 		// const filteredWorkspaces = workspaces.filter(({UUID}) => searchFilteredWorkspaceUUIDS.includes(UUID));
 		// return filteredWorkspaces.length ? filteredWorkspaces : searchInput?.value.length ? [] : workspaces;
@@ -40,7 +39,8 @@
 		untrack(() => activeWorkspace);
 		// console.info("effect", { activeWorkspace, workspaces });
 		// activeWorkspace = homeWorkspace?.active ? homeWorkspace : workspaces.find(({active}) => active)!;
-		activeWorkspace = workspaces.find(({active}) => active)!;
+		console.info({homeWorkspace, workspaces});
+		activeWorkspace = homeWorkspace?.active ? homeWorkspace : workspaces.find(({active}) => active);
 		console.info({ activeWorkspace });
 	});
 
@@ -59,7 +59,7 @@
 	}) {
 		console.info("UPDATEDACTIVEWORKSPACE", {windowId, activeWorkspace});
 		activeWorkspace.active = false;
-		const workspace = workspaces.find(({ UUID }) => UUID === workspaceUUID)!;
+		const workspace = workspaceUUID === "HOME" ? homeWorkspace : workspaces.find(({ UUID }) => UUID === workspaceUUID)!;
 		workspace.active = true;
 	}
 
@@ -265,7 +265,7 @@
 		switch (key) {
 			case Key.ArrowDown:
 				e.preventDefault();
-				selectedIndex = Math.min(viewWorkspaces.length, selectedIndex + 1);
+				selectedIndex = Math.min(viewWorkspaces.length + 1, selectedIndex + 1);
 				break;
 			case Key.ArrowUp:
 				e.preventDefault();
@@ -282,7 +282,21 @@
 		console.info("initView");
 		windowId = (await Browser.windows.getCurrent()).id!;
 		console.info({ windowId });
-		workspaces = await getWorkspaces({ windowId });
+		const _workspaces = await getWorkspaces({ windowId });
+		const [_homeWorkspace, _viewWorkspaces] = _workspaces.reduce((acc, workspace, i) => {
+			if(i === 0) acc[1] = [];
+			if(workspace.UUID === "HOME") 
+			{
+				acc[0] = workspace;
+			} else {
+				acc[1].push(workspace);
+			}
+			return acc;
+		}, new Array(2) as [Ext.Workspace, Ext.Workspace[]]);
+		homeWorkspace = _homeWorkspace;
+		workspaces = _viewWorkspaces;
+
+		console.info({homeWorkspace, workspaces});
 	}
 
 	async function search(e: InputEvent & { target: HTMLInputElement }) {
@@ -395,53 +409,61 @@
 	</div> -->
 	<!-- {#if viewWorkspaces.length && activeWorkspace} -->
 	{#snippet SWorkspace([workspace, i])}
-		<Workspace
-			{workspace}
-			active={workspace.active}
-			selected={i === selectedIndex}
-			index={i}
-			editWorkspace={({ icon, name }: {icon: string; name: string;}) => {
-				editWorkspace({ workspace, icon, name });
-			}}
-			switchWorkspace={() => {
-				switchWorkspace(workspace);
-			}}
-			removeWorkspace={() => {
-				removeWorkspace(workspace);
-			}}
-		/>
+		{#if workspace}
+			<Workspace
+				{workspace}
+				active={workspace.active}
+				selected={i === selectedIndex}
+				index={i}
+				editWorkspace={({ icon, name }: {icon: string; name: string;}) => {
+					editWorkspace({ workspace, icon, name });
+				}}
+				switchWorkspace={() => {
+					switchWorkspace(workspace);
+				}}
+				removeWorkspace={() => {
+					removeWorkspace(workspace);
+				}}
+			/>
+		{/if}
 	{/snippet}
 
-	<ul
-		class="grid gap-4 w-full @container"
-		use:dndzone={{
-			items: workspaces,
-			dropTargetStyle: {},
-			dragDisabled:
-				viewWorkspaces.length !== workspaces.length || workspaces.length < 2,
-		}}
-		on:consider={handleDndConsider}
-		on:finalize={handleDndFinalize}
-	>
-		{#key viewWorkspaces}
-			{#each viewWorkspaces as workspace, i (workspace.UUID)}
-				<li class="item relative max-w-[100cqw]">
-					{@render SWorkspace([workspace, i])}
-				</li>
-				{:else}
-					{#each [,,,] as _}
-						<Skeleton class="w-full h-16 rounded-md"/>
-					{/each}
+	<ul class="w-full @container">
+		{#if !homeWorkspace && !workspaces.length}
+			{#each [,,,] as _}
+				<Skeleton class="w-full h-16 rounded-md"/>
 			{/each}
-		{/key}
+		{/if}
+		<li class="">
+			{@render SWorkspace([homeWorkspace, 0])}
+		</li>
+		<div
+			class="w-full grid gap-4 @container mt-4 empty:mt-0"
+			use:dndzone={{
+				items: workspaces,
+				dropTargetStyle: {},
+				dragDisabled:
+					viewWorkspaces.length !== workspaces.length || workspaces.length < 2,
+			}}
+			on:consider={handleDndConsider}
+			on:finalize={handleDndFinalize}
+		>
+			{#key viewWorkspaces}
+				{#each viewWorkspaces as workspace, i (workspace.UUID)}
+					<li class="item relative max-w-[100cqw]">
+						{@render SWorkspace([workspace, i + 1])}
+					</li>
+				{/each}
+			{/key}
+		</div>
 	</ul>
 
 	<button
 		id="add-workspace"
 		onclick={addWorkspaceByPointer}
 		onkeydown={addWorkspaceByKey}
-		data-focusid={viewWorkspaces.length}
-		class:selected={selectedIndex === viewWorkspaces.length}
+		data-focusid={viewWorkspaces.length + 1}
+		class:selected={selectedIndex === viewWorkspaces.length + 1}
 		class="
 				p-4 items-center flex gap-4 rounded-md text-left border mt-4 w-full
 				outline-none [&.selected]:dark:bg-neutral-700
