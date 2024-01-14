@@ -522,7 +522,7 @@ export class Window {
 		this.#workspaces = newWorkspaces;
 	}
 
-	reorderWorkspaces(orderedIds: Ext.Workspace["UUID"][]) {
+	async reorderWorkspaces(orderedIds: Ext.Workspace["UUID"][]) {
 		this.workspaces.sort(
 			(a, b) => orderedIds.indexOf(a.UUID) - orderedIds.indexOf(b.UUID)
 		);

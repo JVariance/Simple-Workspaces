@@ -121,9 +121,6 @@
 			case "updatedHomeWorkspace":
 				updatedHomeWorkspace(message);
 				break;
-			case "updatedWorkspaces":
-				updatedWorkspaces();
-				break;
 			case "updatedActiveWorkspace":
 				updatedActiveWorkspace(message);
 				break;

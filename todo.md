@@ -1,5 +1,5 @@
 **Today**
-[] if extension has been newly installed, apply default workspaces to current window if set in welcome page
+[] check: move informViews to effect in Window.svelte.ts?
 [] search improvements
 [] emoji picker improvements
 

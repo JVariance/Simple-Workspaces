@@ -496,6 +496,7 @@ browser.runtime.onMessage.addListener((message) => {
 		case "editWorkspace":
 			console.info("editWorkspace", { message });
 			workspaceStorage.getWindow(message.windowId).editWorkspace(message);
+			informViews(message.windowId, "updatedWorkspaces");
 			break;
 		case "getWorkspaces":
 			console.info("bg - getWorkspaces");
@@ -518,7 +519,7 @@ browser.runtime.onMessage.addListener((message) => {
 				.getWindow(message.windowId)
 				.removeWorkspace(message.workspaceUUID);
 		case "reorderedWorkspaces":
-			(() => {
+			(async () => {
 				const { sortedWorkspacesIds, windowId } = message as {
 					sortedWorkspacesIds: Ext.Workspace["UUID"][];
 					windowId: number;
@@ -526,10 +527,11 @@ browser.runtime.onMessage.addListener((message) => {
 
 				console.log({ sortedWorkspacesIds });
 
-				workspaceStorage
+				await workspaceStorage
 					.getWindow(windowId)
 					.reorderWorkspaces(sortedWorkspacesIds);
 
+				informViews(windowId, "updatedWorkspaces");
 				// workspaceStorage.getWindow(windowId).updateWorkspaces(newWorkspaces);
 			})();
 			break;
