@@ -1,12 +1,13 @@
 <script lang="ts">
-	import { onMount, createRoot, unstate } from "svelte";
+	import { createRoot, unstate, getContext } from "svelte";
 	import Browser, { i18n } from "webextension-polyfill";
 	import SimpleWorkspace from "@components/SimpleWorkspace.svelte";
 	import Icon from "@components/Icon.svelte";
 	import Toast from "@components/Toast.svelte";
-	import { BrowserStorage } from "@root/background/Storage";
 
-	let homeWorkspace = $state<Ext.Workspace>()!;
+	let homeWorkspace = $derived(
+		getContext<() => Ext.SimpleWorkspace>("homeWorkspace")()
+	);
 
 	async function applyHomeWorkspaceChanges(
 		event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement }
@@ -31,18 +32,6 @@
 			homeWorkspace: unstate(homeWorkspace),
 		});
 	}
-
-	onMount(async () => {
-		let { homeWorkspace: _homeWorkspace } =
-			await BrowserStorage.getHomeWorkspace();
-		homeWorkspace = _homeWorkspace
-			? _homeWorkspace
-			: {
-					id: -1,
-					icon: "🏠",
-					name: "Home",
-				};
-	});
 </script>
 
 <div class="flex flex-wrap gap-x-2">

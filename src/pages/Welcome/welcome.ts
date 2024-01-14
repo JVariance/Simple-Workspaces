@@ -1,4 +1,4 @@
 import { createRoot } from "svelte";
-import Welcome from "./Welcome.svelte";
+import WelcomeLayout from "./WelcomeLayout.svelte";
 
-createRoot(Welcome, { target: document.body });
+createRoot(WelcomeLayout, { target: document.body });

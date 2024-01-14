@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Browser, { i18n } from "webextension-polyfill";
-	import { onMount, unstate } from "svelte";
+	import { onMount, unstate, getContext, untrack } from "svelte";
 	import Icon from "../Icon.svelte";
 	import Accordion from "../Accordion.svelte";
 	import SimpleWorkspace from "../SimpleWorkspace.svelte";
@@ -14,7 +14,14 @@
 	
 	let dragEnabled = $state(false);
 	let fetchedDefaultWorkspaces: Ext.SimpleWorkspace[] = $state([]);
-	let defaultWorkspaces: Ext.SimpleWorkspace[] = $state([]);
+	let _defaultWorkspaces = $derived(getContext<() => Ext.SimpleWorkspace[]>("defaultWorkspaces")() || []);
+	let defaultWorkspaces = $state((() => unstate(_defaultWorkspaces))());
+
+	$effect(() => {
+		untrack(() => defaultWorkspaces);
+		defaultWorkspaces = unstate(_defaultWorkspaces);
+	});
+
 	let changesMade = $derived((() => {
 		console.info(JSON.stringify(fetchedDefaultWorkspaces) !== JSON.stringify(defaultWorkspaces));
 		return JSON.stringify(fetchedDefaultWorkspaces) !== JSON.stringify(defaultWorkspaces)

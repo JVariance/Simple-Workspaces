@@ -134,9 +134,6 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 			newWorkspace = await workspaceStorage.activeWindow.addWorkspace([]);
 			newWorkspace.active = false;
 			targetWorkspaceUUID = newWorkspace.UUID;
-			// informViews("addedWorkspace", {
-			// 	workspace: newWorkspace,
-			// });
 		}
 
 		if (!tab?.windowId) return;
@@ -415,6 +412,31 @@ browser.tabs.onDetached.addListener((tabId, detachInfo) => {
 // 	}
 // });
 
+browser.storage.local.onChanged.addListener((changes) => {
+	console.info({ changes });
+	for (let key in changes) {
+		const item = changes[key];
+		switch (key) {
+			case "homeWorkspace":
+				workspaceStorage.windows.forEach((window) => {
+					informViews(window.windowId, "updatedHomeWorkspace", {
+						homeWorkspace: item.newValue,
+					});
+				});
+				break;
+			case "defaultWorkspaces":
+				workspaceStorage.windows.forEach((window) => {
+					informViews(window.windowId, "updatedDefaultWorkspaces", {
+						defaultWorkspaces: item.newValue,
+					});
+				});
+				break;
+			default:
+				break;
+		}
+	}
+});
+
 browser.commands.onCommand.addListener((command) => {
 	switch (command) {
 		case "next-workspace":
@@ -592,12 +614,11 @@ browser.runtime.onMessage.addListener((message) => {
 		case "setHomeWorkspace":
 			return new Promise<void>(async (resolve) => {
 				console.info("setHomeWorkspace to " + message.homeWorkspace);
-				await BrowserStorage.setHomeWorkspace(message.homeWorkspace);
 				workspaceStorage.windows.forEach((window) => {
-					informViews(window.windowId, "updatedHomeWorkspace", {
-						homeWorkspace: message.homeWorkspace,
-					});
+					window.workspaces[0].name = message.homeWorkspace.name;
+					window.workspaces[0].icon = message.homeWorkspace.icon;
 				});
+				await BrowserStorage.setHomeWorkspace(message.homeWorkspace);
 				return resolve();
 			});
 		case "setDefaultWorkspaces":

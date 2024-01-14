@@ -3,24 +3,26 @@ import Browser from "webextension-polyfill";
 export class BrowserStorage {
 	constructor() {}
 
-	static getHomeWorkspace(): Promise<Record<"homeWorkspace", Ext.Workspace>> {
+	static getHomeWorkspace(): Promise<
+		Record<"homeWorkspace", Ext.SimpleWorkspace>
+	> {
 		return Browser.storage.local.get("homeWorkspace");
 	}
 
-	static setHomeWorkspace(homeWorkspace: Ext.Workspace): Promise<void> {
+	static setHomeWorkspace(homeWorkspace: Ext.SimpleWorkspace): Promise<void> {
 		return Browser.storage.local.set({
 			homeWorkspace,
 		});
 	}
 
 	static getDefaultWorkspaces(): Promise<
-		Record<"defaultWorkspaces", Ext.Workspace[]>
+		Record<"defaultWorkspaces", Ext.SimpleWorkspace[]>
 	> {
 		return Browser.storage.local.get("defaultWorkspaces");
 	}
 
 	static setDefaultWorkspaces(
-		defaultWorkspaces: Ext.Workspace[]
+		defaultWorkspaces: Ext.SimpleWorkspace[]
 	): Promise<void> {
 		return Browser.storage.local.set({
 			defaultWorkspaces,

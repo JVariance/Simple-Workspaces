@@ -37,9 +37,6 @@
 
 	$effect(() => {
 		untrack(() => activeWorkspace);
-		// console.info("effect", { activeWorkspace, workspaces });
-		// activeWorkspace = homeWorkspace?.active ? homeWorkspace : workspaces.find(({active}) => active)!;
-		console.info({homeWorkspace, workspaces});
 		activeWorkspace = homeWorkspace?.active ? homeWorkspace : workspaces.find(({active}) => active);
 		console.info({ activeWorkspace });
 	});

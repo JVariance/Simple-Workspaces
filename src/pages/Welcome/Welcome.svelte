@@ -5,7 +5,6 @@
 	import { onMount } from "svelte";
 	import Browser, { i18n } from "webextension-polyfill";
 	import Layout from "../Special_Pages/Layout.svelte";
-	import Toast from "@root/components/Toast.svelte";
 	import Shortcuts from "@root/components/ViewBlocks/Shortcuts.svelte";
 	import Info from "@root/components/Info.svelte";
 	import Logo from "@root/components/Logo.svelte";
