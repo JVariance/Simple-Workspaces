@@ -176,7 +176,7 @@
 		<div class="h-max flex flex-wrap">
 			<h2 class="m-0 mb-4 text-xl font-semibold first-letter:uppercase">{i18n.getMessage('default_workspaces')}</h2>
 			<!-- <Info>
-				{i18n.getMessage('will_apply_for_new_windows')}
+				{i18n.getMessage('changes_will_apply_for_new_windows')}
 			</Info> -->
 			<p class="mb-8 basis-full">
 				If you want to, you can set some default workspaces that will open with every window. 

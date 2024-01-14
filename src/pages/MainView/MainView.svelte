@@ -44,6 +44,10 @@
 		console.info({ activeWorkspace });
 	});
 
+	function updatedHomeWorkspace({homeWorkspace: newHomeWorkspace}: { homeWorkspace: Ext.Workspace }) {
+		homeWorkspace = {...homeWorkspace, ...newHomeWorkspace};
+	}
+
 	function getWorkspaces({
 		windowId,
 	}: {
@@ -156,6 +160,9 @@
 				break;
 			case "addedWorkspace":
 				addedWorkspace(message);
+				break;
+			case "updatedHomeWorkspace":
+				updatedHomeWorkspace(message);
 				break;
 			case "updatedWorkspaces":
 				updatedWorkspaces();

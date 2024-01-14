@@ -27,7 +27,7 @@
 		"message": "Standard-Arbeitsbereich hinzufügen",
 		"description": "options page"
 	},
-	"will_apply_for_new_windows": {
+	"changes_will_apply_for_new_windows": {
 		"message": "Änderungen werden für neue Fenster angewendet",
 		"description": "options page -> default workspaces"
 	},

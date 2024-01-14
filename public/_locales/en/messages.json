@@ -43,8 +43,8 @@
 		"message": "current workspaces",
 		"description": ""
 	},
-	"will_apply_for_new_windows": {
-		"message": "will apply for new windows",
+	"changes_will_apply_for_new_windows": {
+		"message": "changes will apply for new windows",
 		"description": "options page -> default workspaces"
 	},
 	"apply_changes": {

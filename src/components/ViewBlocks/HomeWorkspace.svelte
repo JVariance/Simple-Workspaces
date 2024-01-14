@@ -8,8 +8,10 @@
 
 	let homeWorkspace = $state<Ext.Workspace>()!;
 
-	async function applyHomeWorkspaceChanges() {
-		console.info("applyHomeWorkspaceChanges");
+	async function applyHomeWorkspaceChanges(
+		event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement }
+	) {
+		event.stopImmediatePropagation();
 		const toast = createRoot(Toast, {
 			target: document.body,
 			props: {
@@ -24,7 +26,6 @@
 	}
 
 	function persistHomeWorkspace() {
-		console.log("????!?!?? wöoo");
 		return Browser.runtime.sendMessage({
 			msg: "setHomeWorkspace",
 			homeWorkspace: unstate(homeWorkspace),
@@ -36,11 +37,11 @@
 			await BrowserStorage.getHomeWorkspace();
 		homeWorkspace = _homeWorkspace
 			? _homeWorkspace
-			: ({
+			: {
 					id: -1,
 					icon: "🏠",
 					name: "Home",
-				} as Ext.SimpleWorkspace);
+				};
 	});
 </script>
 

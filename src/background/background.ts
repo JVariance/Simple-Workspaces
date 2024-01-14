@@ -593,6 +593,11 @@ browser.runtime.onMessage.addListener((message) => {
 			return new Promise<void>(async (resolve) => {
 				console.info("setHomeWorkspace to " + message.homeWorkspace);
 				await BrowserStorage.setHomeWorkspace(message.homeWorkspace);
+				workspaceStorage.windows.forEach((window) => {
+					informViews(window.windowId, "updatedHomeWorkspace", {
+						homeWorkspace: message.homeWorkspace,
+					});
+				});
 				return resolve();
 			});
 		case "setDefaultWorkspaces":

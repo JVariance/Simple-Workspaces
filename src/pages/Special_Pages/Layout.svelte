@@ -18,14 +18,6 @@
 		@apply m-0;
 	}
 
-	:global(details summary > svg){
-		@apply transition-transform duration-200;
-	}
-
-	:global(details[open] summary > svg){
-		@apply rotate-90;
-	}
-
 	:global(.btn) {
 		@apply flex gap-2 items-center cursor-pointer border border-solid p-2 rounded-md bg-neutral-100 border-gray-300 dark:bg-[#33323a] dark:text-white dark:border-neutral-700;
 		@apply hover:bg-gray-200 dark:hover:bg-[#414049] focus-within:bg-gray-200 focus:bg-gray-200 dark:focus:bg-[#414049];

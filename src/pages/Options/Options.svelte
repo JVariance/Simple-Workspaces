@@ -106,10 +106,10 @@
 				{/if}
 			{/snippet}
 			{#snippet Section_DefaultWorkspaces()}
-				<div class="w-max">
+				<div class="">
 					<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('default_workspaces')}</h2>
 					<Info class="mb-4">
-						{i18n.getMessage('will_apply_for_new_windows')}
+						{i18n.getMessage('changes_will_apply_for_new_windows')}
 					</Info>
 					<DefaultWorkspaces />
 				</div>

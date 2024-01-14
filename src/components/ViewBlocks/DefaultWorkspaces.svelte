@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Browser, { i18n } from "webextension-polyfill";
-	import { onMount } from "svelte";
+	import { onMount, unstate } from "svelte";
 	import Icon from "../Icon.svelte";
 	import Accordion from "../Accordion.svelte";
 	import SimpleWorkspace from "../SimpleWorkspace.svelte";
@@ -12,9 +12,13 @@
 
 	let {dndFinish = () => {} } = $props<Props>();
 	
-	let changesMade = $state(false);
 	let dragEnabled = $state(false);
+	let fetchedDefaultWorkspaces: Ext.SimpleWorkspace[] = $state([]);
 	let defaultWorkspaces: Ext.SimpleWorkspace[] = $state([]);
+	let changesMade = $derived((() => {
+		console.info(JSON.stringify(fetchedDefaultWorkspaces) !== JSON.stringify(defaultWorkspaces));
+		return JSON.stringify(fetchedDefaultWorkspaces) !== JSON.stringify(defaultWorkspaces)
+	})());
 
 	function getNewWorkspace(){
 		return {
@@ -28,7 +32,6 @@
 		e.stopImmediatePropagation();
 		defaultWorkspaces.push(getNewWorkspace());
 		console.info({defaultWorkspaces});
-		changesMade = true;
 	}
 
 	function removeDefaultWorkspace(workspaceId: number) {
@@ -53,15 +56,10 @@
 
 		await persistDefaultWorkspaces();
 		toast.$set({ state: "success" });
-		changesMade = false;
+		fetchedDefaultWorkspaces = [...unstate(defaultWorkspaces)];
 	}
 
 	const applyDefaultWorkspacesChanges = immediateDebounceFunc(_applyDefaultWorkspacesChanges, 500);
-
-	$effect(() => {
-		defaultWorkspaces; 
-		changesMade = true;
-	});
 
 	onMount(async () => {
 		const localDefaultWorkspaces = await Browser.runtime.sendMessage({msg: "getDefaultWorkspaces"}) as Ext.SimpleWorkspace[];
@@ -69,7 +67,10 @@
 			workspace.id = i;
 		});
 
-		if(localDefaultWorkspaces) defaultWorkspaces.push(...localDefaultWorkspaces);
+		if(localDefaultWorkspaces) {
+			fetchedDefaultWorkspaces = [...localDefaultWorkspaces];
+			defaultWorkspaces = localDefaultWorkspaces;
+		};
 	});
 
 
@@ -98,71 +99,69 @@
 </script>
 
 <div class="w-full">
-	<!-- <h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('default_workspaces')}</h2>
-	<Info>
-		{i18n.getMessage('will_apply_for_new_windows')}
-	</Info> -->
 	<div 
 		class="w-full"
 	>
-		<ul
-			class="default-workspaces grid gap-2 [&:not(:empty)]:!mb-2"
-			use:dndzone={{
-				items: defaultWorkspaces,
-				dropTargetStyle: {},
-				zoneTabIndex: -1,
-				dragDisabled: !dragEnabled || defaultWorkspaces.length < 2,
-			}}
-			on:consider={(e: CustomEvent<DndEvent<Ext.SimpleWorkspace>>) => {
-				defaultWorkspaces = e.detail.items;
-			}}
-			on:finalize={(e: CustomEvent<DndEvent<Ext.SimpleWorkspace>>) => {
-				const { info: { source } } = e.detail;
-				defaultWorkspaces = e.detail.items;
-				if(source === SOURCES.POINTER){
-					dragEnabled = false;
-				}
-				dndFinish();
-			}}
-		>
-			{#each defaultWorkspaces as workspace, i (workspace.id)}
-				<li class="flex gap-2 items-stretch">
-					<div class="drag-handle w-4 h-4 self-center" onpointerdown={(e) => {e.preventDefault(); dragEnabled = true}} onpointerup={() => {dragEnabled = false;}} aria-label="drag-handle">
-						<Icon icon="drag-handle" width={18} class="{defaultWorkspaces.length < 2 ? 'hidden' : ''}" />
-					</div>
-					<SimpleWorkspace 
-						{workspace} 
-						updatedIcon={(icon) => {workspace.icon = icon; changesMade = true;}} 
-						updatedName={(name) => {workspace.name = name; changesMade = true;}}
-					/>
-					<div class="self-center flex text-neutral-300">
-						<button class="btn ghost !border-none !w-max !p-0" onclick={() => removeDefaultWorkspace(workspace.id)}>
-							<Icon icon="cross" />
-						</button>
-					</div>
-				</li>
-			{/each}
-		</ul>
-		<button
-			title="add default workspace"
-			class="btn ml-6 w-full mt-2"
-			style:width="-moz-available"
-			onclick={addDefaultWorkspace}><Icon icon="add" width={16}/>
-			<span class="-mt-1">{i18n.getMessage('add_default_workspace')}</span>
-		</button>
-		<button class="btn justify-center mt-4" style:width="-moz-available" disabled={!changesMade} onclick={applyDefaultWorkspacesChanges}>
-			<Icon icon="check" />
-			<span class="-mt-1">{i18n.getMessage('apply_changes')}</span>
-		</button>
+		<div class="w-max list-wrapper [&:has(ul:empty)>button]:ml-0">
+			<ul
+				class="default-workspaces grid gap-2 [&:not(:empty)]:!mb-2"
+				use:dndzone={{
+					items: defaultWorkspaces,
+					dropTargetStyle: {},
+					zoneTabIndex: -1,
+					dragDisabled: !dragEnabled || defaultWorkspaces.length < 2,
+				}}
+				on:consider={(e: CustomEvent<DndEvent<Ext.SimpleWorkspace>>) => {
+					defaultWorkspaces = e.detail.items;
+				}}
+				on:finalize={(e: CustomEvent<DndEvent<Ext.SimpleWorkspace>>) => {
+					const { info: { source } } = e.detail;
+					defaultWorkspaces = e.detail.items;
+					if(source === SOURCES.POINTER){
+						dragEnabled = false;
+					}
+					dndFinish();
+				}}
+			>
+				{#each defaultWorkspaces as workspace, i (workspace.id)}
+					<li class="flex gap-2 items-stretch">
+						<div class="drag-handle w-4 h-4 self-center" onpointerdown={(e) => {e.preventDefault(); dragEnabled = true}} onpointerup={() => {dragEnabled = false;}} aria-label="drag-handle">
+							<Icon icon="drag-handle" width={18} class="{defaultWorkspaces.length < 2 ? 'hidden' : ''}" />
+						</div>
+						<SimpleWorkspace 
+							{workspace} 
+							updatedIcon={(icon) => workspace.icon = icon} 
+							updatedName={(name) => workspace.name = name}
+						/>
+						<div class="self-center flex text-neutral-300">
+							<button class="btn ghost !border-none !w-max !p-0" onclick={() => removeDefaultWorkspace(workspace.id)}>
+								<Icon icon="cross" />
+							</button>
+						</div>
+					</li>
+				{/each}
+			</ul>
+			<button
+				title="add default workspace"
+				class="btn ml-6 w-full"
+				style:width="-moz-available"
+				onclick={addDefaultWorkspace}><Icon icon="add" width={16}/>
+				<span class="-mt-1">{i18n.getMessage('add_default_workspace')}</span>
+			</button>
+			<button class="btn justify-center mt-4 [&:not(.changes-available)]:hidden" class:changes-available={changesMade} style:width="-moz-available" disabled={!changesMade} onclick={applyDefaultWorkspacesChanges}>
+				<Icon icon="check" />
+				<span class="-mt-1">{i18n.getMessage('apply_changes')}</span>
+			</button>
+		</div>
 		<Accordion detailsClasses="mt-4">
 			{#snippet summary()}
-				<span>{i18n.getMessage('force_apply')}</span>
+				<span>{i18n.getMessage('force_apply') || "force apply"}</span>
 			{/snippet}
 			<button class="btn justify-center mt-4" style:width="-moz-available" onclick={forceApplyOnCurrentWindow}>
-				force apply on current window
+				{i18n.getMessage("force_apply_on_current_window") || "force apply on current window"}
 			</button>
 			<button class="btn justify-center mt-4" style:width="-moz-available" onclick={forceApplyOnAllWindows}>
-				force apply on all open windows
+				{i18n.getMessage("force_apply_on_all_open_windows") || "force apply on all open windows"}
 			</button>
 		</Accordion>
 		<Accordion detailsClasses="mt-4">
