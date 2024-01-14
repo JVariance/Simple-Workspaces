@@ -361,11 +361,13 @@ export class Window {
 		const { defaultWorkspaces } = await BrowserStorage.getDefaultWorkspaces();
 		if (!defaultWorkspaces?.length) return;
 
+		console.info({ defaultWorkspaces });
+
 		for (let [index, _defaultWorkspace] of defaultWorkspaces.entries() ||
 			[].entries()) {
 			const { id, ...defaultWorkspace } = _defaultWorkspace;
 
-			let presentWorkspace = this.workspaces
+			let presentWorkspace = this.#workspaces
 				.filter(({ UUID }) => UUID !== "HOME")
 				?.at(index);
 
@@ -373,6 +375,8 @@ export class Window {
 				console.info({ presentWorkspace, defaultWorkspace });
 				presentWorkspace = { ...presentWorkspace, ...defaultWorkspace };
 				console.info({ presentWorkspace });
+
+				this.workspaces[index + 1] = presentWorkspace;
 			} else {
 				const newTab = (await API.createTab({
 					active: false,
@@ -400,6 +404,7 @@ export class Window {
 			}
 		}
 
+		// this.#persist();
 		console.info("forceApply end");
 		this.#initializing = false;
 	}

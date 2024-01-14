@@ -114,10 +114,15 @@
 		updatedActiveWorkspace({ UUID: workspace.UUID });
 	}
 	
+	async function initWorkspaces(){
+		const _workspaces = await getWorkspaces({ windowId });
+		homeWorkspace = _workspaces[0];
+		workspaces = _workspaces.slice(1);
+	}
+
 	async function updatedWorkspaces() {
 		console.info("updatedWorkspaces");
-		workspaces = await getWorkspaces({ windowId });
-		// initWorkspaces();
+		initWorkspaces();
 	}
 
 	function movedTabsToNewWorkspace({workspace}: {workspace: Ext.Workspace}){
@@ -279,24 +284,8 @@
 	}
 	
 	async function initView() {
-		console.info("initView");
 		windowId = (await Browser.windows.getCurrent()).id!;
-		console.info({ windowId });
-		const _workspaces = await getWorkspaces({ windowId });
-		// const [_homeWorkspace, _viewWorkspaces] = _workspaces.reduce((acc, workspace, i) => {
-		// 	if(i === 0) acc[1] = [];
-		// 	if(workspace.UUID === "HOME") 
-		// 	{
-		// 		acc[0] = workspace;
-		// 	} else {
-		// 		acc[1].push(workspace);
-		// 	}
-		// 	return acc;
-		// }, new Array(2) as [Ext.Workspace, Ext.Workspace[]]);
-		homeWorkspace = _workspaces[0];
-		workspaces = _workspaces.slice(1);
-
-		console.info({homeWorkspace, workspaces});
+		initWorkspaces();
 	}
 
 	async function search(e: InputEvent & { target: HTMLInputElement }) {
@@ -428,7 +417,7 @@
 		{/if}
 	{/snippet}
 
-	<ul class="w-full @container">
+	<ul class="w-full @container grid">
 		{#if !homeWorkspace && !workspaces.length}
 			{#each [,,,] as _}
 				<Skeleton class="w-full h-16 rounded-md"/>
