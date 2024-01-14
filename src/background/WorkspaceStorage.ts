@@ -207,8 +207,11 @@ export class WorkspaceStorage {
 	}
 
 	async forceApplyDefaultWorkspacesOnAllWindows() {
-		for (let window of this.#windows.values()) {
-			await window.forceApplyDefaultWorkspaces();
-		}
+		// for (let window of this.#windows.values()) {
+		const promises: Promise<any>[] = [];
+		this.#windows.forEach((window) => {
+			promises.push(window.forceApplyDefaultWorkspaces());
+		});
+		await Promise.all(promises);
 	}
 }

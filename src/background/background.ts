@@ -619,17 +619,21 @@ browser.runtime.onMessage.addListener((message) => {
 				return resolve(defaultWorkspaces);
 			});
 		case "forceApplyDefaultWorkspacesOnCurrentWindow":
-			return new Promise<boolean>(async (resolve) => {
+			return new Promise<void>(async (resolve) => {
 				await workspaceStorage.activeWindow.forceApplyDefaultWorkspaces();
 				informViews(
 					workspaceStorage.activeWindow.windowId,
 					"updatedWorkspaces"
 				);
-				return resolve(true);
+				return resolve();
 			});
 		case "forceApplyDefaultWorkspacesOnAllWindows":
 			return new Promise<void>(async (resolve) => {
 				await workspaceStorage.forceApplyDefaultWorkspacesOnAllWindows();
+				for (let windowId of workspaceStorage.windows.keys()) {
+					console.info({ windowId });
+					informViews(windowId, "updatedWorkspaces");
+				}
 				return resolve();
 			});
 		case "clearExtensionData":

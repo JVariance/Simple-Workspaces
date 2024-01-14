@@ -44,7 +44,7 @@
 	});
 </script>
 
-<div class="flex flex-wrap gap-2">
+<div class="flex flex-wrap gap-x-2">
 	{#if homeWorkspace}
 		<SimpleWorkspace
 			workspace={homeWorkspace}

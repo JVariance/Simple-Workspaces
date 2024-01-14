@@ -52,7 +52,7 @@
 		});
 
 		await persistDefaultWorkspaces();
-		toast.$set({state: "success"});
+		toast.$set({ state: "success" });
 		changesMade = false;
 	}
 
@@ -74,22 +74,26 @@
 
 
 	async function forceApplyOnCurrentWindow(event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement; }) {
-		await Browser.runtime.sendMessage({msg: "forceApplyDefaultWorkspacesOnCurrentWindow"});
-		createToast({
+		event.stopImmediatePropagation();
+		const toast = createToast({
 			loadingMessage: i18n.getMessage("applying_changes"),
 			successMessage: i18n.getMessage("applied_changes"),
 			errorMessage: "Something went wrong", 
 		});
+		await Browser.runtime.sendMessage({msg: "forceApplyDefaultWorkspacesOnCurrentWindow"});
+		toast.$set({ state: "success" });
 	}
 	
 	
 	async function forceApplyOnAllWindows(event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement; }) {
-		await Browser.runtime.sendMessage({msg: "forceApplyDefaultWorkspacesOnAllWindows"});
-		createToast({
+		event.stopImmediatePropagation();
+		const toast = createToast({
 			loadingMessage: i18n.getMessage("applying_changes"),
 			successMessage: i18n.getMessage("applied_changes"),
 			errorMessage: "Something went wrong", 
 		});
+		await Browser.runtime.sendMessage({msg: "forceApplyDefaultWorkspacesOnAllWindows"});
+		toast.$set({ state: "success" });
 	}
 </script>
 
