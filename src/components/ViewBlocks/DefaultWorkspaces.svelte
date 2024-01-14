@@ -1,12 +1,13 @@
 <script lang="ts">
 	import Browser, { i18n } from "webextension-polyfill";
-	import { onMount, unstate, getContext, untrack } from "svelte";
+	import { onMount, unstate, untrack } from "svelte";
 	import Icon from "../Icon.svelte";
 	import Accordion from "../Accordion.svelte";
 	import SimpleWorkspace from "../SimpleWorkspace.svelte";
 	import { SOURCES, dndzone } from "svelte-dnd-action";
 	import { createToast } from "../createToast";
 	import { immediateDebounceFunc } from "@root/utils";
+	import {getDefaultWorkspacesState} from "@pages/states.svelte";
 
 	type Props = {dndFinish?: Function};
 
@@ -14,7 +15,7 @@
 	
 	let dragEnabled = $state(false);
 	let fetchedDefaultWorkspaces: Ext.SimpleWorkspace[] = $state([]);
-	let _defaultWorkspaces = $derived(getContext<() => Ext.SimpleWorkspace[]>("defaultWorkspaces")() || []);
+	let _defaultWorkspaces = $derived(getDefaultWorkspacesState());
 	let defaultWorkspaces = $state((() => unstate(_defaultWorkspaces))());
 
 	$effect(() => {

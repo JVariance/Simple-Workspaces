@@ -147,7 +147,7 @@
 	<div
 		class:active
 		class:selected
-		class="workspace flex gap-2 @[360px]:gap-8 justify-center @[244px]:justify-start items-center p-2 py-3 rounded-md {classes} focus-within:bg-neutral-100 hover:bg-neutral-100 focus-within:dark:bg-neutral-700 hover:dark:bg-neutral-700 [&.active]:bg-[#5021ff] [&.active]:text-white"
+		class="workspace flex gap-2 @[360px]:gap-8 justify-center @[244px]:justify-start items-center p-2 py-3 rounded-md {classes} focus-within:bg-neutral-100 hover:bg-neutral-100 focus-within:dark:bg-neutral-700 hover:dark:bg-neutral-700 [&.active]:bg-[#5021ff] [&.active]:text-white group"
 	>
 		{#if editMode}
 			<div
@@ -216,7 +216,11 @@
 			{#if UUID === "HOME"}
 				<button class="invisible" />
 			{:else}
-				<button class="ghost" title="edit" onclick={toggleEditMode}>
+				<button
+					class="ghost invisible group-hover:visible group-focus-within:visible"
+					title="edit"
+					onclick={toggleEditMode}
+				>
 					<Icon icon="edit" width={14} />
 				</button>
 			{/if}

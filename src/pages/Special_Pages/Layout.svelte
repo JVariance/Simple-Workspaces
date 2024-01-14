@@ -1,17 +1,5 @@
 <script lang="ts">
-	import { getDefaultWorkspacesState, getHomeWorkspaceState, getWorkspacesState } from "../states.svelte";
-	import { setContext } from "svelte";
 	let { children } = $props();
-
-	let abrada = $derived(getWorkspacesState());
-
-	$effect(() => {
-		console.log({ abrada });
-	});
-
-	setContext("homeWorkspace", () => getHomeWorkspaceState());
-	setContext("workspaces", () => getWorkspacesState());
-	setContext("defaultWorkspaces", () => getDefaultWorkspacesState());
 </script>
 
 {@render children()}

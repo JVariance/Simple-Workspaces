@@ -71,12 +71,6 @@ browser.runtime.onStartup.addListener(async () => {
 	if (!workspaceStorage) await initExtension();
 });
 
-browser.runtime.onConnect.addListener(async (port) => {
-	Processes.ExtensionInitialization.then(() => {
-		port.postMessage({ msg: "connected" });
-	});
-});
-
 async function informViews(
 	windowId: number,
 	message: string,

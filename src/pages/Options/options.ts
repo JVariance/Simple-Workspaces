@@ -1,4 +1,4 @@
 import { createRoot } from "svelte";
-import OptionsLayout from "./OptionsLayout.svelte";
+import Options from "./Options.svelte";
 
-createRoot(OptionsLayout, { target: document.body });
+createRoot(Options, { target: document.body });

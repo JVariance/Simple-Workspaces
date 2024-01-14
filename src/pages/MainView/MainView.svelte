@@ -7,7 +7,8 @@
 	import Icon from "@root/components/Icon.svelte";
 	import { debounceFunc } from "@root/utils";
 	import Skeleton from "@root/components/Skeleton.svelte";
-	import { untrack } from "svelte";
+	import { untrack, onMount } from "svelte";
+	import { getWorkspacesState } from "@pages/states.svelte";
 
 	import {overrideItemIdKeyNameBeforeInitialisingDndZones} from "svelte-dnd-action";
 	overrideItemIdKeyNameBeforeInitialisingDndZones("UUID");
@@ -17,13 +18,11 @@
 	let searchInput: HTMLInputElement = $state();
 	let selectedIndex = $state(0);
 	let homeWorkspace: Ext.Workspace = $state();
+	let _workspaces: Ext.Workspace[] = $derived(getWorkspacesState());
 	let workspaces: Ext.Workspace[] = $state([]);
-	let activeWorkspace: Ext.Workspace = $state()!;
+	let activeWorkspace: Ext.Workspace = $derived(homeWorkspace?.active ? homeWorkspace : workspaces?.find(({active}) => active));
 	let searchFilteredWorkspaceUUIDS: string[] = $state([]);
 	let viewWorkspaces: Ext.Workspace[] = $derived((() => {
-		// searchFilteredWorkspaceUUIDS;
-		// const filteredWorkspaces = workspaces.filter(({UUID}) => searchFilteredWorkspaceUUIDS.includes(UUID));
-		// return filteredWorkspaces.length ? filteredWorkspaces : searchInput?.value.length ? [] : workspaces;
 		const filteredWorkspaces = searchFilteredWorkspaceUUIDS.reduce((_workspaces, uuid) => {
 			const workspace = workspaces.find(({ UUID }) => UUID === uuid);
 			if(workspace) _workspaces.push(workspace);
@@ -36,21 +35,13 @@
 	let windowId: number;
 
 	$effect(() => {
-		untrack(() => activeWorkspace);
-		activeWorkspace = homeWorkspace?.active ? homeWorkspace : workspaces.find(({active}) => active);
-		console.info({ activeWorkspace });
+		untrack(() => workspaces);
+		homeWorkspace = _workspaces[0];
+		workspaces = _workspaces.slice(1);
 	});
 
 	function updatedHomeWorkspace({homeWorkspace: newHomeWorkspace}: { homeWorkspace: Ext.Workspace }) {
 		homeWorkspace = {...homeWorkspace, ...newHomeWorkspace};
-	}
-
-	function getWorkspaces({
-		windowId,
-	}: {
-		windowId: number;
-	}): Promise<Ext.Workspace[]> {
-		return Browser.runtime.sendMessage({ msg: "getWorkspaces", windowId });
 	}
 
 	function updatedActiveWorkspace({
@@ -58,7 +49,6 @@
 	}: {
 		UUID: Ext.Workspace["UUID"];
 	}) {
-		console.info("UPDATEDACTIVEWORKSPACE", {windowId, activeWorkspace});
 		activeWorkspace.active = false;
 		const workspace = workspaceUUID === "HOME" ? homeWorkspace : workspaces.find(({ UUID }) => UUID === workspaceUUID)!;
 		workspace.active = true;
@@ -114,36 +104,10 @@
 		workspaces.push(workspace);
 		updatedActiveWorkspace({ UUID: workspace.UUID });
 	}
-	
-	async function initWorkspaces(){
-		const _workspaces = await getWorkspaces({ windowId });
-		homeWorkspace = _workspaces[0];
-		workspaces = _workspaces.slice(1);
-	}
-
-	async function updatedWorkspaces() {
-		console.info("updatedWorkspaces");
-		initWorkspaces();
-	}
 
 	function movedTabsToNewWorkspace({workspace}: {workspace: Ext.Workspace}){
 		workspaces.push(workspace);
 	}
-
-	const port = Browser.runtime.connect();
-
-	port.onMessage.addListener((message) => {
-		const { msg } = message;
-		console.info("port onmessage", { message });
-		switch(msg){
-			case "connected":
-					initView();
-				break;
-			default:
-				break;
-		}
-	});
-
 
 	Browser.runtime.onMessage.addListener((message) => {
 		console.info("browser runtime onmessage");
@@ -151,10 +115,6 @@
 		if(targetWindowId !== windowId) return;
 
 		switch (msg) {
-			case "initialized":
-				console.info("background initialized");
-				// initView();
-				break;
 			case "addedWorkspace":
 				addedWorkspace(message);
 				break;
@@ -195,7 +155,7 @@
 	}
 
 	function addWorkspaceByKey(e: KeyboardEvent) {
-		e.stopPropagation();
+		// e.preventDefault();
 	}
 
 	function removeWorkspace(workspace: Ext.Workspace) {
@@ -286,11 +246,6 @@
 				break;
 		}
 	}
-	
-	async function initView() {
-		windowId = (await Browser.windows.getCurrent()).id!;
-		initWorkspaces();
-	}
 
 	async function search(e: InputEvent & { target: HTMLInputElement }) {
 		const { value } = e.target;
@@ -333,6 +288,10 @@
 	function openOptionsPage() {
 		Browser.runtime.openOptionsPage();
 	}
+
+	onMount(async () => {
+		windowId = (await Browser.windows.getCurrent()).id!;
+	});
 </script>
 
 <svelte:body onkeydown={onKeyDown} />

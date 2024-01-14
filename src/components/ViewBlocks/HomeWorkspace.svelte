@@ -1,13 +1,12 @@
 <script lang="ts">
-	import { createRoot, unstate, getContext } from "svelte";
+	import { createRoot, unstate } from "svelte";
 	import Browser, { i18n } from "webextension-polyfill";
 	import SimpleWorkspace from "@components/SimpleWorkspace.svelte";
 	import Icon from "@components/Icon.svelte";
 	import Toast from "@components/Toast.svelte";
+	import { getHomeWorkspaceState } from "@pages/states.svelte";
 
-	let homeWorkspace = $derived(
-		getContext<() => Ext.SimpleWorkspace>("homeWorkspace")()
-	);
+	let homeWorkspace = $derived(getHomeWorkspaceState());
 
 	async function applyHomeWorkspaceChanges(
 		event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement }
