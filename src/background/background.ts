@@ -6,10 +6,10 @@ import { Processes } from "./Processes";
 import * as API from "@root/browserAPI";
 import { unstate } from "svelte";
 import { BrowserStorage } from "./Storage";
+import { createTab } from "./tabCreation";
 
-let workspaceStorage: WorkspaceStorage;
+// let WorkspaceStorage: WorkspaceStorage;
 let tabMenu: TabMenu;
-let manualTabCreationHandling = false;
 
 console.info("MOINSEN MOINSEN MOINSEN MOINSEN MOINSEN MOINSEN MOINSEN");
 
@@ -22,7 +22,7 @@ async function initExtension() {
 	console.info("initExtension 2");
 
 	// await browser.storage.local.clear();
-	if (!workspaceStorage && !tabMenu) {
+	if (!WorkspaceStorage.initialized && !tabMenu) {
 		console.info("initExtension 3");
 		await initWorkspaceStorage();
 		console.info("initExtension 4");
@@ -38,19 +38,19 @@ async function initTabMenu() {
 	console.info("initTabMenu");
 	tabMenu = new TabMenu();
 	await tabMenu.init(
-		workspaceStorage.windows.get(workspaceStorage.focusedWindowId)!.workspaces
+		WorkspaceStorage.windows.get(WorkspaceStorage.focusedWindowId)!.workspaces
 	);
 }
 
 async function initWorkspaceStorage() {
-	workspaceStorage = new WorkspaceStorage();
-	await workspaceStorage.init();
+	// WorkspaceStorage = new WorkspaceStorage();
+	await WorkspaceStorage.init();
 }
 
 browser.runtime.onInstalled.addListener(async (details) => {
 	console.info("onInstalled");
 	await browser.storage.local.clear();
-	if (!workspaceStorage) await initExtension();
+	if (!WorkspaceStorage.initialized) await initExtension();
 
 	switch (details.reason) {
 		case "install":
@@ -68,7 +68,7 @@ browser.runtime.onInstalled.addListener(async (details) => {
 
 browser.runtime.onStartup.addListener(async () => {
 	console.info("onStartup");
-	if (!workspaceStorage) await initExtension();
+	if (!WorkspaceStorage.initialized) await initExtension();
 });
 
 async function informViews(
@@ -77,21 +77,12 @@ async function informViews(
 	props: Record<string | symbol, any> = {}
 ) {
 	console.info("bg - informViews -> " + message, props);
-	// const popups = browser.extension.getViews({ type: "popup", windowId });
-	// const sidebar = browser.extension.getViews({ type: "sidebar", windowId });
-
-	// console.info({ popups, sidebar });
-
-	// [...popups, ...sidebar].forEach((view) => {
-	// console.info({ view, window: view.window });
-	// view.postMessage({ msg: message, ...props });
 	browser.runtime.sendMessage({ windowId, msg: message, ...props });
-	// });
 }
 
 browser.menus.onShown.addListener((info, tab) => {
 	console.info("browser.menus.onShown");
-	const workspaces = workspaceStorage.windows
+	const workspaces = WorkspaceStorage.windows
 		.get(tab.windowId!)!
 		.workspaces.filter(({ active }) => !active);
 
@@ -125,7 +116,7 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 		if (menuItemId.toString().startsWith("workspace-menu")) {
 			targetWorkspaceUUID = menuItemId.split("_").at(1)!;
 		} else if (newWorkspaceDemanded) {
-			newWorkspace = await workspaceStorage.activeWindow.addWorkspace([]);
+			newWorkspace = await WorkspaceStorage.activeWindow.addWorkspace([]);
 			newWorkspace.active = false;
 			targetWorkspaceUUID = newWorkspace.UUID;
 		}
@@ -133,7 +124,7 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 		if (!tab?.windowId) return;
 
 		tabIds &&
-			(await workspaceStorage.getWindow(tab!.windowId!).moveTabs({
+			(await WorkspaceStorage.getWindow(tab!.windowId!).moveTabs({
 				tabIds,
 				targetWorkspaceUUID,
 			}));
@@ -148,7 +139,7 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 		}
 
 		if (
-			targetWorkspaceUUID === workspaceStorage.activeWindow.activeWorkspace.UUID
+			targetWorkspaceUUID === WorkspaceStorage.activeWindow.activeWorkspace.UUID
 		) {
 			informViews(tab.windowId!, "updatedActiveWorkspace", {
 				UUID: targetWorkspaceUUID,
@@ -162,7 +153,7 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 	1. browser.tabs.onCreated
 	2. browser.windows.onCreated
 
-	=> create new workspaceStorage-window inside tabs.onCreated
+	=> create new WorkspaceStorage-window inside tabs.onCreated
 
 	Removal:
 	1. browser.tabs.onRemoved
@@ -191,18 +182,18 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 
 // browser.management.onEnabled.addListener(async () => {
 // 	await browser.storage.local.clear();
-// 	if (!workspaceStorage) await initExtension();
+// 	if (!WorkspaceStorage) await initExtension();
 // });
 
 browser.windows.onFocusChanged.addListener((windowId) => {
 	if (windowId !== browser.windows.WINDOW_ID_NONE) {
-		workspaceStorage.focusedWindowId = windowId;
+		WorkspaceStorage.focusedWindowId = windowId;
 	}
 });
 
 browser.windows.onRemoved.addListener(async (windowId) => {
-	if (workspaceStorage.windows.size > 1) {
-		await workspaceStorage.removeWindow(windowId);
+	if (WorkspaceStorage.windows.size > 1) {
+		await WorkspaceStorage.removeWindow(windowId);
 	}
 });
 
@@ -212,7 +203,7 @@ browser.windows.onCreated.addListener(async (window) => {
 	Processes.WindowCreation.start();
 	console.info("windows.onCreated");
 
-	const newWindow = await workspaceStorage.getOrCreateWindow(window.id!);
+	const newWindow = await WorkspaceStorage.getOrCreateWindow(window.id!);
 	const windowId = newWindow.windowId;
 	await API.setWindowValue(windowId, "windowUUID", newWindow.UUID);
 
@@ -225,39 +216,47 @@ browser.tabs.onActivated.addListener(async (activeInfo) => {
 	if (!tabId) return;
 	const workspaceUUID = await API.getTabValue<string>(tabId, "workspaceUUID");
 	if (workspaceUUID) {
-		const workspace = workspaceStorage.activeWindow.workspaces.find(
+		const workspace = WorkspaceStorage.activeWindow.workspaces.find(
 			({ UUID }) => UUID === workspaceUUID
 		);
 
 		if (workspace) {
 			const isActiveWorkspace =
-				workspace.UUID === workspaceStorage.activeWindow.activeWorkspace.UUID;
+				workspace.UUID === WorkspaceStorage.activeWindow.activeWorkspace.UUID;
 
 			if (!isActiveWorkspace) {
-				await workspaceStorage.activeWindow.switchWorkspace(workspace);
+				await WorkspaceStorage.activeWindow.switchWorkspace(workspace);
 				informViews(
-					workspaceStorage.activeWindow.windowId,
+					WorkspaceStorage.activeWindow.windowId,
 					"updatedActiveWorkspace",
 					{ UUID: workspace.UUID }
 				);
 				await API.updateTab(tabId, { active: true });
 			} else {
-				workspaceStorage.activeWindow.setActiveTab(tabId);
+				WorkspaceStorage.activeWindow.setActiveTab(tabId);
 			}
 		}
 	}
 });
 
 browser.tabs.onCreated.addListener(async (tab) => {
-	console.info("browser.tabs.onCreated", { manualTabCreationHandling });
+	console.info("browser.tabs.onCreated", {
+		manualTabAddition: Processes.manualTabAddition,
+	});
 	const window = await browser.windows.get(tab.windowId!);
-	if (window?.type !== "normal" || manualTabCreationHandling) return;
-	if (Processes.WindowCreation.state === "pending") return;
+	if (Processes.manualTabAddition) {
+		Processes.manualTabAddition = false;
+		return;
+	}
+
+	if (window?.type !== "normal" || Processes.WindowCreation.state === "pending")
+		return;
 	await Processes.WindowCreation;
 	Processes.TabCreation.start();
-	const windowIsNew = !workspaceStorage.windows.has(tab.windowId!);
+	const windowIsNew = !WorkspaceStorage.windows.has(tab.windowId!);
 
 	console.info("createdTab", { tab: structuredClone(tab) });
+	console.info({ windowIsNew });
 	if (!windowIsNew) {
 		const tabSessionWorkspaceUUID = await API.getTabValue(
 			tab.id!,
@@ -267,11 +266,12 @@ browser.tabs.onCreated.addListener(async (tab) => {
 		console.info({ tabSessionWorkspaceUUID });
 
 		if (tabSessionWorkspaceUUID) {
-			await workspaceStorage
-				.getWindow(tab.windowId!)
-				.restoredTab(tab.id!, tabSessionWorkspaceUUID);
+			await WorkspaceStorage.getWindow(tab.windowId!).restoredTab(
+				tab.id!,
+				tabSessionWorkspaceUUID
+			);
 		} else {
-			await workspaceStorage.getWindow(tab.windowId!).addTab(tab.id!);
+			await WorkspaceStorage.getWindow(tab.windowId!).addTab(tab.id!);
 		}
 		informViews(tab.windowId!, "createdTab", { tabId: tab.id });
 	}
@@ -280,6 +280,11 @@ browser.tabs.onCreated.addListener(async (tab) => {
 });
 
 browser.tabs.onRemoved.addListener(async (tabId, info) => {
+	console.info("bg - tabs.onRemoved");
+	console.info({ manualTabRemoval: Processes.manualTabRemoval });
+
+	if (Processes.manualTabRemoval) return;
+
 	await Promise.all([
 		Processes.TabCreation,
 		Processes.TabAttachment,
@@ -288,18 +293,20 @@ browser.tabs.onRemoved.addListener(async (tabId, info) => {
 
 	console.info("tab removed");
 
-	const window = workspaceStorage.getWindow(info.windowId);
+	const window = WorkspaceStorage.getWindow(info.windowId);
 	const prevActiveWorkspace = window.activeWorkspace;
 
 	await window.removeTab(tabId);
 
 	if (!prevActiveWorkspace.tabIds.length) {
 		console.info("| activeWorkspace has no tabs");
-		manualTabCreationHandling = true;
-		const newTab = (await API.createTab({
-			active: false,
-			windowId: window.windowId,
-		}))!;
+		const newTab = (await createTab(
+			{
+				active: false,
+				windowId: window.windowId,
+			},
+			prevActiveWorkspace
+		))!;
 
 		await API.setTabValue(
 			newTab.id!,
@@ -307,8 +314,8 @@ browser.tabs.onRemoved.addListener(async (tabId, info) => {
 			window.activeWorkspace.UUID
 		);
 
-		prevActiveWorkspace.tabIds.push(newTab.id!);
-		prevActiveWorkspace.activeTabId = newTab.id;
+		// prevActiveWorkspace.tabIds.push(newTab.id!);
+		// prevActiveWorkspace.activeTabId = newTab.id;
 		await window.switchToPreviousWorkspace();
 
 		if (
@@ -329,7 +336,6 @@ browser.tabs.onRemoved.addListener(async (tabId, info) => {
 		informViews(window.windowId, "updatedActiveWorkspace", {
 			UUID: window.activeWorkspace.UUID,
 		});
-		manualTabCreationHandling = false;
 	}
 
 	informViews(window.windowId, "removedTab", { tabId });
@@ -349,7 +355,7 @@ async function _handleAttachedTabs(tabIds: number[], targetWindowId: number) {
 	console.info("handleAttachedTabs", { tabIds, targetWindowId });
 
 	Processes.TabAttachment.start();
-	const activeWorkspace = await workspaceStorage.moveAttachedTabs({
+	const activeWorkspace = await WorkspaceStorage.moveAttachedTabs({
 		tabIds,
 		targetWindowId,
 	});
@@ -366,7 +372,7 @@ async function _handleDetachedTabs(tabIds: number[], currentWindowId: number) {
 	console.info("handleDetachedTabs", { tabIds, currentWindowId });
 
 	Processes.TabDetachment.start();
-	const activeWorkspace = await workspaceStorage.moveDetachedTabs({
+	const activeWorkspace = await WorkspaceStorage.moveDetachedTabs({
 		tabIds,
 		currentWindowId,
 	});
@@ -399,8 +405,8 @@ browser.tabs.onDetached.addListener((tabId, detachInfo) => {
 });
 
 // browser.tabs.onActivated.addListener((activeInfo) => {
-// 	if (workspaceStorage.windows.has(activeInfo.windowId)) {
-// 		workspaceStorage
+// 	if (WorkspaceStorage.windows.has(activeInfo.windowId)) {
+// 		WorkspaceStorage
 // 			.getWindow(activeInfo.windowId)
 // 			.setActiveTab(activeInfo.tabId);
 // 	}
@@ -412,14 +418,14 @@ browser.storage.local.onChanged.addListener((changes) => {
 		const item = changes[key];
 		switch (key) {
 			case "homeWorkspace":
-				workspaceStorage.windows.forEach((window) => {
+				WorkspaceStorage.windows.forEach((window) => {
 					informViews(window.windowId, "updatedHomeWorkspace", {
 						homeWorkspace: item.newValue,
 					});
 				});
 				break;
 			case "defaultWorkspaces":
-				workspaceStorage.windows.forEach((window) => {
+				WorkspaceStorage.windows.forEach((window) => {
 					informViews(window.windowId, "updatedDefaultWorkspaces", {
 						defaultWorkspaces: item.newValue,
 					});
@@ -436,10 +442,10 @@ browser.commands.onCommand.addListener((command) => {
 		case "next-workspace":
 			(async () => {
 				const activeWorkspace =
-					await workspaceStorage.activeWindow.switchToNextWorkspace();
+					await WorkspaceStorage.activeWindow.switchToNextWorkspace();
 				if (!activeWorkspace) return;
 				informViews(
-					workspaceStorage.activeWindow.windowId,
+					WorkspaceStorage.activeWindow.windowId,
 					"updatedActiveWorkspace",
 					{
 						UUID: activeWorkspace.UUID,
@@ -450,10 +456,10 @@ browser.commands.onCommand.addListener((command) => {
 		case "previous-workspace":
 			(async () => {
 				const activeWorkspace =
-					await workspaceStorage.activeWindow.switchToPreviousWorkspace();
+					await WorkspaceStorage.activeWindow.switchToPreviousWorkspace();
 				if (!activeWorkspace) return;
 				informViews(
-					workspaceStorage.activeWindow.windowId,
+					WorkspaceStorage.activeWindow.windowId,
 					"updatedActiveWorkspace",
 					{
 						UUID: activeWorkspace.UUID,
@@ -464,8 +470,8 @@ browser.commands.onCommand.addListener((command) => {
 		case "new-workspace":
 			(async () => {
 				const newWorkspace =
-					await workspaceStorage.activeWindow.addWorkspaceAndSwitch();
-				informViews(workspaceStorage.activeWindow.windowId, "addedWorkspace", {
+					await WorkspaceStorage.activeWindow.addWorkspaceAndSwitch();
+				informViews(WorkspaceStorage.activeWindow.windowId, "addedWorkspace", {
 					workspace: newWorkspace,
 				});
 			})();
@@ -480,22 +486,22 @@ browser.runtime.onMessage.addListener((message) => {
 
 	switch (msg) {
 		case "clearDB":
-			workspaceStorage.clearDB();
+			WorkspaceStorage.clearDB();
 			break;
 		case "logWindows":
-			console.info(workspaceStorage.windows);
+			console.info(WorkspaceStorage.windows);
 			break;
 		case "addWorkspace":
 			(async () => {
-				informViews(workspaceStorage.activeWindow.windowId, "addedWorkspace", {
+				informViews(WorkspaceStorage.activeWindow.windowId, "addedWorkspace", {
 					workspace:
-						await workspaceStorage.activeWindow.addWorkspaceAndSwitch(),
+						await WorkspaceStorage.activeWindow.addWorkspaceAndSwitch(),
 				});
 			})();
 			break;
 		case "editWorkspace":
 			console.info("editWorkspace", { message });
-			workspaceStorage.getWindow(message.windowId).editWorkspace(message);
+			WorkspaceStorage.getWindow(message.windowId).editWorkspace(message);
 			informViews(message.windowId, "updatedWorkspaces");
 			break;
 		case "getWorkspaces":
@@ -509,15 +515,15 @@ browser.runtime.onMessage.addListener((message) => {
 					Processes.TabAttachment,
 				]);
 
-				const workspaces = workspaceStorage.getWindow(
+				const workspaces = WorkspaceStorage.getWindow(
 					message.windowId
 				).workspaces;
 				return resolve(unstate(workspaces));
 			});
 		case "removeWorkspace":
-			return workspaceStorage
-				.getWindow(message.windowId)
-				.removeWorkspace(message.workspaceUUID);
+			return WorkspaceStorage.getWindow(message.windowId).removeWorkspace(
+				message.workspaceUUID
+			);
 		case "reorderedWorkspaces":
 			(async () => {
 				const { sortedWorkspacesIds, windowId } = message as {
@@ -527,12 +533,12 @@ browser.runtime.onMessage.addListener((message) => {
 
 				console.log({ sortedWorkspacesIds });
 
-				await workspaceStorage
-					.getWindow(windowId)
-					.reorderWorkspaces(sortedWorkspacesIds);
+				await WorkspaceStorage.getWindow(windowId).reorderWorkspaces(
+					sortedWorkspacesIds
+				);
 
 				informViews(windowId, "updatedWorkspaces");
-				// workspaceStorage.getWindow(windowId).updateWorkspaces(newWorkspaces);
+				// WorkspaceStorage.getWindow(windowId).updateWorkspaces(newWorkspaces);
 			})();
 			break;
 		case "reloadAllTabs":
@@ -570,14 +576,14 @@ browser.runtime.onMessage.addListener((message) => {
 		case "switchWorkspace":
 			Processes.WorkspaceSwitch.start();
 			const { workspaceUUID } = message as { workspaceUUID: string };
-			const nextWorkspace = workspaceStorage.windows
-				.get(workspaceStorage.focusedWindowId)!
+			const nextWorkspace = WorkspaceStorage.windows
+				.get(WorkspaceStorage.focusedWindowId)!
 				.workspaces.find(({ UUID }) => UUID === workspaceUUID)!;
 
 			(async () => {
-				await workspaceStorage.activeWindow.switchWorkspace(nextWorkspace);
+				await WorkspaceStorage.activeWindow.switchWorkspace(nextWorkspace);
 				informViews(
-					workspaceStorage.activeWindow.windowId,
+					WorkspaceStorage.activeWindow.windowId,
 					"updatedActiveWorkspace",
 					{ UUID: nextWorkspace.UUID }
 				);
@@ -592,7 +598,7 @@ browser.runtime.onMessage.addListener((message) => {
 
 				await Promise.all(
 					currentWorkspaces.map((workspace) =>
-						workspaceStorage.activeWindow.editWorkspace({
+						WorkspaceStorage.activeWindow.editWorkspace({
 							workspaceUUID: workspace.UUID,
 							icon: workspace.icon,
 							name: workspace.name,
@@ -601,7 +607,7 @@ browser.runtime.onMessage.addListener((message) => {
 				);
 
 				informViews(
-					workspaceStorage.activeWindow.windowId,
+					WorkspaceStorage.activeWindow.windowId,
 					"updatedWorkspaces"
 				);
 
@@ -610,7 +616,7 @@ browser.runtime.onMessage.addListener((message) => {
 		case "setHomeWorkspace":
 			return new Promise<void>(async (resolve) => {
 				console.info("setHomeWorkspace to " + message.homeWorkspace);
-				workspaceStorage.windows.forEach((window) => {
+				WorkspaceStorage.windows.forEach((window) => {
 					window.workspaces[0].name = message.homeWorkspace.name;
 					window.workspaces[0].icon = message.homeWorkspace.icon;
 				});
@@ -621,13 +627,13 @@ browser.runtime.onMessage.addListener((message) => {
 			return new Promise<void>(async (resolve) => {
 				await BrowserStorage.setDefaultWorkspaces(message.defaultWorkspaces);
 				if (
-					workspaceStorage.windows.size < 2 &&
-					workspaceStorage.activeWindow.workspaces.length < 2
+					WorkspaceStorage.windows.size < 2 &&
+					WorkspaceStorage.activeWindow.workspaces.length < 2
 				) {
-					await workspaceStorage.activeWindow.addDefaultWorkspaces();
+					await WorkspaceStorage.activeWindow.addDefaultWorkspaces();
 					console.info("added default workspaces and now informviews");
 					informViews(
-						workspaceStorage.activeWindow.windowId,
+						WorkspaceStorage.activeWindow.windowId,
 						"updatedWorkspaces"
 					);
 				}
@@ -642,17 +648,17 @@ browser.runtime.onMessage.addListener((message) => {
 			});
 		case "forceApplyDefaultWorkspacesOnCurrentWindow":
 			return new Promise<void>(async (resolve) => {
-				await workspaceStorage.activeWindow.forceApplyDefaultWorkspaces();
+				await WorkspaceStorage.activeWindow.forceApplyDefaultWorkspaces();
 				informViews(
-					workspaceStorage.activeWindow.windowId,
+					WorkspaceStorage.activeWindow.windowId,
 					"updatedWorkspaces"
 				);
 				return resolve();
 			});
 		case "forceApplyDefaultWorkspacesOnAllWindows":
 			return new Promise<void>(async (resolve) => {
-				await workspaceStorage.forceApplyDefaultWorkspacesOnAllWindows();
-				for (let windowId of workspaceStorage.windows.keys()) {
+				await WorkspaceStorage.forceApplyDefaultWorkspacesOnAllWindows();
+				for (let windowId of WorkspaceStorage.windows.keys()) {
 					console.info({ windowId });
 					informViews(windowId, "updatedWorkspaces");
 				}

@@ -2,6 +2,7 @@ import { promisedDebounceFunc } from "@root/utils";
 import Browser from "webextension-polyfill";
 import { Window } from "./Window.svelte";
 import * as API from "@root/browserAPI";
+import { createTab } from "./tabCreation";
 
 enum StorageKeys {
 	windowUUIDs = "windowIds",
@@ -11,9 +12,10 @@ enum StorageKeys {
 
 // TODO: make windows state as soon as Map is supported
 
-export class WorkspaceStorage {
+class _WorkspaceStorage {
 	#windows: Map<number, Window> = new Map();
 	#focusedWindowId!: number;
+	initialized = false;
 
 	constructor() {}
 
@@ -69,6 +71,7 @@ export class WorkspaceStorage {
 		}
 
 		this.#persistWindows();
+		this.initialized = true;
 	}
 
 	get windows(): Map<number, Window> {
@@ -146,11 +149,13 @@ export class WorkspaceStorage {
 	}) {
 		console.info("moveDetachedTabs");
 		const window = this.getWindow(currentWindowId);
-		const currentActiveWorkspace = window?.activeWorkspace;
+		const parentWorkspace = window?.workspaces.find((workspace) =>
+			workspace.tabIds.includes(tabIds?.at(0)!)
+		);
 		await window?.removeTabs(tabIds);
-		const currentTabIds = currentActiveWorkspace?.tabIds;
+		const currentTabIds = parentWorkspace?.tabIds;
 
-		console.log({ currentTabIds, currentActiveWorkspace, window });
+		console.log({ currentTabIds, parentWorkspace, window });
 
 		if (window && !currentTabIds?.length) {
 			console.info("keine tabs mehr im workspace");
@@ -169,17 +174,19 @@ export class WorkspaceStorage {
 
 				console.info({ workspaceOfActiveTab });
 
-				const newTab = (await API.createTab({
+				const newTab = (await createTab({
 					active: false,
 					windowId: window.windowId,
 				}))!;
+				// await API.hideTab(newTab.id!);
 
-				await window.addTab(newTab.id!);
+				// await window.addTab(newTab.id!, parentWorkspace);
 				console.info("ADDED TAB");
 
 				if (workspaceOfActiveTab) {
 					await window.switchWorkspace(workspaceOfActiveTab);
-					currentActiveWorkspace.activeTabId = newTab.id!;
+					parentWorkspace && (parentWorkspace.activeTabId = newTab.id!);
+					parentWorkspace?.tabIds.push(newTab.id!);
 				}
 			}
 		}
@@ -215,3 +222,5 @@ export class WorkspaceStorage {
 		await Promise.all(promises);
 	}
 }
+
+export const WorkspaceStorage = new _WorkspaceStorage();
