@@ -174,20 +174,18 @@ class _WorkspaceStorage {
 
 				console.info({ workspaceOfActiveTab });
 
-				const newTab = (await createTab({
-					active: false,
-					windowId: window.windowId,
-				}))!;
-				// await API.hideTab(newTab.id!);
+				await createTab(
+					{
+						active: false,
+						windowId: window.windowId,
+					},
+					parentWorkspace
+				);
 
-				// await window.addTab(newTab.id!, parentWorkspace);
 				console.info("ADDED TAB");
 
-				if (workspaceOfActiveTab) {
-					await window.switchWorkspace(workspaceOfActiveTab);
-					parentWorkspace && (parentWorkspace.activeTabId = newTab.id!);
-					parentWorkspace?.tabIds.push(newTab.id!);
-				}
+				workspaceOfActiveTab &&
+					(await window.switchWorkspace(workspaceOfActiveTab));
 			}
 		}
 

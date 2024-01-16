@@ -1,5 +1,4 @@
 import Browser from "webextension-polyfill";
-import { onMount } from "svelte";
 import { BrowserStorage } from "@root/background/Storage";
 
 let workspaces = $state<Ext.Workspace[]>([]);
@@ -22,6 +21,7 @@ export const getHomeWorkspaceState = () => {
 function addedWorkspace({ workspace }: { workspace: Ext.Workspace }) {
 	console.info("states: addedWorkspace");
 	workspaces.push(workspace);
+	updatedActiveWorkspace({ UUID: workspace.UUID });
 }
 
 function updatedHomeWorkspace({
@@ -31,6 +31,7 @@ function updatedHomeWorkspace({
 }) {
 	console.info("states: updatedHomeWorkspace");
 	homeWorkspace = _homeWorkspace;
+	workspaces[0] = { ...workspaces[0], ...homeWorkspace };
 }
 
 async function setWorkspaces() {
@@ -72,6 +73,55 @@ async function setDefaultWorkspacesFromLocalStorage() {
 		) || [];
 }
 
+const findActiveWorkspace = (workspace: Ext.Workspace) => workspace.active;
+
+function updatedActiveWorkspace({
+	UUID: workspaceUUID,
+}: {
+	UUID: Ext.Workspace["UUID"];
+}) {
+	console.info("states: updatedActiveWorkspace");
+
+	const activeWorkspace = workspaces.find(findActiveWorkspace);
+
+	if (activeWorkspace) {
+		activeWorkspace.active = false;
+		const workspace = workspaces.find(({ UUID }) => UUID === workspaceUUID)!;
+		(workspace as Ext.Workspace).active = true;
+	}
+}
+
+function movedTabs({
+	targetWorkspaceUUID,
+	tabIds,
+}: {
+	targetWorkspaceUUID: string;
+	tabIds: number[];
+}) {
+	const targetWorkspace = workspaces.find(
+		({ UUID }) => UUID === targetWorkspaceUUID
+	)!;
+
+	const activeWorkspace = workspaces.find(findActiveWorkspace);
+
+	if (activeWorkspace) {
+		activeWorkspace.tabIds = activeWorkspace.tabIds.filter(
+			(tabId) => !tabIds.includes(tabId)
+		);
+
+		if (!activeWorkspace.tabIds.length) {
+			console.info("habe keine Tabs mehr :(", { activeWorkspace });
+			updatedActiveWorkspace({ UUID: targetWorkspace.UUID });
+		}
+	}
+
+	targetWorkspace.tabIds.push(...tabIds);
+}
+
+function movedTabsToNewWorkspace({ workspace }: { workspace: Ext.Workspace }) {
+	workspaces.push(workspace);
+}
+
 Browser.runtime.onMessage.addListener((message) => {
 	console.info("browser runtime onmessage");
 	const { windowId: targetWindowId, msg } = message;
@@ -90,6 +140,15 @@ Browser.runtime.onMessage.addListener((message) => {
 			break;
 		case "updatedWorkspaces":
 			setWorkspaces();
+			break;
+		case "updatedActiveWorkspace":
+			updatedActiveWorkspace(message);
+			break;
+		case "movedTabs":
+			movedTabs(message);
+			break;
+		case "movedTabsToNewWorkspace":
+			movedTabsToNewWorkspace(message);
 			break;
 		case "updatedDefaultWorkspaces":
 			updatedDefaultWorkspaces(message);

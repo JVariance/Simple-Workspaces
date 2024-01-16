@@ -11,7 +11,7 @@ type EnhancedTab = Browser.Tabs.Tab & { workspaceUUID?: string };
 
 export class Window {
 	#initializing = false;
-	#movingTabs = false;
+	// #movingTabs = false;
 	#storageKey!: string;
 	#switchingWorkspace = false;
 	#UUID: string;
@@ -191,18 +191,19 @@ export class Window {
 	}
 
 	async addTabs(tabIds: number[], workspace = this.activeWorkspace) {
+		Processes.manualTabAddition = true;
 		console.info(
 			!this.activeWorkspace && !workspace,
 			this.#switchingWorkspace,
 			// this.#initializing,
-			this.#movingTabs,
+			// this.#movingTabs,
 			tabIds.some((tabId) => workspace.tabIds.includes(tabId))
 		);
 		if (
 			(!this.activeWorkspace && !workspace) ||
 			this.#switchingWorkspace ||
 			// this.#initializing ||
-			this.#movingTabs ||
+			// this.#movingTabs ||
 			tabIds.some((tabId) => workspace.tabIds.includes(tabId))
 		)
 			return;
@@ -217,9 +218,10 @@ export class Window {
 			),
 		]);
 
-		if (workspace.UUID === this.activeWorkspace?.UUID) {
+		if (workspace.UUID !== this.activeWorkspace?.UUID) {
 			await API.hideTabs(tabIds);
 		}
+		Processes.manualTabAddition = false;
 	}
 
 	async removeTab(tabId: number) {
@@ -229,7 +231,7 @@ export class Window {
 	async removeTabs(tabIds: number[], workspace = this.activeWorkspace) {
 		console.info("removeTabs 1");
 		console.info(!this.activeWorkspace, !workspace, this.#initializing);
-		if (!this.activeWorkspace || !workspace || this.#initializing) return;
+		if ((!this.activeWorkspace && !workspace) || this.#initializing) return;
 
 		console.info("removeTabs 2");
 
@@ -254,7 +256,12 @@ export class Window {
 		targetWorkspaceUUID: string;
 		tabIds: number[];
 	}) {
-		this.#movingTabs = true;
+		// this.#movingTabs = true;
+
+		// const currentWorkspace = this.activeWorkspace;
+		const currentWorkspace = this.#workspaces.find((workspace) =>
+			workspace.tabIds.includes(tabIds?.at(0)!)
+		)!;
 
 		const targetWorkspace = this.#workspaces.find(
 			(workspace) => workspace.UUID === targetWorkspaceUUID
@@ -264,14 +271,14 @@ export class Window {
 			targetWorkspace.activeTabId = tabIds.at(-1);
 		targetWorkspace.tabIds.push(...tabIds);
 
-		this.activeWorkspace.tabIds = this.activeWorkspace.tabIds.filter(
+		currentWorkspace.tabIds = currentWorkspace.tabIds.filter(
 			(tabId) => !tabIds.includes(tabId)
 		);
 
-		const activeTabId = this.activeWorkspace.activeTabId;
+		const activeTabId = currentWorkspace.activeTabId;
 
 		if (tabIds.includes(activeTabId!)) {
-			const newActiveTabId = [...this.activeWorkspace.tabIds]
+			const newActiveTabId = [...currentWorkspace.tabIds]
 				.reverse()
 				.find((tabId) => !tabIds.includes(tabId));
 
@@ -280,7 +287,7 @@ export class Window {
 			}
 		}
 
-		if (!this.activeWorkspace.tabIds.length) {
+		if (!currentWorkspace.tabIds.length) {
 			await createTab({
 				windowId: this.#windowId,
 				active: false,
@@ -294,7 +301,7 @@ export class Window {
 		for (let tabId of tabIds) {
 			await API.setTabValue(tabId, "workspaceUUID", targetWorkspace.UUID);
 		}
-		this.#movingTabs = false;
+		// this.#movingTabs = false;
 	}
 
 	async remove() {

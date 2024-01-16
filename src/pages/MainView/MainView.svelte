@@ -40,20 +40,6 @@
 		workspaces = _workspaces.slice(1);
 	});
 
-	function updatedHomeWorkspace({homeWorkspace: newHomeWorkspace}: { homeWorkspace: Ext.Workspace }) {
-		homeWorkspace = {...homeWorkspace, ...newHomeWorkspace};
-	}
-
-	function updatedActiveWorkspace({
-		UUID: workspaceUUID,
-	}: {
-		UUID: Ext.Workspace["UUID"];
-	}) {
-		activeWorkspace.active = false;
-		const workspace = workspaceUUID === "HOME" ? homeWorkspace : workspaces.find(({ UUID }) => UUID === workspaceUUID)!;
-		workspace.active = true;
-	}
-
 	function switchWorkspace(workspace: Ext.Workspace) {
 		(async () => {
 			await Browser.runtime.sendMessage({
@@ -64,29 +50,6 @@
 			searchInput.value = "";
 			window.close();
 		})();
-	}
-
-	function movedTabs({
-		targetWorkspaceUUID,
-		tabIds,
-	}: {
-		targetWorkspaceUUID: string;
-		tabIds: number[];
-	}) {
-		const targetWorkspace = workspaces.find(
-			({ UUID }) => UUID === targetWorkspaceUUID
-			)!;
-			
-			activeWorkspace.tabIds = activeWorkspace.tabIds.filter(
-				(tabId) => !tabIds.includes(tabId)
-				);
-				
-				if (!activeWorkspace.tabIds.length) {
-					console.info("habe keine Tabs mehr :(", {activeWorkspace});
-					updatedActiveWorkspace({ UUID: targetWorkspace.UUID });
-				}
-				
-				targetWorkspace.tabIds.push(...tabIds);
 	}
 
 	function createdTab({ tabId }: { tabId: number }) {
@@ -100,41 +63,17 @@
 		);
 	}
 
-	function addedWorkspace({ workspace }: { workspace: Ext.Workspace }) {
-		workspaces.push(workspace);
-		updatedActiveWorkspace({ UUID: workspace.UUID });
-	}
-
-	function movedTabsToNewWorkspace({workspace}: {workspace: Ext.Workspace}){
-		workspaces.push(workspace);
-	}
-
 	Browser.runtime.onMessage.addListener((message) => {
 		console.info("browser runtime onmessage");
 		const { windowId: targetWindowId, msg } = message;
 		if(targetWindowId !== windowId) return;
 
 		switch (msg) {
-			case "addedWorkspace":
-				addedWorkspace(message);
-				break;
-			case "updatedHomeWorkspace":
-				updatedHomeWorkspace(message);
-				break;
-			case "updatedActiveWorkspace":
-				updatedActiveWorkspace(message);
-				break;
-			case "movedTabsToNewWorkspace":
-				movedTabsToNewWorkspace(message);
-				break;
-			case "movedTabs":
-				movedTabs(message);
-				break;
 			case "createdTab":
-				createdTab(message);
+				// createdTab(message);
 				break;
 			case "removedTab":
-				removedTab(message);
+				// removedTab(message);
 				break;
 			default:
 				break;
