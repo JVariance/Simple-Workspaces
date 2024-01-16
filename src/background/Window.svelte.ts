@@ -110,10 +110,12 @@ export class Window {
 
 			if (blankTab.url === "about:blank") {
 				console.info("is blank tab");
+				Processes.manualTabAddition = true;
 				const newTab = (await API.createTab({
 					active: true,
 					windowId: this.#windowId,
 				}))!;
+				Processes.manualTabAddition = false;
 
 				// if (newTab) {
 				// 	homeWorkspace.tabIds.push(newTab.id!);
@@ -130,7 +132,10 @@ export class Window {
 				homeWorkspace.tabIds = homeWorkspace.tabIds.filter(
 					(id) => id !== blankTab.id
 				);
+
+				Processes.manualTabRemoval = true;
 				await API.removeTab(blankTab.id!);
+				Processes.manualTabRemoval = false;
 				// await removeTabs([blankTab.id!], homeWorkspace);
 			}
 			this.#workspaces.push(homeWorkspace);
@@ -195,15 +200,11 @@ export class Window {
 		console.info(
 			!this.activeWorkspace && !workspace,
 			this.#switchingWorkspace,
-			// this.#initializing,
-			// this.#movingTabs,
 			tabIds.some((tabId) => workspace.tabIds.includes(tabId))
 		);
 		if (
 			(!this.activeWorkspace && !workspace) ||
 			this.#switchingWorkspace ||
-			// this.#initializing ||
-			// this.#movingTabs ||
 			tabIds.some((tabId) => workspace.tabIds.includes(tabId))
 		)
 			return;
@@ -230,8 +231,8 @@ export class Window {
 
 	async removeTabs(tabIds: number[], workspace = this.activeWorkspace) {
 		console.info("removeTabs 1");
-		console.info(!this.activeWorkspace, !workspace, this.#initializing);
-		if ((!this.activeWorkspace && !workspace) || this.#initializing) return;
+		console.info(!this.activeWorkspace, !workspace);
+		if (!this.activeWorkspace && !workspace) return;
 
 		console.info("removeTabs 2");
 
@@ -332,6 +333,8 @@ export class Window {
 		// const { homeWorkspace } = await BrowserStorage.getHomeWorkspace();
 		const { defaultWorkspaces } = await BrowserStorage.getDefaultWorkspaces();
 
+		console.info({ defaultWorkspaces });
+
 		for (let _defaultWorkspace of defaultWorkspaces || []) {
 			const { id, ...defaultWorkspace } = _defaultWorkspace;
 
@@ -341,13 +344,25 @@ export class Window {
 				active: false,
 			};
 
-			await createTab(
-				{
-					active: false,
-					windowId: this.#windowId,
-				},
-				newWorkspace as Ext.Workspace
-			);
+			console.info("before:", {
+				newWorkspace,
+				defaultWorkspace,
+				windowId: this.#windowId,
+			});
+
+			Processes.manualTabAddition = true;
+			const newTab = (await API.createTab({
+				active: false,
+				windowId: this.#windowId,
+			}))!;
+			await API.hideTab(newTab.id!);
+
+			newWorkspace.tabIds.push(newTab.id!);
+			newWorkspace.activeTabId = newTab.id!;
+			await API.setTabValue(newTab.id!, "workspaceUUID", newWorkspace.UUID);
+			Processes.manualTabAddition = false;
+
+			console.info("after: ", { newWorkspace });
 
 			this.#workspaces.push(newWorkspace);
 		}
