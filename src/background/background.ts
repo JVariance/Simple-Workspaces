@@ -289,12 +289,16 @@ browser.tabs.onRemoved.addListener(async (tabId, info) => {
 		Processes.TabCreation,
 		Processes.TabAttachment,
 		Processes.TabDetachment,
+		// Processes.TabRemoval,
 	]);
 
 	console.info("tab removed");
 
 	const window = WorkspaceStorage.getWindow(info.windowId);
-	const prevActiveWorkspace = window.activeWorkspace;
+	// const prevActiveWorkspace = window.activeWorkspace;
+	const prevActiveWorkspace = window.workspaces.find((workspace) =>
+		workspace.tabIds.includes(tabId)
+	)!;
 
 	await window.removeTab(tabId);
 
@@ -314,9 +318,17 @@ browser.tabs.onRemoved.addListener(async (tabId, info) => {
 			window.activeWorkspace.UUID
 		);
 
-		// prevActiveWorkspace.tabIds.push(newTab.id!);
-		// prevActiveWorkspace.activeTabId = newTab.id;
-		await window.switchToPreviousWorkspace();
+		const activeTab = (
+			await API.queryTabs({
+				active: true,
+				windowId: window.windowId,
+			})
+		).tabs?.at(0)!;
+		const workspaceUUID = await API.getTabValue(activeTab.id!, "workspaceUUID");
+		const targetWorkspace = window.workspaces.find(
+			({ UUID }) => UUID === workspaceUUID
+		)!;
+		await window.switchWorkspace(targetWorkspace);
 
 		if (
 			window.workspaces.findIndex(
