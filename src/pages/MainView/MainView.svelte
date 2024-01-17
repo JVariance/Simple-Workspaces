@@ -226,7 +226,19 @@
 	}
 
 	onMount(async () => {
+		const { colors } = await Browser.theme.getCurrent();
+		console.log({ colors });
+		// button_primary, button_active, ntp_card_background, sidebar_selected_color
 		windowId = (await Browser.windows.getCurrent()).id!;
+
+		const sidebarBg = colors?.sidebar || colors?.toolbar;
+		sidebarBg && document.body.style.setProperty("--body-bg", sidebarBg);
+		const workspaceActiveBg = colors?.sidebar_highlight;
+		workspaceActiveBg && document.body.style.setProperty("--workspace-active-bg", workspaceActiveBg);
+		const workspaceActiveColor = colors?.sidebar_highlight_text;
+		workspaceActiveColor && document.body.style.setProperty("--workspace-active-color", workspaceActiveColor);
+		const buttonBg = colors?.button_background_active || colors?.icons;
+		buttonBg && document.body.style.setProperty("--button-bg", buttonBg);
 	});
 </script>
 

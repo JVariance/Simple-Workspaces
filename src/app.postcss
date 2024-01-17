@@ -2,13 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+	@media (prefers-color-scheme: light) {
+		--body-bg: #fff;
+		--body-color: #000;
+		--button-bg: #eeeeef;
+		--button-bg-hover: #f5f5f5;
+		--button-bg-focus: #f5f5f5;
+		--button-border: initial;
+		--workspace-bg: transparent;
+		--workspace-color: #000;
+		--workspace-bg-hover: #f5f5f5;
+		--workspace-bg-focus: #f5f5f5;
+		--workspace-active-bg: #5021ff;
+		--workspace-active-bg-hover: #5021ff;
+		--workspace-active-bg-focus: #5021ff;
+		--workspace-active-color: #fff;
+	}
+}
+
+:root {
+	@media (prefers-color-scheme: dark) {
+		--body-bg: #171717;
+		--body-color: #fff;
+		--button-bg: #262626;
+		--button-bg-hover: #404040;
+		--button-bg-focus: #404040;
+		--button-border: #404040;
+		--workspace-bg: transparent;
+		--workspace-color: #fff;
+		--workspace-bg-hover: #404040;
+		--workspace-bg-focus: #404040;
+		--workspace-active-bg: #5021ff;
+		--workspace-active-bg-hover: #5021ff;
+		--workspace-active-bg-focus: #5021ff;
+		--workspace-active-color: #fff;
+	}
+}
+
 body {
-	@apply dark:bg-neutral-900 dark:text-white min-h-[24rem] p-0 m-0 @container w-[100dvw] h-[100dvh] overflow-auto;
+	@apply bg-[--body-bg] text-[--body-text] min-h-[24rem] p-0 m-0 @container w-[100dvw] h-[100dvh] overflow-auto;
 }
 
 button {
 	@apply rounded-md p-2;
-	@apply bg-[#eeeeef] dark:border-neutral-700 dark:bg-neutral-800 hover:bg-neutral-100 focus-within:bg-neutral-100 hover:dark:bg-neutral-700 focus-within:dark:bg-neutral-700;
+	@apply bg-[--button-bg] hover:bg-[--button-bg-hover] focus-within:bg-[--button-bg-hover];
 
 	&.ghost {
 		@apply bg-transparent hover:bg-transparent focus-within:border-transparent;
@@ -17,4 +55,9 @@ button {
 
 kbd {
 	@apply bg-[#eee] rounded-[3px] border-[1px] border-solid border-[#b4b4b4] shadow-[0_1px_1px_rgba(0,0,0,0.2),0_2px_0_0_rgba(255,255,255,0.7)_inset] text-[#333] inline-block text-[0.85em] font-bold leading-none px-[4px] py-[2px] whitespace-nowrap;
+}
+
+@font-face {
+	font-family: "Noto Color Emoji";
+	src: url("/fonts/NotoColorEmoji.ttf");
 }
