@@ -1,8 +1,9 @@
 **Today**
 [] check: move informViews to effect in Window.svelte.ts?
-[] fix: tab detachment
+[] fix popup overflow
 [] search improvements
 [] emoji picker improvements
+[x] fix: tab detachment
 
 
 # Scenarios

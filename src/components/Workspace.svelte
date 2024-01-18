@@ -156,6 +156,7 @@
 		{#if editMode}
 			<div
 				class="@[244px]:hidden ghost text-2xl rounded-full flex-grow-0 flex-shrink basis-0"
+				style:font-family="Noto Color Emoji"
 			>
 				{iconValue}
 			</div>
@@ -163,6 +164,7 @@
 				title="pick emoji"
 				onclick={openEmojiPicker}
 				class="hidden @[244px]:[display:initial] ghost text-2xl rounded-full flex-grow-0 flex-shrink basis-0"
+				style:font-family="Noto Color Emoji"
 				>{iconValue}
 			</button>
 			<div class="hidden @[244px]:contents">
@@ -211,8 +213,9 @@
 				data-focusid={index}
 				bind:this={workspaceButton}
 			>
-				<span class="text-2xl w-[2.5ch] overflow-hidden text-center"
-					>{icon}</span
+				<span
+					class="text-2xl w-[2.5ch] overflow-hidden text-center"
+					style:font-family="Noto Color Emoji">{icon}</span
 				>
 				<span class="{active ? 'font-bold' : ''} text-lg">{name}</span>
 				<!-- <span>({tabIds.join(",")})</span> -->

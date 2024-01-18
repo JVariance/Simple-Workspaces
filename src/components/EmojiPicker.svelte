@@ -87,11 +87,13 @@
 <emoji-picker
 	class="absolute"
 	class:visible
+	emoji-version="15.1"
 	use:clickOutside
 	on:emoji-click={emojiClick}
 	bind:this={emojiPicker}
 	style:top="{y}px"
 	style:left="{x}px"
+	style:--emoji-font-family="Noto Color Emoji"
 />
 
 <style lang="postcss">
