@@ -198,7 +198,69 @@
 	display: none;
 }
 
-/* _______________________________________ */
+// "flexible" space between toolbar buttons
+toolbarspring {
+	flex: unset !important;
+	width: 1rem;
+
+	+ toolbarspring {
+		width: 2rem;
+
+		+ toolbarspring {
+			width: 4rem;
+
+			+ toolbarspring {
+				width: 8rem;
+			}
+		}
+	}
+}
+
+#nav-bar-customization-target toolbaritem[data-extensionid] {
+	toolbarbutton {
+		background: var(--tab-island-bg) !important;
+	}
+}
+
+// first extension button of group
+#nav-bar-customization-target
+	:not(toolbaritem[data-extensionid])
+	+ toolbaritem[data-extensionid] {
+	margin-right: 0 !important;
+
+	toolbarbutton {
+		border-top-left-radius: var(--radius);
+		border-bottom-left-radius: var(--radius);
+	}
+}
+
+// inbetween extension buttons of group
+#nav-bar-customization-target
+	toolbaritem[data-extensionid]
+	+ toolbaritem[data-extensionid]:has(+ toolbaritem[data-extensionid]) {
+	margin: 0 !important;
+	// toolbarbutton {}
+}
+
+// last extension button of group
+#nav-bar-customization-target
+	:not(toolbaritem[data-extensionid])
+	+ toolbaritem[data-extensionid]
+	~ toolbaritem[data-extensionid]:has(+ :not(toolbaritem[data-extensionid])) {
+	margin-left: 0 !important;
+	toolbarbutton {
+		border-top-right-radius: var(--radius);
+		border-bottom-right-radius: var(--radius);
+	}
+}
+
+// loneley extension button
+// #nav-bar-customization-target
+// 	:not([data-extensionid])
+// 	+ [data-extensionid]:has(+ :not([data-extensionid])) {
+// }
+
+/* __________________COLORS__________________ */
 
 $colors: "blue", "turqouise", "green", "lightgreen", "yellow", "orange", "red",
 	"pink", "purple", "tomato", "toolbar";

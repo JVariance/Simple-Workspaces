@@ -185,7 +185,45 @@
   display: none;
 }
 
-/* _______________________________________ */
+toolbarspring {
+  flex: unset !important;
+  width: 1rem;
+}
+toolbarspring + toolbarspring {
+  width: 2rem;
+}
+toolbarspring + toolbarspring + toolbarspring {
+  width: 4rem;
+}
+toolbarspring + toolbarspring + toolbarspring + toolbarspring {
+  width: 8rem;
+}
+
+#nav-bar-customization-target toolbaritem[data-extensionid] toolbarbutton {
+  background: var(--tab-island-bg) !important;
+}
+
+#nav-bar-customization-target :not(toolbaritem[data-extensionid]) + toolbaritem[data-extensionid] {
+  margin-right: 0 !important;
+}
+#nav-bar-customization-target :not(toolbaritem[data-extensionid]) + toolbaritem[data-extensionid] toolbarbutton {
+  border-top-left-radius: var(--radius);
+  border-bottom-left-radius: var(--radius);
+}
+
+#nav-bar-customization-target toolbaritem[data-extensionid] + toolbaritem[data-extensionid]:has(+ toolbaritem[data-extensionid]) {
+  margin: 0 !important;
+}
+
+#nav-bar-customization-target :not(toolbaritem[data-extensionid]) + toolbaritem[data-extensionid] ~ toolbaritem[data-extensionid]:has(+ :not(toolbaritem[data-extensionid])) {
+  margin-left: 0 !important;
+}
+#nav-bar-customization-target :not(toolbaritem[data-extensionid]) + toolbaritem[data-extensionid] ~ toolbaritem[data-extensionid]:has(+ :not(toolbaritem[data-extensionid])) toolbarbutton {
+  border-top-right-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+}
+
+/* __________________COLORS__________________ */
 .tabbrowser-tab.identity-color-blue {
   background: var(--tab-island-bg) !important;
   border-radius: var(--radius) !important;
