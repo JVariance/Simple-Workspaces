@@ -93,7 +93,7 @@
 		}
 	}
 
-	@container (width < 300px) {
+	@container (width < 250px) {
 		#sidebar-switcher-arrow,
 		#sidebar-throbber,
 		#sidebar-spacer,
@@ -257,4 +257,4 @@ toolbarspring {
 }
 
 @import "./tab-islands.scss";
-@import "./bookmarks.scss";
+@import "./sidebar.scss";
