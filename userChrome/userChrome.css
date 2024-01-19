@@ -12,6 +12,7 @@
   --radius: 6px;
   --base-bg: var(--lwt-accent-color, #fbfbfb);
   --sidebar-bg: #fff;
+  --sidebar-search-box-bg: #e6eef5;
   --tab-island-bg: #e7edf1;
   --tab-island-blue: #2e78f6;
   --tab-island-turqouise: #7bc6d7;
@@ -30,6 +31,7 @@
   :root {
     --base-bg: var(--lwt-accent-color, #111);
     --sidebar-bg: #252835;
+    --sidebar-search-box-bg: #030615;
     --tab-island-bg: #1a1d2b;
   }
 }
@@ -224,12 +226,12 @@ toolbarspring + toolbarspring + toolbarspring + toolbarspring {
 }
 
 /* __________________COLORS__________________ */
-.tabbrowser-tab.identity-color-blue {
+[usercontextid] {
   background: var(--tab-island-bg) !important;
   border-radius: var(--radius) !important;
   align-items: center !important;
 }
-.tabbrowser-tab.identity-color-blue .tab-stack {
+[usercontextid] .tab-stack {
   height: 80%;
 }
 
@@ -267,15 +269,6 @@ toolbarspring + toolbarspring + toolbarspring + toolbarspring {
   color: #fff;
 }
 
-.tabbrowser-tab.identity-color-turqouise {
-  background: var(--tab-island-bg) !important;
-  border-radius: var(--radius) !important;
-  align-items: center !important;
-}
-.tabbrowser-tab.identity-color-turqouise .tab-stack {
-  height: 80%;
-}
-
 .tabbrowser-tab.identity-color-turqouise:has(+ .identity-color-turqouise) {
   border-top-right-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
@@ -308,15 +301,6 @@ toolbarspring + toolbarspring + toolbarspring + toolbarspring {
 :not(.tabbrowser-tab.identity-color-turqouise) + .tabbrowser-tab.identity-color-turqouise:last-child {
   background: transparent !important;
   color: #fff;
-}
-
-.tabbrowser-tab.identity-color-green {
-  background: var(--tab-island-bg) !important;
-  border-radius: var(--radius) !important;
-  align-items: center !important;
-}
-.tabbrowser-tab.identity-color-green .tab-stack {
-  height: 80%;
 }
 
 .tabbrowser-tab.identity-color-green:has(+ .identity-color-green) {
@@ -353,15 +337,6 @@ toolbarspring + toolbarspring + toolbarspring + toolbarspring {
   color: #fff;
 }
 
-.tabbrowser-tab.identity-color-lightgreen {
-  background: var(--tab-island-bg) !important;
-  border-radius: var(--radius) !important;
-  align-items: center !important;
-}
-.tabbrowser-tab.identity-color-lightgreen .tab-stack {
-  height: 80%;
-}
-
 .tabbrowser-tab.identity-color-lightgreen:has(+ .identity-color-lightgreen) {
   border-top-right-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
@@ -394,15 +369,6 @@ toolbarspring + toolbarspring + toolbarspring + toolbarspring {
 :not(.tabbrowser-tab.identity-color-lightgreen) + .tabbrowser-tab.identity-color-lightgreen:last-child {
   background: transparent !important;
   color: #fff;
-}
-
-.tabbrowser-tab.identity-color-yellow {
-  background: var(--tab-island-bg) !important;
-  border-radius: var(--radius) !important;
-  align-items: center !important;
-}
-.tabbrowser-tab.identity-color-yellow .tab-stack {
-  height: 80%;
 }
 
 .tabbrowser-tab.identity-color-yellow:has(+ .identity-color-yellow) {
@@ -439,15 +405,6 @@ toolbarspring + toolbarspring + toolbarspring + toolbarspring {
   color: #fff;
 }
 
-.tabbrowser-tab.identity-color-orange {
-  background: var(--tab-island-bg) !important;
-  border-radius: var(--radius) !important;
-  align-items: center !important;
-}
-.tabbrowser-tab.identity-color-orange .tab-stack {
-  height: 80%;
-}
-
 .tabbrowser-tab.identity-color-orange:has(+ .identity-color-orange) {
   border-top-right-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
@@ -480,15 +437,6 @@ toolbarspring + toolbarspring + toolbarspring + toolbarspring {
 :not(.tabbrowser-tab.identity-color-orange) + .tabbrowser-tab.identity-color-orange:last-child {
   background: transparent !important;
   color: #fff;
-}
-
-.tabbrowser-tab.identity-color-red {
-  background: var(--tab-island-bg) !important;
-  border-radius: var(--radius) !important;
-  align-items: center !important;
-}
-.tabbrowser-tab.identity-color-red .tab-stack {
-  height: 80%;
 }
 
 .tabbrowser-tab.identity-color-red:has(+ .identity-color-red) {
@@ -525,15 +473,6 @@ toolbarspring + toolbarspring + toolbarspring + toolbarspring {
   color: #fff;
 }
 
-.tabbrowser-tab.identity-color-pink {
-  background: var(--tab-island-bg) !important;
-  border-radius: var(--radius) !important;
-  align-items: center !important;
-}
-.tabbrowser-tab.identity-color-pink .tab-stack {
-  height: 80%;
-}
-
 .tabbrowser-tab.identity-color-pink:has(+ .identity-color-pink) {
   border-top-right-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
@@ -566,15 +505,6 @@ toolbarspring + toolbarspring + toolbarspring + toolbarspring {
 :not(.tabbrowser-tab.identity-color-pink) + .tabbrowser-tab.identity-color-pink:last-child {
   background: transparent !important;
   color: #fff;
-}
-
-.tabbrowser-tab.identity-color-purple {
-  background: var(--tab-island-bg) !important;
-  border-radius: var(--radius) !important;
-  align-items: center !important;
-}
-.tabbrowser-tab.identity-color-purple .tab-stack {
-  height: 80%;
 }
 
 .tabbrowser-tab.identity-color-purple:has(+ .identity-color-purple) {
@@ -611,15 +541,6 @@ toolbarspring + toolbarspring + toolbarspring + toolbarspring {
   color: #fff;
 }
 
-.tabbrowser-tab.identity-color-tomato {
-  background: var(--tab-island-bg) !important;
-  border-radius: var(--radius) !important;
-  align-items: center !important;
-}
-.tabbrowser-tab.identity-color-tomato .tab-stack {
-  height: 80%;
-}
-
 .tabbrowser-tab.identity-color-tomato:has(+ .identity-color-tomato) {
   border-top-right-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
@@ -654,15 +575,6 @@ toolbarspring + toolbarspring + toolbarspring + toolbarspring {
   color: #fff;
 }
 
-.tabbrowser-tab.identity-color-toolbar {
-  background: var(--tab-island-bg) !important;
-  border-radius: var(--radius) !important;
-  align-items: center !important;
-}
-.tabbrowser-tab.identity-color-toolbar .tab-stack {
-  height: 80%;
-}
-
 .tabbrowser-tab.identity-color-toolbar:has(+ .identity-color-toolbar) {
   border-top-right-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
@@ -695,6 +607,50 @@ toolbarspring + toolbarspring + toolbarspring + toolbarspring {
 :not(.tabbrowser-tab.identity-color-toolbar) + .tabbrowser-tab.identity-color-toolbar:last-child {
   background: transparent !important;
   color: #fff;
+}
+
+/*
+	.sidebar-placesTree treechildren::-moz-tree-cell-text
+	.sidebar-placesTree treechildren::-moz-tree-row(hover),
+	.sidebar-placesTree treechildren::-moz-tree-row(selected)
+*/
+#sidebar-search-container {
+  margin-block: 1rem !important;
+}
+
+#search-box {
+  appearance: none !important;
+  background: var(--sidebar-search-box-bg) !important;
+  border-radius: 9999px !important;
+  padding: 0.83333rem !important;
+}
+#search-box image {
+  scale: -1 1 !important;
+  margin-right: 1rem !important;
+}
+
+:-moz-any(#bookmarks-view) treechildren::-moz-tree-image(container) {
+  list-style-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='context-fill' d='M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8z'/%3E%3C/svg%3E") !important;
+}
+
+.sidebar-placesTree treechildren {
+  --opera-folder-color: #a8abad;
+}
+.sidebar-placesTree treechildren::-moz-tree-row {
+  outline-color: transparent !important;
+  outline-width: 0 !important;
+  margin-block: 0.1rem !important;
+}
+.sidebar-placesTree treechildren::-moz-tree-separator {
+  border-color: transparent !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' %3E%3Crect x='0' y='0' width='100%25' height='100%25' rx='0.05rem' fill-opacity='0.1' fill='%23a8abad'/%3E%3C/svg%3E") !important;
+  background-size: cover !important;
+  background-position: 0 0 !important;
+  height: 0.1rem !important;
+}
+.sidebar-placesTree treechildren::-moz-tree-image(container) {
+  -moz-context-properties: fill;
+  fill: var(--opera-folder-color) !important;
 }
 
 /*# sourceMappingURL=userChrome.css.map */

@@ -1,4 +1,6 @@
 **Today**
+[] Alt+T: create new tab in tab-island/container if active tab is in one
+[] userChrome: style library windows (bookmarks etc.)
 [] check: move informViews to effect in Window.svelte.ts?
 [] fix popup overflow
 [] search improvements

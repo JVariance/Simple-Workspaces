@@ -1,0 +1,67 @@
+// loneley extension button
+// #nav-bar-customization-target
+// 	:not([data-extensionid])
+// 	+ [data-extensionid]:has(+ :not([data-extensionid])) {
+// }
+
+/* __________________COLORS__________________ */
+
+$colors: "blue", "turqouise", "green", "lightgreen", "yellow", "orange", "red",
+	"pink", "purple", "tomato", "toolbar";
+
+[usercontextid] {
+	background: var(--tab-island-bg) !important;
+	border-radius: var(--radius) !important;
+	align-items: center !important;
+
+	.tab-stack {
+		height: 80%;
+	}
+}
+
+@each $color in $colors {
+	.tabbrowser-tab.identity-color-#{$color}:has(+ .identity-color-#{$color}) {
+		border-top-right-radius: 0 !important;
+		border-bottom-right-radius: 0 !important;
+	}
+
+	:not(.tabbrowser-tab.identity-color-#{$color})
+		+ .tabbrowser-tab.identity-color-#{$color} {
+		&::before {
+			content: "";
+			width: 0.375rem;
+			height: 20px;
+			display: block;
+			/* background: var(--identity-icon-color); */
+			background: var(--tab-island-#{$color});
+			border-radius: 9999px;
+			--identity-tab-color: var(--tab-island-#{$color}) !important;
+			--identity-icon-color: var(--tab-island-#{$color}) !important;
+			translate: 3px 0;
+			z-index: 1;
+		}
+
+		.tab-stack {
+			margin-left: 8px;
+		}
+	}
+
+	.tabbrowser-tab.identity-color-#{$color}
+		+ .tabbrowser-tab.identity-color-#{$color} {
+		border-top-left-radius: 0 !important;
+		border-bottom-left-radius: 0 !important;
+	}
+
+	:not(.tabbrowser-tab.identity-color-#{$color})
+		+ .tabbrowser-tab.identity-color-#{$color}:has(
+			+ :not(.tabbrowser-tab.identity-color-#{$color})
+		),
+	.tabbrowser-tab.identity-color-#{$color}:first-child:has(
+			+ :not(.tabbrowser-tab.identity-color-#{$color})
+		),
+	:not(.tabbrowser-tab.identity-color-#{$color})
+		+ .tabbrowser-tab.identity-color-#{$color}:last-child {
+		background: transparent !important;
+		color: #fff;
+	}
+}
