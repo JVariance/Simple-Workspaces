@@ -26,7 +26,7 @@ export default defineConfig({
 		],
 	},
 	esbuild: {
-		drop: ["console", "debugger"],
+		// drop: ["console", "debugger"],
 	},
 	plugins: [
 		svelte(),

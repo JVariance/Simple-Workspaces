@@ -9,8 +9,6 @@ import { Processes } from "./Processes";
 type EnhancedTab = Browser.Tabs.Tab & { workspaceUUID?: string };
 
 export class Window {
-	#initializing = false;
-	// #movingTabs = false;
 	#storageKey!: string;
 	switchingWorkspace = false;
 	#UUID: string;
@@ -37,7 +35,6 @@ export class Window {
 
 	async init({ lookInStorage = true } = {}) {
 		console.info("start initializing window");
-		this.#initializing = true;
 		const { [this.#storageKey]: localWindow }: Record<string, Ext.Window> =
 			await Browser.storage.local.get(this.#storageKey);
 
@@ -148,7 +145,6 @@ export class Window {
 			}
 		}
 
-		this.#initializing = false;
 		console.info("finished initializing window");
 	}
 
@@ -256,8 +252,6 @@ export class Window {
 		targetWorkspaceUUID: string;
 		tabIds: number[];
 	}) {
-		// this.#movingTabs = true;
-
 		// const currentWorkspace = this.activeWorkspace;
 		const currentWorkspace = this.#workspaces.find((workspace) =>
 			workspace.tabIds.includes(tabIds?.at(0)!)
@@ -301,7 +295,6 @@ export class Window {
 		for (let tabId of tabIds) {
 			await API.setTabValue(tabId, "workspaceUUID", targetWorkspace.UUID);
 		}
-		// this.#movingTabs = false;
 	}
 
 	async remove() {
@@ -328,7 +321,6 @@ export class Window {
 	 * If the extension has been newly installed and no workspaces have been added to the window yet, apply the set default workspaces.
 	 */
 	async addDefaultWorkspaces() {
-		this.#initializing = true;
 		// const { homeWorkspace } = await BrowserStorage.getHomeWorkspace();
 		const { defaultWorkspaces } = await BrowserStorage.getDefaultWorkspaces();
 
@@ -365,13 +357,10 @@ export class Window {
 
 			this.#workspaces.push(newWorkspace);
 		}
-
-		this.#initializing = false;
 	}
 
 	async forceApplyDefaultWorkspaces() {
 		console.info("Window - forceApplyDefaultWorkspaces");
-		this.#initializing = true;
 		const { defaultWorkspaces } = await BrowserStorage.getDefaultWorkspaces();
 		if (!defaultWorkspaces?.length) return;
 
@@ -411,7 +400,6 @@ export class Window {
 
 		// this.#persist();
 		console.info("forceApply end");
-		this.#initializing = false;
 	}
 
 	async addWorkspaceAndSwitch() {
