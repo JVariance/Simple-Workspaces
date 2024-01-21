@@ -1,4 +1,9 @@
-import { debounceFunc, promisedDebounceFunc } from "@root/utils";
+import {
+	countedImmediateDebounceFunc,
+	debounceFunc,
+	immediateDebounceFunc,
+	promisedDebounceFunc,
+} from "@root/utils";
 import browser from "webextension-polyfill";
 import { TabMenu } from "./TabMenu";
 import { WorkspaceStorage } from "./WorkspaceStorage";
@@ -280,17 +285,15 @@ browser.tabs.onCreated.addListener(async (tab) => {
 		return;
 	}
 
-	if (tabSessionWorkspaceUUID) {
-		await WorkspaceStorage.getWindow(tab.windowId!).restoredTab(
+	tabSessionWorkspaceUUID &&
+		(await WorkspaceStorage.getWindow(tab.windowId!).restoredTab(
 			tab.id!,
 			tabSessionWorkspaceUUID
-		);
-	}
-
-	console.info("WTF?????");
+		));
 
 	if (window?.type !== "normal" || Processes.WindowCreation.state === "pending")
 		return;
+
 	await Processes.WindowCreation;
 	Processes.TabCreation.start();
 	const windowIsNew = !WorkspaceStorage.windows.has(tab.windowId!);
@@ -485,35 +488,60 @@ browser.storage.local.onChanged.addListener((changes) => {
 	}
 });
 
+const runSwitchWorkspaceCommand = immediateDebounceFunc(
+	switchWorkspaceCommand,
+	150
+);
+
+function switchWorkspaceCommand(direction: "next" | "prev") {
+	switch (direction) {
+		case "next":
+			switchToNextWorkspace();
+			break;
+		case "prev":
+			switchToPreviousWorkspace();
+			break;
+		default:
+			break;
+	}
+}
+
+function switchToNextWorkspace() {
+	(async () => {
+		const activeWorkspace =
+			await WorkspaceStorage.activeWindow.switchToNextWorkspace();
+		if (!activeWorkspace) return;
+		informViews(
+			WorkspaceStorage.activeWindow.windowId,
+			"updatedActiveWorkspace",
+			{
+				UUID: activeWorkspace.UUID,
+			}
+		);
+	})();
+}
+function switchToPreviousWorkspace() {
+	(async () => {
+		const activeWorkspace =
+			await WorkspaceStorage.activeWindow.switchToPreviousWorkspace();
+		if (!activeWorkspace) return;
+		informViews(
+			WorkspaceStorage.activeWindow.windowId,
+			"updatedActiveWorkspace",
+			{
+				UUID: activeWorkspace.UUID,
+			}
+		);
+	})();
+}
+
 browser.commands.onCommand.addListener((command) => {
 	switch (command) {
 		case "next-workspace":
-			(async () => {
-				const activeWorkspace =
-					await WorkspaceStorage.activeWindow.switchToNextWorkspace();
-				if (!activeWorkspace) return;
-				informViews(
-					WorkspaceStorage.activeWindow.windowId,
-					"updatedActiveWorkspace",
-					{
-						UUID: activeWorkspace.UUID,
-					}
-				);
-			})();
+			runSwitchWorkspaceCommand("next");
 			break;
 		case "previous-workspace":
-			(async () => {
-				const activeWorkspace =
-					await WorkspaceStorage.activeWindow.switchToPreviousWorkspace();
-				if (!activeWorkspace) return;
-				informViews(
-					WorkspaceStorage.activeWindow.windowId,
-					"updatedActiveWorkspace",
-					{
-						UUID: activeWorkspace.UUID,
-					}
-				);
-			})();
+			runSwitchWorkspaceCommand("prev");
 			break;
 		case "new-workspace":
 			(async () => {

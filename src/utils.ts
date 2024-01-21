@@ -29,6 +29,23 @@ export function immediateDebounceFunc(func: Function, delay: number) {
 	};
 }
 
+export function countedImmediateDebounceFunc(
+	func: Function,
+	delay: number,
+	callCountBeforeDebouncing = 1
+) {
+	let timer = 0;
+	let _callCount = callCountBeforeDebouncing;
+	return function debouncedFn(...args: any[]) {
+		console.info({ _callCount, callCountBeforeDebouncing });
+		_callCount-- > 0 && func(...args);
+		if (Date.now() - timer > delay) {
+			_callCount = callCountBeforeDebouncing;
+		}
+		timer = Date.now();
+	};
+}
+
 export const promisedDebounceFunc = <T>(
 	func: Function,
 	delay: number
