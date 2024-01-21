@@ -535,6 +535,18 @@ function switchToPreviousWorkspace() {
 	})();
 }
 
+const runNewWorkspaceCommand = debounceFunc(newWorkspaceCommandHandler, 150);
+
+function newWorkspaceCommandHandler() {
+	(async () => {
+		const newWorkspace =
+			await WorkspaceStorage.activeWindow.addWorkspaceAndSwitch();
+		informViews(WorkspaceStorage.activeWindow.windowId, "addedWorkspace", {
+			workspace: newWorkspace,
+		});
+	})();
+}
+
 browser.commands.onCommand.addListener((command) => {
 	switch (command) {
 		case "next-workspace":
@@ -544,13 +556,7 @@ browser.commands.onCommand.addListener((command) => {
 			runSwitchWorkspaceCommand("prev");
 			break;
 		case "new-workspace":
-			(async () => {
-				const newWorkspace =
-					await WorkspaceStorage.activeWindow.addWorkspaceAndSwitch();
-				informViews(WorkspaceStorage.activeWindow.windowId, "addedWorkspace", {
-					workspace: newWorkspace,
-				});
-			})();
+			runNewWorkspaceCommand();
 			break;
 		default:
 			break;
