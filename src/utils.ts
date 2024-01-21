@@ -21,9 +21,9 @@ export const debounceFunc = (func: Function, delay: number) => {
  */
 export function immediateDebounceFunc(func: Function, delay: number) {
 	var timer = 0;
-	return function debouncedFn() {
+	return function debouncedFn(...args: any[]) {
 		if (Date.now() - timer > delay) {
-			func();
+			func(...args);
 		}
 		timer = Date.now();
 	};

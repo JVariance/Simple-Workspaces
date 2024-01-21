@@ -64,7 +64,7 @@
 	}
 
 	Browser.runtime.onMessage.addListener((message) => {
-		console.info("browser runtime onmessage");
+		// console.info("browser runtime onmessage");
 		const { windowId: targetWindowId, msg } = message;
 		if(targetWindowId !== windowId) return;
 

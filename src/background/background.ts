@@ -211,7 +211,18 @@ browser.windows.onCreated.addListener(async (window) => {
 });
 
 browser.tabs.onActivated.addListener(async (activeInfo) => {
-	await Processes.WorkspaceSwitch;
+	// WorkspaceStorage.getWindow(activeInfo.windowId).switchingWorkspace
+	// console.log("removalState: " + Processes.TabRemoval.state);
+	// console.info(
+	// 	"switchingWorkspace: " + WorkspaceStorage.activeWindow.switchingWorkspace
+	// );
+	if (
+		WorkspaceStorage.activeWindow.switchingWorkspace ||
+		Processes.TabRemoval.state === "pending"
+	)
+		return;
+
+	// await Processes.WorkspaceSwitch;
 	const tabId = activeInfo.tabId;
 	if (!tabId) return;
 	const workspaceUUID = await API.getTabValue<string>(tabId, "workspaceUUID");
@@ -221,10 +232,15 @@ browser.tabs.onActivated.addListener(async (activeInfo) => {
 		);
 
 		if (workspace) {
-			const isActiveWorkspace =
-				workspace.UUID === WorkspaceStorage.activeWindow.activeWorkspace.UUID;
+			// const isActiveWorkspace =
+			// 	workspace.UUID ===
+			// 	WorkspaceStorage.activeWindow.workspaces.find(({ active }) => active)
+			// 		?.UUID;
+			// const isActiveWorkspace = workspace.active;
 
-			if (!isActiveWorkspace) {
+			if (!workspace.active) {
+				console.info("tabs.onActivated - !isActiveWorkspace");
+				// Processes.WorkspaceSwitch.start();
 				await WorkspaceStorage.activeWindow.switchWorkspace(workspace);
 				informViews(
 					WorkspaceStorage.activeWindow.windowId,
@@ -232,6 +248,7 @@ browser.tabs.onActivated.addListener(async (activeInfo) => {
 					{ UUID: workspace.UUID }
 				);
 				await API.updateTab(tabId, { active: true });
+				// Processes.WorkspaceSwitch.finish();
 			} else {
 				WorkspaceStorage.activeWindow.setActiveTab(tabId);
 			}
@@ -240,14 +257,15 @@ browser.tabs.onActivated.addListener(async (activeInfo) => {
 });
 
 browser.tabs.onCreated.addListener(async (tab) => {
-	console.info("browser.tabs.onCreated", {
-		manualTabAddition: Processes.manualTabAddition,
-	});
+	const manualTabAddition = Processes.manualTabAddition;
 	const window = await browser.windows.get(tab.windowId!);
-	if (Processes.manualTabAddition) {
+	if (manualTabAddition) {
+		console.info("Processes.manualTabAddition = true");
 		Processes.manualTabAddition = false;
 		return;
 	}
+
+	console.info("WTF?????");
 
 	if (window?.type !== "normal" || Processes.WindowCreation.state === "pending")
 		return;
@@ -291,6 +309,7 @@ browser.tabs.onRemoved.addListener(async (tabId, info) => {
 		Processes.TabDetachment,
 		// Processes.TabRemoval,
 	]);
+	Processes.TabRemoval.start();
 
 	console.info("tab removed");
 
@@ -351,6 +370,7 @@ browser.tabs.onRemoved.addListener(async (tabId, info) => {
 	}
 
 	informViews(window.windowId, "removedTab", { tabId });
+	Processes.TabRemoval.finish();
 });
 
 // browser.tabs.onMoved.addListener((tabId, moveInfo) => {

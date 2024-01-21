@@ -5,7 +5,6 @@ import Browser from "webextension-polyfill";
 import { BrowserStorage } from "./Storage";
 import { createTab } from "./tabCreation";
 import { Processes } from "./Processes";
-import { removeTabs } from "./tabRemoval";
 
 type EnhancedTab = Browser.Tabs.Tab & { workspaceUUID?: string };
 
@@ -13,7 +12,7 @@ export class Window {
 	#initializing = false;
 	// #movingTabs = false;
 	#storageKey!: string;
-	#switchingWorkspace = false;
+	switchingWorkspace = false;
 	#UUID: string;
 	#windowId!: number;
 	#workspaces: Ext.Workspace[] = $state([]);
@@ -166,7 +165,7 @@ export class Window {
 	}
 
 	setActiveTab(tabId: number) {
-		if (!this.activeWorkspace || this.#switchingWorkspace) return;
+		if (!this.activeWorkspace || this.switchingWorkspace) return;
 
 		this.activeWorkspace.activeTabId = tabId;
 	}
@@ -199,12 +198,12 @@ export class Window {
 		Processes.manualTabAddition = true;
 		console.info(
 			!this.activeWorkspace && !workspace,
-			this.#switchingWorkspace,
+			this.switchingWorkspace,
 			tabIds.some((tabId) => workspace.tabIds.includes(tabId))
 		);
 		if (
 			(!this.activeWorkspace && !workspace) ||
-			this.#switchingWorkspace ||
+			this.switchingWorkspace ||
 			tabIds.some((tabId) => workspace.tabIds.includes(tabId))
 		)
 			return;
@@ -454,7 +453,8 @@ export class Window {
 
 	async switchWorkspace(workspace: Ext.Workspace) {
 		console.info("switchWorkspace()");
-		this.#switchingWorkspace = true;
+		// Processes.WorkspaceSwitch.start();
+		this.switchingWorkspace = true;
 
 		const currentTabIds = this.activeWorkspace.tabIds;
 		const nextTabIds = workspace.tabIds;
@@ -466,9 +466,17 @@ export class Window {
 
 		await API.showTabs(nextTabIds);
 		await API.updateTab(activeTabId, { active: true });
-		if (currentTabIds.length) await API.hideTabs(currentTabIds);
-
-		this.#switchingWorkspace = false;
+		// if (currentTabIds.length) await API.hideTabs(currentTabIds);
+		if (currentTabIds.length)
+			API.hideTabs(currentTabIds).then(
+				({ hiddenIds, errorIds, ignoredIds }) => {
+					if (!errorIds?.length) {
+					}
+					// this.switchingWorkspace = false;
+				}
+			);
+		this.switchingWorkspace = false;
+		// Processes.WorkspaceSwitch.finish();
 	}
 
 	async switchToNextWorkspace() {
