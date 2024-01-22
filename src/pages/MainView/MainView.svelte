@@ -242,8 +242,12 @@
 		workspaceActiveBg && addToRootStyles(`--workspace-active-bg: ${workspaceActiveBg}`);
 		const workspaceActiveColor = colors?.sidebar_highlight_text;
 		workspaceActiveColor && addToRootStyles(`--workspace-active-color: ${workspaceActiveColor}`);
-		const buttonBg = colors?.button_background_active || colors?.icons;
+		const buttonBg = colors?.button_background_color || colors?.button_background_active || colors?.toolbar_field_background_color || colors?.icons;
 		buttonBg && addToRootStyles(`--button-bg: ${buttonBg}`);
+		const searchBg = colors?.searchbar_bg || colors?.toolbar_field_background_color;
+		searchBg && addToRootStyles(`--search-bg: ${searchBg}`);
+		const searchColor = colors?.searchbar_color || colors?.toolbar_field_color;
+		searchColor && addToRootStyles(`--search-color: ${searchColor}`);
 	}
 
 	function unsetBrowserTheme(){

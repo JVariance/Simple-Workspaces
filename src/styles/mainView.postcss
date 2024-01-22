@@ -1,38 +1,40 @@
 @import "app.postcss";
 
 :root {
-	@media (prefers-color-scheme: light) {
-		--outline-color: #5021ff;
-		--body-bg: #fff;
-		--body-color: #000;
-		--button-bg: #fff;
-		--button-bg-hover: #d8e2eb;
-		--button-bg-focus: #b2cce3;
-		--button-border-color: #d8e2eb;
-		--button-color: #000;
-		--search-bg: #e6eef5;
-		--search-bg-hover: color-mix(in hsl, var(--search-bg) 95%, black);
-		--search-bg-focus: color-mix(in hsl, var(--search-bg) 95%, black);
-		--search-color: #000;
-		--search-border-color: transparent;
-		--icon-fill: #000;
-		--workspace-bg: transparent;
-		--workspace-color: #000;
-		--workspace-bg-hover: #ebf5fb;
-		--workspace-bg-focus: #ebf5fb;
-		--workspace-active-bg: #5021ff;
-		--workspace-active-bg-hover: color-mix(
-			in hsl,
-			var(--workspace-active-bg) 85%,
-			white
-		);
-		--workspace-active-bg-focus: color-mix(
-			in hsl,
-			var(--workspace-active-bg) 85%,
-			white
-		);
-		--workspace-active-color: #fff;
-	}
+	--outline-color: light-dark(#5021ff, #5021ff);
+	--body-bg: light-dark(#fff, #252835);
+	--body-color: light-dark(#000, #fff);
+	--button-bg: light-dark(#fff, #030615);
+	--button-bg-hover: light-dark(#d8e2eb, #3e4852);
+	--button-bg-focus: light-dark(#b2cce3, #4d647a);
+	--button-border-color: light-dark(#d8e2eb, #3e4852);
+	--button-color: light-dark(#000, #fff);
+	--search-bg: light-dark(#e6eef5, #030615);
+	--search-bg-hover: light-dark(
+		color-mix(in hsl, var(--search-bg) 95%, black),
+		color-mix(in hsl, var(--search-bg) 95%, white)
+	);
+	--search-bg-focus: light-dark(
+		color-mix(in hsl, var(--search-bg) 95%, black),
+		color-mix(in hsl, var(--search-bg) 95%, white)
+	);
+	--search-color: light-dark(#000, #fff);
+	--search-border-color: light-dark(transparent, transparent);
+	--icon-fill: light-dark(#000, #fff);
+	--workspace-bg: light-dark(transparent, transparent);
+	--workspace-color: light-dark(#000, #fff);
+	--workspace-bg-hover: light-dark(#ebf5fb, #3f5265);
+	--workspace-bg-focus: light-dark(#ebf5fb, #3f5265);
+	--workspace-active-bg: light-dark(#5021ff, #5021ff);
+	--workspace-active-bg-hover: light-dark(
+		color-mix(in hsl, var(--workspace-active-bg) 85%, white),
+		color-mix(in hsl, var(--workspace-active-bg) 85%, white)
+	);
+	--workspace-active-bg-focus: light-dark(
+		color-mix(in hsl, var(--workspace-active-bg) 85%, white),
+		color-mix(in hsl, var(--workspace-active-bg) 85%, white)
+	);
+	--workspace-active-color: light-dark(#fff, #fff);
 }
 
 html[theme="browser"] {
@@ -44,38 +46,9 @@ html[theme="browser"] {
 	--search-bg: color-mix(in hsl, black 50%, transparent);
 }
 
-:root {
-	@media (prefers-color-scheme: dark) {
-		--outline-color: #5021ff;
-		--body-bg: #252835;
-		--body-color: #fff;
-		--button-bg: #030615;
-		--button-bg-hover: #3e4852;
-		--button-bg-focus: #4d647a;
-		--button-border-color: #3e4852;
-		--button-color: #fff;
-		--search-bg: #030615;
-		--search-bg-hover: color-mix(in hsl, var(--search-bg) 95%, white);
-		--search-bg-focus: color-mix(in hsl, var(--search-bg) 95%, white);
-		--search-color: #fff;
-		--search-border-color: transparent;
-		--icon-fill: #fff;
-		--workspace-bg: transparent;
-		--workspace-color: #fff;
-		--workspace-bg-hover: #3f5265;
-		--workspace-bg-focus: #3f5265;
-		--workspace-active-bg: #5021ff;
-		--workspace-active-bg-hover: color-mix(
-			in hsl,
-			var(--workspace-active-bg) 85%,
-			white
-		);
-		--workspace-active-bg-focus: color-mix(
-			in hsl,
-			var(--workspace-active-bg) 85%,
-			white
-		);
-		--workspace-active-color: #fff;
+@media (prefers-color-scheme: dark) {
+	html {
+		color-scheme: dark;
 	}
 }
 
