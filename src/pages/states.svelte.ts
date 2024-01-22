@@ -1,22 +1,17 @@
 import Browser from "webextension-polyfill";
 import { BrowserStorage } from "@root/background/Entities/Static/Storage";
+import { tick } from "svelte";
 
 let workspaces = $state<Ext.Workspace[]>([]);
 let homeWorkspace = $state<Ext.SimpleWorkspace>();
 let defaultWorkspaces = $state<Ext.SimpleWorkspace[]>([]);
 let windowId = $state<number>();
+let theme = $state<"browser" | "">("");
 
-export const getWorkspacesState = () => {
-	return workspaces;
-};
-
-export const getDefaultWorkspacesState = () => {
-	return defaultWorkspaces;
-};
-
-export const getHomeWorkspaceState = () => {
-	return homeWorkspace;
-};
+export const getWorkspacesState = () => workspaces;
+export const getDefaultWorkspacesState = () => defaultWorkspaces;
+export const getHomeWorkspaceState = () => homeWorkspace;
+export const getThemeState = () => theme;
 
 function addedWorkspace({ workspace }: { workspace: Ext.Workspace }) {
 	console.info("states: addedWorkspace");
@@ -122,6 +117,24 @@ function movedTabsToNewWorkspace({ workspace }: { workspace: Ext.Workspace }) {
 	workspaces.push(workspace);
 }
 
+async function setTheme() {
+	const { theme: _theme } = await BrowserStorage.getTheme();
+	theme = _theme || "";
+}
+
+function updatedTheme({ theme: _theme }: { theme: typeof theme }) {
+	theme = _theme || "";
+}
+
+async function themeChanged() {
+	console.info("themeChanged");
+	if (theme === "browser") {
+		theme = "";
+		await tick();
+		theme = "browser";
+	}
+}
+
 Browser.runtime.onMessage.addListener((message) => {
 	console.info("browser runtime onmessage");
 	const { windowId: targetWindowId, msg } = message;
@@ -153,6 +166,12 @@ Browser.runtime.onMessage.addListener((message) => {
 		case "updatedDefaultWorkspaces":
 			updatedDefaultWorkspaces(message);
 			break;
+		case "updatedTheme":
+			updatedTheme(message);
+			break;
+		case "themeChanged":
+			themeChanged();
+			break;
 		default:
 			break;
 	}
@@ -175,6 +194,7 @@ $effect.root(() => {
 				setWorkspaces(),
 				setDefaultWorkspacesFromLocalStorage(),
 				setHomeWorkspace(),
+				setTheme(),
 			]);
 		})();
 	});

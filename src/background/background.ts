@@ -15,6 +15,7 @@ import {
 	runtimeOnMessage,
 	commandsOnCommand,
 } from "./browserEvents";
+import { themeOnUpdated } from "./browserEvents/theme/themeOnUpdated";
 /* Event Order:
 Creation:
 1. browser.tabs.onCreated
@@ -47,3 +48,5 @@ browser.storage.local.onChanged.addListener(storageOnChanged);
 browser.commands.onCommand.addListener(commandsOnCommand);
 
 browser.runtime.onMessage.addListener(runtimeOnMessage);
+
+browser.theme.onUpdated.addListener(themeOnUpdated);

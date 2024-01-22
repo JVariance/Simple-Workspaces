@@ -1,5 +1,5 @@
 import type Browser from "webextension-polyfill";
-import {WorkspaceStorage} from "../../Entities";
+import { WorkspaceStorage } from "../../Entities";
 import { informViews } from "../../informViews";
 
 export function storageOnChanged(
@@ -20,6 +20,13 @@ export function storageOnChanged(
 				WorkspaceStorage.windows.forEach((window) => {
 					informViews(window.windowId, "updatedDefaultWorkspaces", {
 						defaultWorkspaces: item.newValue,
+					});
+				});
+				break;
+			case "theme":
+				WorkspaceStorage.windows.forEach((window) => {
+					informViews(window.windowId, "updatedTheme", {
+						theme: item.newValue,
 					});
 				});
 				break;

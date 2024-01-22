@@ -28,4 +28,12 @@ export class BrowserStorage {
 			defaultWorkspaces,
 		});
 	}
+
+	static getTheme(): Promise<Record<"theme", "" | "browser">> {
+		return Browser.storage.local.get("theme");
+	}
+
+	static setTheme(theme: "" | "browser"): Promise<void> {
+		return Browser.storage.local.set({ theme });
+	}
 }

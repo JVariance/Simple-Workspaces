@@ -14,6 +14,7 @@
 	import HomeWorkspace from "@root/components/ViewBlocks/HomeWorkspace.svelte";
 	import Layout from "@pages/Special_Pages/Layout.svelte";
 	import { getWorkspacesState } from "@pages/states.svelte";
+	import ThemeSwitch from "@root/components/ViewBlocks/ThemeSwitch.svelte";
 
 	let windowWorkspaces = $derived(getWorkspacesState()?.filter(({ UUID }) => UUID !== "HOME") || []);
 
@@ -70,6 +71,10 @@
 					{/each}
 				</select>
 			</section> -->
+			{#snippet Section_Theme()}
+				<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('theme') || 'theme'}</h2>
+				<ThemeSwitch />
+			{/snippet}
 			{#snippet Section_HomeWorkspace()}
 				<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('home_workspace') || 'Home Workspace'}</h2>
 				<HomeWorkspace />
@@ -139,6 +144,7 @@
 				</ButtonLink>
 			{/snippet}
 
+			{@render Section([Section_Theme, "basis-full flex-1"])}
 			{@render Section([Section_HomeWorkspace, "basis-full flex-1"])}
 			{@render Section([Section_CurrentWorkspaces, "flex-0"])}
 			{@render Section([Section_DefaultWorkspaces, "flex-1 w-full overflow-auto [scrollbar-gutter:_stable] sm:[scrollbar-gutter:_unset]"])}

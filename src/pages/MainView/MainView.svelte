@@ -8,7 +8,7 @@
 	import { debounceFunc } from "@root/utils";
 	import Skeleton from "@root/components/Skeleton.svelte";
 	import { untrack, onMount } from "svelte";
-	import { getWorkspacesState } from "@pages/states.svelte";
+	import { getWorkspacesState, getThemeState } from "@pages/states.svelte";
 
 	import {overrideItemIdKeyNameBeforeInitialisingDndZones} from "svelte-dnd-action";
 	overrideItemIdKeyNameBeforeInitialisingDndZones("UUID");
@@ -20,6 +20,7 @@
 	let homeWorkspace: Ext.Workspace = $state();
 	let _workspaces: Ext.Workspace[] = $derived(getWorkspacesState());
 	let workspaces: Ext.Workspace[] = $state([]);
+	let theme = $derived(getThemeState());
 	let activeWorkspace: Ext.Workspace = $derived(homeWorkspace?.active ? homeWorkspace : workspaces?.find(({active}) => active));
 	let searchFilteredWorkspaceUUIDS: string[] = $state([]);
 	let viewWorkspaces: Ext.Workspace[] = $derived((() => {
@@ -225,28 +226,48 @@
 		Browser.runtime.openOptionsPage();
 	}
 
-	onMount(async () => {
+	let rootStyles = $state("");
+	const addToRootStyles = (style: string) => rootStyles += `${style};`;
+
+	async function setBrowserTheme(){
+		document.documentElement.setAttribute('theme', 'browser');
 		const { colors } = await Browser.theme.getCurrent();
 		console.log({ colors });
-		// button_primary, button_active, ntp_card_background, sidebar_selected_color
-		windowId = (await Browser.windows.getCurrent()).id!;
 
-		if(document.documentElement.getAttribute("theme") === "browser") {
-			const sidebarBg = colors?.sidebar || colors?.toolbar;
-			sidebarBg && document.body.style.setProperty("--body-bg", sidebarBg);
-			const workspaceActiveBg = colors?.sidebar_highlight;
-			workspaceActiveBg && document.body.style.setProperty("--workspace-active-bg", workspaceActiveBg);
-			const workspaceActiveColor = colors?.sidebar_highlight_text;
-			workspaceActiveColor && document.body.style.setProperty("--workspace-active-color", workspaceActiveColor);
-			const buttonBg = colors?.button_background_active || colors?.icons;
-			buttonBg && document.body.style.setProperty("--button-bg", buttonBg);
-		}
+		const sidebarBg = colors?.sidebar || colors?.toolbar;
+		sidebarBg && addToRootStyles(`--body-bg: ${sidebarBg}`);
+		const sidebarColor = colors?.sidebar_text;
+		sidebarColor && addToRootStyles(`--workspace-color: ${sidebarColor}`);
+		const workspaceActiveBg = colors?.sidebar_highlight;
+		workspaceActiveBg && addToRootStyles(`--workspace-active-bg: ${workspaceActiveBg}`);
+		const workspaceActiveColor = colors?.sidebar_highlight_text;
+		workspaceActiveColor && addToRootStyles(`--workspace-active-color: ${workspaceActiveColor}`);
+		const buttonBg = colors?.button_background_active || colors?.icons;
+		buttonBg && addToRootStyles(`--button-bg: ${buttonBg}`);
+	}
+
+	function unsetBrowserTheme(){
+		document.documentElement.removeAttribute('theme');
+		rootStyles = "";
+	}
+
+
+	$effect(() => {
+		console.info({ theme });
+		theme === "browser" ? setBrowserTheme() : unsetBrowserTheme();
+	});
+
+	onMount(async () => {
+		windowId = (await Browser.windows.getCurrent()).id!;
 	});
 </script>
 
 <svelte:body onkeydown={onKeyDown} />
+<svelte:head>
+	{@html `<`+`style>html[theme=browser]{${rootStyles}}</style>`}
+</svelte:head>
 
-<div class="w-[100cqw] h-[100cqh] p-2 box-border overflow-auto [scrollbar-width:_thin]">
+<div class="w-[100cqw] h-[100cqh] p-2 box-border overflow-auto [scrollbar-width:_thin]" style:--header-height="5rem">
 	<!-- <h1 class="mb-4">Workspaces</h1> -->
 	{#if false && import.meta.env.DEV}
 		<div class="flex flex-wrap gap-1 absolute top-0 right-0">
@@ -276,7 +297,7 @@
 			</details>
 		</div>
 	{/if}
-	<section class="flex gap-2 items-center mt-4 mb-6 w-full">
+	<section class="flex gap-2 items-center h-[--header-height] fixed top-0 bg-[--body-bg] w-[calc(100cqw_-_1.25rem)] z-50">
 		<search
 			class="
 				w-full flex items-center gap-2 border
@@ -330,7 +351,7 @@
 		{/if}
 	{/snippet}
 
-	<ul class="w-full @container grid">
+	<ul class="w-full @container grid mt-[--header-height]">
 		{#if !homeWorkspace && !workspaces.length}
 			{#each [,,,] as _}
 				<Skeleton class="w-full h-16 rounded-md"/>

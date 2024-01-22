@@ -36,10 +36,12 @@
 }
 
 html[theme="browser"] {
-	--button-bg-hover: color-mix(in rgb, var(--button-bg) 80%, black);
-	--button-border-color: color-mix(in rgb, var(--button-bg) 75%, black);
-	--workspace-bg-hover: color-mix(in rgb, var(--workspace-bg) 80%, black);
-	--workspace-bg-focus: color-mix(in rgb, var(--workspace-bg) 80%, black);
+	//--button-bg: color-mix(in hsl, black 20%, transparent);
+	--button-bg-hover: color-mix(in hsl, var(--button-bg) 75%, black);
+	--button-border-color: color-mix(in hsl, var(--button-bg) 75%, black);
+	--workspace-bg-hover: color-mix(in hsl, var(--workspace-bg) 80%, black);
+	--workspace-bg-focus: color-mix(in hsl, var(--workspace-bg) 80%, black);
+	--search-bg: color-mix(in hsl, black 50%, transparent);
 }
 
 :root {
