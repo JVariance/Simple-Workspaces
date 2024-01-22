@@ -1,7 +1,7 @@
 import Browser from "webextension-polyfill";
-import Processes from "../Processes";
-import WorkspaceStorage from "../WorkspaceStorage";
-import { informViews } from "../informViews";
+import Processes from "../../Processes";
+import WorkspaceStorage from "../../WorkspaceStorage";
+import { informViews } from "../../informViews";
 import * as API from "@root/browserAPI";
 
 export async function tabsOnCreated(tab: Browser.Tabs.Tab) {

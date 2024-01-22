@@ -1,5 +1,5 @@
-import Processes from "../Processes";
-import { initExtension } from "../initExtension";
+import Processes from "../../Processes";
+import { initExtension } from "../../initExtension";
 
 export async function runtimeOnStartup() {
 	console.info("onStartup");

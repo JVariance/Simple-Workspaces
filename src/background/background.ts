@@ -1,19 +1,20 @@
 import browser from "webextension-polyfill";
-import { storageOnChanged } from "./browserEvents/storageOnChanged";
-import { tabsOnDetached } from "./browserEvents/tabsDetached";
-import { tabsOnAttached } from "./browserEvents/tabsAttached";
-import { tabsOnRemoved } from "./browserEvents/tabsRemoved";
-import { tabsOnCreated } from "./browserEvents/tabsCreated";
-import { windowsOnCreated } from "./browserEvents/windowsOnCreated";
-import { windowsOnRemoved } from "./browserEvents/windowsOnRemoved";
-import { windowsOnFocusChanged } from "./browserEvents/windowsOnFocusChanged";
-import { menusOnClicked } from "./browserEvents/menusOnClicked";
-import { menusOnShown } from "./browserEvents/menusOnShown";
-import { runtimeOnInstalled } from "./browserEvents/runtimeOnInstalled";
-import { runtimeOnStartup } from "./browserEvents/runtimeOnStartup";
-import { runtimeOnMessage } from "./browserEvents/runtimeOnMessage";
-import { commandsOnCommand } from "./browserEvents/commandsOnCommand";
-
+import {
+	storageOnChanged,
+	tabsOnDetached,
+	tabsOnAttached,
+	tabsOnRemoved,
+	tabsOnCreated,
+	windowsOnCreated,
+	windowsOnRemoved,
+	windowsOnFocusChanged,
+	menusOnClicked,
+	menusOnShown,
+	runtimeOnInstalled,
+	runtimeOnStartup,
+	runtimeOnMessage,
+	commandsOnCommand,
+} from "./browserEvents";
 /* Event Order:
 Creation:
 1. browser.tabs.onCreated

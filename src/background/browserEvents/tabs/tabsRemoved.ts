@@ -1,9 +1,9 @@
 import type Browser from "webextension-polyfill";
-import Processes from "../Processes";
-import WorkspaceStorage from "../WorkspaceStorage";
+import Processes from "../../Processes";
+import WorkspaceStorage from "../../WorkspaceStorage";
 import { createTab } from "@root/browserAPI";
 import * as API from "@root/browserAPI";
-import { informViews } from "../informViews";
+import { informViews } from "../../informViews";
 
 export async function tabsOnRemoved(
 	tabId: number,

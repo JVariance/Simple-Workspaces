@@ -1,6 +1,6 @@
 import type Browser from "webextension-polyfill";
-import Processes from "../Processes";
-import WorkspaceStorage from "../WorkspaceStorage";
+import Processes from "../../Processes";
+import WorkspaceStorage from "../../WorkspaceStorage";
 import * as API from "@root/browserAPI";
 
 export async function windowsOnCreated(window: Browser.Windows.Window) {

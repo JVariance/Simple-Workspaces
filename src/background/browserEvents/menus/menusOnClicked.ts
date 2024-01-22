@@ -1,6 +1,6 @@
 import type Browser from "webextension-polyfill";
-import WorkspaceStorage from "../WorkspaceStorage";
-import { informViews } from "../informViews";
+import WorkspaceStorage from "../../WorkspaceStorage";
+import { informViews } from "../../informViews";
 import * as API from "@root/browserAPI";
 
 export async function menusOnClicked(

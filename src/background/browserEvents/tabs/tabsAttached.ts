@@ -1,8 +1,8 @@
 import { promisedDebounceFunc } from "@root/utils";
 import type Browser from "webextension-polyfill";
-import { informViews } from "../informViews";
-import Processes from "../Processes";
-import WorkspaceStorage from "../WorkspaceStorage";
+import { informViews } from "../../informViews";
+import Processes from "../../Processes";
+import WorkspaceStorage from "../../WorkspaceStorage";
 
 let collectedAttachedTabs: number[] = [];
 

@@ -1,4 +1,4 @@
-import WorkspaceStorage from "../WorkspaceStorage";
+import WorkspaceStorage from "../../WorkspaceStorage";
 
 export async function windowsOnRemoved(windowId: number) {
 	if (WorkspaceStorage.windows.size > 1) {

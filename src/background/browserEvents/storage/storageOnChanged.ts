@@ -1,6 +1,6 @@
 import type Browser from "webextension-polyfill";
-import WorkspaceStorage from "../WorkspaceStorage";
-import { informViews } from "../informViews";
+import WorkspaceStorage from "../../WorkspaceStorage";
+import { informViews } from "../../informViews";
 
 export function storageOnChanged(
 	changes: Browser.Storage.StorageAreaOnChangedChangesType

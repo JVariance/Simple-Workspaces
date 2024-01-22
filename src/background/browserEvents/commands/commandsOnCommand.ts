@@ -1,6 +1,6 @@
 import { debounceFunc, immediateDebounceFunc } from "@root/utils";
-import WorkspaceStorage from "../WorkspaceStorage";
-import { informViews } from "../informViews";
+import WorkspaceStorage from "../../WorkspaceStorage";
+import { informViews } from "../../informViews";
 import type Browser from "webextension-polyfill";
 
 const runSwitchWorkspaceCommand = immediateDebounceFunc(

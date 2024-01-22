@@ -1,6 +1,6 @@
 import type Browser from "webextension-polyfill";
-import WorkspaceStorage from "../WorkspaceStorage";
-import TabMenu from "../TabMenu";
+import WorkspaceStorage from "../../WorkspaceStorage";
+import TabMenu from "../../TabMenu";
 
 export function menusOnShown(
 	info: Browser.Menus.OnShownInfoType,
