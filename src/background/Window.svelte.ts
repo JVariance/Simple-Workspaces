@@ -4,7 +4,7 @@ import { unstate } from "svelte";
 import Browser from "webextension-polyfill";
 import { BrowserStorage } from "./Storage";
 import { createTab } from "./tabCreation";
-import { Processes } from "./Processes";
+import Processes from "./Processes";
 
 type EnhancedTab = Browser.Tabs.Tab & { workspaceUUID?: string };
 

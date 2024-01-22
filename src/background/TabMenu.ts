@@ -1,9 +1,14 @@
 import Browser, { i18n } from "webextension-polyfill";
 
-export class TabMenu {
+class TabMenu {
 	#parentId!: string;
+	private static _instance: TabMenu;
 
-	constructor() {}
+	private constructor() {}
+
+	public static get Instance() {
+		return this._instance || (this._instance = new this());
+	}
 
 	init(workspaces: Ext.Workspace[]) {
 		return this.update({ workspaces });
@@ -25,6 +30,8 @@ export class TabMenu {
 		// windowId: number;
 		workspaces: Ext.Workspace[];
 	}) {
+		console.info("update TabMenu");
+
 		await Browser.menus.removeAll();
 		this.#createParentMenu();
 
@@ -53,3 +60,5 @@ export class TabMenu {
 		Browser.menus.refresh();
 	}
 }
+
+export default TabMenu.Instance;

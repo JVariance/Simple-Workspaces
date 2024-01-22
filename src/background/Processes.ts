@@ -1,8 +1,9 @@
 import { DeferredPromise } from "@root/utils";
 
-type Process = keyof typeof _Processes;
+type Process = keyof typeof Processes;
 
-class _Processes {
+class Processes {
+	private static _instance: Processes;
 	ExtensionInitialization = new DeferredPromise<void>();
 	TabCreation = new DeferredPromise<void>();
 	TabAttachment = new DeferredPromise<void>();
@@ -12,10 +13,11 @@ class _Processes {
 	WindowRemoval = new DeferredPromise<void>();
 	WorkspaceSwitch = new DeferredPromise<void>();
 
+	extensionInitialized = false;
 	manualTabAddition = false;
 	manualTabRemoval = false;
 
-	constructor() {
+	private constructor() {
 		// this.ExtensionInitialization.finish();
 		// this.TabAttachment.finish();
 		// this.TabCreation.finish();
@@ -25,6 +27,10 @@ class _Processes {
 		// this.WindowRemoval.finish();
 		// this.WorkspaceSwitch.finish();
 	}
+
+	public static get Instance() {
+		return this._instance || (this._instance = new this());
+	}
 }
 
-export const Processes = new _Processes();
+export default Processes.Instance;

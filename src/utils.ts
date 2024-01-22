@@ -62,23 +62,43 @@ export const promisedDebounceFunc = <T>(
 	};
 };
 
+// export const promisedDebounceFuncWithCollectedArgs = <T>(
+// 	func: Function,
+// 	delay: number,
+// 	options: { flatArgsList?: boolean } = {}
+// ): ((...args: any) => Promise<T[]>) => {
+// 	let _options = { flatArgsList: false, ...options };
+
+// 	let timer: ReturnType<typeof setTimeout>;
+// 	let argsList: any[] = [];
+// 	return function (...args: any) {
+// 		return new Promise((resolve) => {
+// 			const context = this;
+// 			_options.flatArgsList ? argsList.push(...args) : argsList.push(args);
+// 			clearTimeout(timer);
+// 			timer = setTimeout(() => {
+// 				resolve(func.apply(context, [argsList]));
+// 				argsList = [];
+// 			}, delay);
+// 		});
+// 	};
+// };
+
 export const promisedDebounceFuncWithCollectedArgs = <T>(
 	func: Function,
-	delay: number,
-	options: { flatArgsList?: boolean } = {}
-): ((...args: any) => Promise<T[]>) => {
-	let _options = { flatArgsList: false, ...options };
-
+	delay: number
+): ((...args: any) => Promise<T>) => {
 	let timer: ReturnType<typeof setTimeout>;
-	let argsList: any[] = [];
+	let collectedArgs: T[] = [];
 	return function (...args: any) {
+		collectedArgs.push(...args);
 		return new Promise((resolve) => {
 			const context = this;
-			_options.flatArgsList ? argsList.push(...args) : argsList.push(args);
 			clearTimeout(timer);
 			timer = setTimeout(() => {
-				resolve(func.apply(context, [argsList]));
-				argsList = [];
+				resolve(func.apply(context, collectedArgs));
+				collectedArgs = [];
+				return;
 			}, delay);
 		});
 	};

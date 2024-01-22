@@ -16,8 +16,13 @@ class _WorkspaceStorage {
 	#windows: Map<number, Window> = new Map();
 	#focusedWindowId!: number;
 	initialized = false;
+	private static _instance: _WorkspaceStorage;
 
-	constructor() {}
+	private constructor() {}
+
+	public static get Instance() {
+		return this._instance || (this._instance = new this());
+	}
 
 	async init() {
 		const currentWindows = await Browser.windows.getAll();
@@ -221,4 +226,7 @@ class _WorkspaceStorage {
 	}
 }
 
-export const WorkspaceStorage = new _WorkspaceStorage();
+// const WorkspaceStorage = new _WorkspaceStorage();
+
+// export default new _WorkspaceStorage();
+export default _WorkspaceStorage.Instance;
