@@ -2,7 +2,7 @@
 	import Icon from "@root/components/Icon.svelte";
 	import { createRoot, type Snippet} from "svelte";
 	import Browser, { i18n } from "webextension-polyfill";
-	import "@root/app.postcss";
+	import "@root/styles/specialPages.postcss";
 	import Accordion from "@root/components/Accordion.svelte";
 	import DefaultWorkspaces from "@root/components/ViewBlocks/DefaultWorkspaces.svelte";
 	import Info from "@root/components/Info.svelte";
@@ -58,6 +58,7 @@
 			<Logo />
 			Simple Workspaces
 		</h2>
+
 		<!-- <h1 class="first-letter:uppercase mb-2">{i18n.getMessage('options')}</h1> -->
 
 		<div class="flex flex-wrap gap-4 mt-16 flex-col sm:flex-row">

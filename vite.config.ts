@@ -19,6 +19,8 @@ export default defineConfig({
 		alias: [
 			{ find: "@root", replacement: "/src" },
 			{ find: "@root/*", replacement: "/src/*" },
+			{ find: "@background", replacement: "/src/background" },
+			{ find: "@background/*", replacement: "/src/background/*" },
 			{ find: "@components", replacement: "/src/components" },
 			{ find: "@components/*", replacement: "/src/components/*" },
 			{ find: "@pages", replacement: "/src/pages" },
@@ -34,7 +36,10 @@ export default defineConfig({
 			manifest: generateManifest,
 			browser: "firefox",
 			watchFilePaths: ["package.json", "manifest.json"],
-			additionalInputs: ["src/pages/Welcome/welcome.html", "src/pages/Welcome/welcome.ts"],
+			additionalInputs: [
+				"src/pages/Welcome/welcome.html",
+				"src/pages/Welcome/welcome.ts",
+			],
 			webExtConfig: {
 				startUrl: "https://excalidraw.com",
 			},

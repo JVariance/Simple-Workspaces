@@ -1,6 +1,6 @@
-import * as API from "../browserAPI";
-import Processes from "./Processes";
-import WorkspaceStorage from "./WorkspaceStorage";
+import * as API from "../../browserAPI";
+import Processes from "../Entities/Singletons/Processes";
+import WorkspaceStorage from "../Entities/Singletons/WorkspaceStorage";
 
 export async function removeTabs(
 	tabIds: number[],

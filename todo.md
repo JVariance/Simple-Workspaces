@@ -5,7 +5,6 @@
 [] fix popup overflow
 [] search improvements
 [] emoji picker improvements
-[] Avatar nutzen? CSS: --avatar-image-url
 [x] fix: tab detachment
 
 

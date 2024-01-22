@@ -36,4 +36,9 @@
 	};
 </script>
 
-<Icon icon={icons[icon]} {width} {height} class="{classes} text-foreground" />
+<Icon
+	icon={icons[icon]}
+	{width}
+	{height}
+	class="{classes} text-foreground text-[--icon-fill]"
+/>

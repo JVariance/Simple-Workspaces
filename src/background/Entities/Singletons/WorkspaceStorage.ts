@@ -1,8 +1,8 @@
 import { promisedDebounceFunc } from "@root/utils";
 import Browser from "webextension-polyfill";
-import { Window } from "./Window.svelte";
 import * as API from "@root/browserAPI";
-import { createTab } from "./tabCreation";
+import { Window } from "@background/Entities/Window.svelte";
+import { createTab } from "@root/background/browserAPIWrapper/tabCreation";
 
 enum StorageKeys {
 	windowUUIDs = "windowIds",
@@ -12,11 +12,11 @@ enum StorageKeys {
 
 // TODO: make windows state as soon as Map is supported
 
-class _WorkspaceStorage {
+class WorkspaceStorage {
 	#windows: Map<number, Window> = new Map();
 	#focusedWindowId!: number;
 	initialized = false;
-	private static _instance: _WorkspaceStorage;
+	private static _instance: WorkspaceStorage;
 
 	private constructor() {}
 
@@ -229,4 +229,4 @@ class _WorkspaceStorage {
 // const WorkspaceStorage = new _WorkspaceStorage();
 
 // export default new _WorkspaceStorage();
-export default _WorkspaceStorage.Instance;
+export default WorkspaceStorage.Instance;

@@ -17,6 +17,8 @@
 		"paths": {
 			"@root": ["src"],
 			"@root/*": ["src/*"],
+			"@background": ["src/background"],
+			"@background/*": ["src/background/*"],
 			"@components": ["src/components"],
 			"@components/*": ["src/components/*"],
 			"@pages": ["src/pages"],

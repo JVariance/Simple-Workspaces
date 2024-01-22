@@ -1,8 +1,7 @@
 import { promisedDebounceFunc } from "@root/utils";
 import type Browser from "webextension-polyfill";
-import Processes from "../../Processes";
 import { informViews } from "../../informViews";
-import WorkspaceStorage from "../../WorkspaceStorage";
+import { WorkspaceStorage, Processes } from "../../Entities";
 const handleDetachedTabs = promisedDebounceFunc(_handleDetachedTabs, 200);
 
 let collectedDetachedTabs: number[] = [];

@@ -1,5 +1,5 @@
 import Browser from "webextension-polyfill";
-import { BrowserStorage } from "@root/background/Storage";
+import { BrowserStorage } from "@root/background/Entities/Static/Storage";
 
 let workspaces = $state<Ext.Workspace[]>([]);
 let homeWorkspace = $state<Ext.SimpleWorkspace>();

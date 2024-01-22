@@ -1,6 +1,5 @@
 import Browser from "webextension-polyfill";
-import Processes from "../../Processes";
-import WorkspaceStorage from "../../WorkspaceStorage";
+import { WorkspaceStorage, Processes } from "../../Entities";
 import { informViews } from "../../informViews";
 import * as API from "@root/browserAPI";
 

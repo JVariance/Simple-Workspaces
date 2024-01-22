@@ -1,7 +1,7 @@
 import Browser from "webextension-polyfill";
 import * as API from "@root/browserAPI";
 import { initExtension } from "../../initExtension";
-import Processes from "../../Processes";
+import { Processes } from "../../Entities";
 
 export async function runtimeOnInstalled(
 	details: Browser.Runtime.OnInstalledDetailsType

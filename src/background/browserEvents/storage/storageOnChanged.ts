@@ -1,5 +1,5 @@
 import type Browser from "webextension-polyfill";
-import WorkspaceStorage from "../../WorkspaceStorage";
+import {WorkspaceStorage} from "../../Entities";
 import { informViews } from "../../informViews";
 
 export function storageOnChanged(

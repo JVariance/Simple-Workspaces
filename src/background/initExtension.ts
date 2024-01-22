@@ -1,6 +1,4 @@
-import Processes from "./Processes";
-import TabMenu from "./TabMenu";
-import WorkspaceStorage from "./WorkspaceStorage";
+import { Processes, TabMenu, WorkspaceStorage } from "./Entities";
 
 async function initTabMenu() {
 	console.info("initTabMenu");

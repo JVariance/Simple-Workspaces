@@ -1,4 +1,4 @@
-import Processes from "../../Processes";
+import { Processes } from "../../Entities";
 import { initExtension } from "../../initExtension";
 
 export async function runtimeOnStartup() {

@@ -1,7 +1,7 @@
 import Browser from "webextension-polyfill";
 
 export class BrowserStorage {
-	constructor() {}
+	private constructor() {}
 
 	static getHomeWorkspace(): Promise<
 		Record<"homeWorkspace", Ext.SimpleWorkspace>

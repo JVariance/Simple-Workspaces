@@ -1,7 +1,6 @@
 import type { Tabs } from "webextension-polyfill";
-import * as API from "../browserAPI";
-import Processes from "./Processes";
-import WorkspaceStorage from "./WorkspaceStorage";
+import * as API from "../../browserAPI";
+import { Processes, WorkspaceStorage } from "../Entities";
 
 export async function createTab(
 	props: Tabs.CreateCreatePropertiesType,

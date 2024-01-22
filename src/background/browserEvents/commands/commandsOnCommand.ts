@@ -1,5 +1,5 @@
 import { debounceFunc, immediateDebounceFunc } from "@root/utils";
-import WorkspaceStorage from "../../WorkspaceStorage";
+import { WorkspaceStorage } from "../../Entities";
 import { informViews } from "../../informViews";
 import type Browser from "webextension-polyfill";
 
@@ -50,7 +50,10 @@ function switchToPreviousWorkspace() {
 	})();
 }
 
-const runNewWorkspaceCommand = debounceFunc(newWorkspaceCommandHandler, 150);
+const runNewWorkspaceCommand = immediateDebounceFunc(
+	newWorkspaceCommandHandler,
+	150
+);
 
 function newWorkspaceCommandHandler() {
 	(async () => {

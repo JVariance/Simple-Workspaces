@@ -1,0 +1,108 @@
+@import "app.postcss";
+
+:root {
+	@media (prefers-color-scheme: light) {
+		--outline-color: #5021ff;
+		--body-bg: #fff;
+		--body-color: #000;
+		--button-bg: #fff;
+		--button-bg-hover: #d8e2eb;
+		--button-bg-focus: #b2cce3;
+		--button-border-color: #d8e2eb;
+		--button-color: #000;
+		--search-bg: #e6eef5;
+		--search-bg-hover: color-mix(in hsl, var(--search-bg) 95%, black);
+		--search-bg-focus: color-mix(in hsl, var(--search-bg) 95%, black);
+		--search-color: #000;
+		--search-border-color: transparent;
+		--icon-fill: #000;
+		--workspace-bg: transparent;
+		--workspace-color: #000;
+		--workspace-bg-hover: #ebf5fb;
+		--workspace-bg-focus: #ebf5fb;
+		--workspace-active-bg: #5021ff;
+		--workspace-active-bg-hover: color-mix(
+			in hsl,
+			var(--workspace-active-bg) 85%,
+			white
+		);
+		--workspace-active-bg-focus: color-mix(
+			in hsl,
+			var(--workspace-active-bg) 85%,
+			white
+		);
+		--workspace-active-color: #fff;
+	}
+}
+
+html[theme="browser"] {
+	--button-bg-hover: color-mix(in rgb, var(--button-bg) 80%, black);
+	--button-border-color: color-mix(in rgb, var(--button-bg) 75%, black);
+	--workspace-bg-hover: color-mix(in rgb, var(--workspace-bg) 80%, black);
+	--workspace-bg-focus: color-mix(in rgb, var(--workspace-bg) 80%, black);
+}
+
+:root {
+	@media (prefers-color-scheme: dark) {
+		--outline-color: #5021ff;
+		--body-bg: #252835;
+		--body-color: #fff;
+		--button-bg: #030615;
+		--button-bg-hover: #3e4852;
+		--button-bg-focus: #4d647a;
+		--button-border-color: #3e4852;
+		--button-color: #fff;
+		--search-bg: #030615;
+		--search-bg-hover: color-mix(in hsl, var(--search-bg) 95%, white);
+		--search-bg-focus: color-mix(in hsl, var(--search-bg) 95%, white);
+		--search-color: #fff;
+		--search-border-color: transparent;
+		--icon-fill: #fff;
+		--workspace-bg: transparent;
+		--workspace-color: #fff;
+		--workspace-bg-hover: #3f5265;
+		--workspace-bg-focus: #3f5265;
+		--workspace-active-bg: #5021ff;
+		--workspace-active-bg-hover: color-mix(
+			in hsl,
+			var(--workspace-active-bg) 85%,
+			white
+		);
+		--workspace-active-bg-focus: color-mix(
+			in hsl,
+			var(--workspace-active-bg) 85%,
+			white
+		);
+		--workspace-active-color: #fff;
+	}
+}
+
+body {
+	@apply bg-[--body-bg] text-[--body-text] min-h-[24rem] p-0 m-0 @container w-[100dvw] h-[100dvh] overflow-hidden;
+}
+
+button {
+	@apply rounded-md p-2;
+	@apply bg-[--button-bg] hover:bg-[--button-bg-hover] focus-within:bg-[--button-bg-hover] text-[--button-color] border-[--button-border-color];
+
+	&.ghost {
+		&:not(:focus, :hover) {
+			@apply bg-transparent;
+		}
+	}
+
+	&.reset {
+		@apply bg-transparent p-0;
+	}
+}
+
+.workspace {
+	button {
+		@apply text-[--workspace-color];
+	}
+	&.active {
+		button {
+			@apply text-[--workspace-active-color];
+		}
+	}
+}

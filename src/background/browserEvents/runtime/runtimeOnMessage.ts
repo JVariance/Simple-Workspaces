@@ -1,7 +1,5 @@
 import { unstate } from "svelte";
-import Processes from "../../Processes";
-import { BrowserStorage } from "../../Storage";
-import WorkspaceStorage from "../../WorkspaceStorage";
+import { WorkspaceStorage, Processes, BrowserStorage } from "../../Entities";
 import { informViews } from "../../informViews";
 import Browser from "webextension-polyfill";
 import * as API from "@root/browserAPI";

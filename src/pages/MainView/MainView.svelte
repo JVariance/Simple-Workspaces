@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { dndzone } from "svelte-dnd-action";
 	import { Key } from "ts-key-enum";
-	import "@root/app.postcss";
+	import "@root/styles/mainView.postcss";
 	import Workspace from "@components/Workspace.svelte";
 	import Browser, { i18n } from "webextension-polyfill";
 	import Icon from "@root/components/Icon.svelte";
@@ -231,22 +231,24 @@
 		// button_primary, button_active, ntp_card_background, sidebar_selected_color
 		windowId = (await Browser.windows.getCurrent()).id!;
 
-		const sidebarBg = colors?.sidebar || colors?.toolbar;
-		sidebarBg && document.body.style.setProperty("--body-bg", sidebarBg);
-		const workspaceActiveBg = colors?.sidebar_highlight;
-		workspaceActiveBg && document.body.style.setProperty("--workspace-active-bg", workspaceActiveBg);
-		const workspaceActiveColor = colors?.sidebar_highlight_text;
-		workspaceActiveColor && document.body.style.setProperty("--workspace-active-color", workspaceActiveColor);
-		const buttonBg = colors?.button_background_active || colors?.icons;
-		buttonBg && document.body.style.setProperty("--button-bg", buttonBg);
+		if(document.documentElement.getAttribute("theme") === "browser") {
+			const sidebarBg = colors?.sidebar || colors?.toolbar;
+			sidebarBg && document.body.style.setProperty("--body-bg", sidebarBg);
+			const workspaceActiveBg = colors?.sidebar_highlight;
+			workspaceActiveBg && document.body.style.setProperty("--workspace-active-bg", workspaceActiveBg);
+			const workspaceActiveColor = colors?.sidebar_highlight_text;
+			workspaceActiveColor && document.body.style.setProperty("--workspace-active-color", workspaceActiveColor);
+			const buttonBg = colors?.button_background_active || colors?.icons;
+			buttonBg && document.body.style.setProperty("--button-bg", buttonBg);
+		}
 	});
 </script>
 
 <svelte:body onkeydown={onKeyDown} />
 
-<div class="w-[100dvw] p-2 box-border">
+<div class="w-[100cqw] h-[100cqh] p-2 box-border overflow-auto [scrollbar-width:_thin]">
 	<!-- <h1 class="mb-4">Workspaces</h1> -->
-	{#if true && import.meta.env.DEV}
+	{#if false && import.meta.env.DEV}
 		<div class="flex flex-wrap gap-1 absolute top-0 right-0">
 			<details class="bg-neutral-950 p-1 rounded-md">
 				<summary></summary>
@@ -277,10 +279,10 @@
 	<section class="flex gap-2 items-center mt-4 mb-6 w-full">
 		<search
 			class="
-			w-full flex items-center gap-2 border
-			focus-within:bg-neutral-50 focus-within:shadow-xl
-			dark:focus-within:bg-neutral-700
-			dark:border-neutral-700 dark:bg-neutral-800 rounded-md px-4 py-2
+				w-full flex items-center gap-2 border
+				bg-[--search-bg] hover:bg-[--search-bg-hover] focus-within:bg-[--search-bg-focus]
+				border-[--search-border-color] text-[--search-color]
+				focus-within:shadow-xl rounded-md px-4 py-2
 			"
 		>
 			<label for="search"
@@ -342,6 +344,7 @@
 			use:dndzone={{
 				items: workspaces,
 				dropTargetStyle: {},
+				zoneTabIndex: -1,
 				dragDisabled:
 					viewWorkspaces.length !== workspaces.length || workspaces.length < 2,
 			}}
@@ -364,11 +367,10 @@
 		onkeydown={addWorkspaceByKey}
 		data-focusid={viewWorkspaces.length + 1}
 		class:selected={selectedIndex === viewWorkspaces.length + 1}
-		class="
-				p-4 items-center flex gap-4 rounded-md text-left border mt-4 w-full
-				outline-none [&.selected]:dark:bg-neutral-700
+		class="ghost
+				!p-4 items-center flex gap-4 rounded-md text-left mt-4 w-full outline-none border
 			"
-		><span class="text-2xl text-center"
+		><span class="text-2xl text-center w-7 flex justify-center items-center"
 			><Icon icon="add" width={18} /></span
 		>
 		<span class="leading-none -mt-[0.5ch] text-lg">{i18n.getMessage('create_new_workspace')}</span></button
@@ -384,6 +386,10 @@
 
 		button#add-workspace {
 			@apply w-12 h-12 p-0 aspect-square mx-auto justify-center items-center;
+			span:nth-of-type(1) {
+				@apply w-max;
+			}
+
 			span:nth-of-type(n + 2) {
 				@apply hidden;
 			}

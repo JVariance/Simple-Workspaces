@@ -1,5 +1,5 @@
 <script lang="ts">
-	import "@root/app.postcss";
+	import "@root/styles/specialPages.postcss";
 	import Icon from "@root/components/Icon.svelte";
 	import DefaultWorkspaces from "@root/components/ViewBlocks/DefaultWorkspaces.svelte";
 	import { onMount } from "svelte";

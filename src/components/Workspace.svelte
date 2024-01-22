@@ -148,7 +148,7 @@
 		class:active
 		class:selected
 		class="
-			workspace flex gap-2 @[360px]:gap-8 justify-center @[244px]:justify-start items-center p-2 py-3 rounded-md {classes} group
+			workspace flex gap-2 @[360px]:gap-8 justify-center @[244px]:justify-start items-center p-4 rounded-md {classes} group
 			bg-[--workspace-bg] text-[--workspace-color] focus-within:bg-[--workspace-bg-focus] hover:bg-[--workspace-bg-hover]
 			[&.active]:bg-[--workspace-active-bg] [&.active]:text-[--workspace-active-color] [&.active]:hover:bg-[--workspace-active-bg-hover] [&.active]:focus-within:bg-[--workspace-active-bg-focus]
 		"
@@ -207,14 +207,14 @@
 		{:else}
 			<button
 				onclick={_switchWorkspace}
-				class="ghost w-full outline-transparent outline-none flex items-center gap-4 {active
+				class="reset w-full outline-transparent outline-none flex items-center gap-4 {active
 					? '!cursor-default'
 					: ''}"
 				data-focusid={index}
 				bind:this={workspaceButton}
 			>
 				<span
-					class="text-2xl w-[2.5ch] overflow-hidden text-center"
+					class="text-2xl w-[1ch] overflow-hidden text-center"
 					style:font-family="Noto Color Emoji">{icon}</span
 				>
 				<span class="{active ? 'font-bold' : ''} text-lg">{name}</span>
