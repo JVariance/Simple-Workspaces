@@ -271,12 +271,17 @@ export class Window {
 
 		const activeTabId = currentWorkspace.activeTabId;
 
+		console.info("moveTabs", { tabIds, activeTabId });
+
 		if (tabIds.includes(activeTabId!)) {
-			const newActiveTabId = [...currentWorkspace.tabIds]
-				.reverse()
-				.find((tabId) => !tabIds.includes(tabId));
+			const newActiveTabId = [...currentWorkspace.tabIds].findLast(
+				(tabId) => !tabIds.includes(tabId)
+			);
+
+			console.info({ newActiveTabId });
 
 			if (newActiveTabId) {
+				currentWorkspace.activeTabId = newActiveTabId;
 				await Browser.tabs.update(newActiveTabId, { active: true });
 			}
 		}
