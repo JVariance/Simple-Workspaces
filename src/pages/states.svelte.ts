@@ -7,11 +7,18 @@ let homeWorkspace = $state<Ext.SimpleWorkspace>();
 let defaultWorkspaces = $state<Ext.SimpleWorkspace[]>([]);
 let windowId = $state<number>();
 let theme = $state<"browser" | "">("");
+let systemTheme = $state<"dark" | "light">("dark");
+let forceDefaultThemeIfDarkMode = $state<boolean>(false);
+let activeWorkspaceIndex = $state<number>();
 
 export const getWorkspacesState = () => workspaces;
 export const getDefaultWorkspacesState = () => defaultWorkspaces;
 export const getHomeWorkspaceState = () => homeWorkspace;
 export const getThemeState = () => theme;
+export const getForceDefaultThemeIfDarkModeState = () =>
+	forceDefaultThemeIfDarkMode;
+export const getSystemThemeState = () => systemTheme;
+export const getActiveWorkspaceIndexState = () => activeWorkspaceIndex;
 
 function addedWorkspace({ workspace }: { workspace: Ext.Workspace }) {
 	console.info("states: addedWorkspace");
@@ -77,7 +84,12 @@ function updatedActiveWorkspace({
 }) {
 	console.info("states: updatedActiveWorkspace");
 
-	const activeWorkspace = workspaces.find(findActiveWorkspace);
+	const _activeWorkspaceIndex = workspaces.findIndex(
+		({ UUID }) => UUID === workspaceUUID
+	);
+	if (_activeWorkspaceIndex < 0) return;
+	activeWorkspaceIndex = _activeWorkspaceIndex;
+	const activeWorkspace = workspaces[_activeWorkspaceIndex];
 
 	if (activeWorkspace) {
 		activeWorkspace.active = false;
@@ -135,6 +147,29 @@ async function themeChanged() {
 	}
 }
 
+async function setSystemTheme() {
+	const _systemTheme = await Browser.runtime.sendMessage({
+		msg: "getSystemTheme",
+		windowId,
+	});
+
+	systemTheme = _systemTheme;
+}
+
+function systemThemeChanged({ theme: _theme }: { theme: "dark" | "light" }) {
+	systemTheme = _theme;
+}
+
+async function setForceDefaultThemeIfDarkMode() {
+	const { forceDefaultThemeIfDarkMode: _forceDefaultThemeIfDarkMode } =
+		await BrowserStorage.getForceDefaultThemeIfDarkMode();
+	forceDefaultThemeIfDarkMode = _forceDefaultThemeIfDarkMode;
+}
+
+function forceDefaultThemeIfDarkModeChanged({ bool }: { bool: boolean }) {
+	forceDefaultThemeIfDarkMode = bool;
+}
+
 Browser.runtime.onMessage.addListener((message) => {
 	console.info("browser runtime onmessage");
 	const { windowId: targetWindowId, msg } = message;
@@ -172,6 +207,12 @@ Browser.runtime.onMessage.addListener((message) => {
 		case "themeChanged":
 			themeChanged();
 			break;
+		case "systemThemeChanged":
+			systemThemeChanged(message);
+			break;
+		case "forceDefaultThemeIfDarkModeChanged":
+			forceDefaultThemeIfDarkModeChanged(message);
+			break;
 		default:
 			break;
 	}
@@ -194,7 +235,9 @@ $effect.root(() => {
 				setWorkspaces(),
 				setDefaultWorkspacesFromLocalStorage(),
 				setHomeWorkspace(),
+				setSystemTheme(),
 				setTheme(),
+				setForceDefaultThemeIfDarkMode(),
 			]);
 		})();
 	});

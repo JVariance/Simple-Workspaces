@@ -16,6 +16,8 @@ import {
 	commandsOnCommand,
 } from "./browserEvents";
 import { themeOnUpdated } from "./browserEvents/theme/themeOnUpdated";
+import { WorkspaceStorage } from "./Entities";
+import { informViews } from "./informViews";
 /* Event Order:
 Creation:
 1. browser.tabs.onCreated
@@ -50,3 +52,12 @@ browser.commands.onCommand.addListener(commandsOnCommand);
 browser.runtime.onMessage.addListener(runtimeOnMessage);
 
 browser.theme.onUpdated.addListener(themeOnUpdated);
+
+const mql = window.matchMedia("(prefers-color-scheme: dark)");
+mql.addEventListener("change", (e) => {
+	WorkspaceStorage.windows.forEach((window) => {
+		informViews(window.windowId, "systemThemeChanged", {
+			theme: e?.matches ? "dark" : "light",
+		});
+	});
+});

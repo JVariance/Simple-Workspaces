@@ -30,6 +30,13 @@ export function storageOnChanged(
 					});
 				});
 				break;
+			case "forceDefaultThemeIfDarkMode":
+				WorkspaceStorage.windows.forEach((window) => {
+					informViews(window.windowId, "forceDefaultThemeIfDarkModeChanged", {
+						bool: item.newValue,
+					});
+				});
+				break;
 			default:
 				break;
 		}

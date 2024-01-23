@@ -7,20 +7,26 @@
 	import Icon from "@root/components/Icon.svelte";
 	import { debounceFunc } from "@root/utils";
 	import Skeleton from "@root/components/Skeleton.svelte";
-	import { untrack, onMount } from "svelte";
-	import { getWorkspacesState, getThemeState } from "@pages/states.svelte";
+	import { untrack, onMount, tick, unstate } from "svelte";
+	import { getWorkspacesState, getThemeState, getSystemThemeState, getForceDefaultThemeIfDarkModeState, getActiveWorkspaceIndexState } from "@pages/states.svelte";
+	import { fade, slide, scale,blur, crossfade, draw, fly } from "svelte/transition";
 
-	import {overrideItemIdKeyNameBeforeInitialisingDndZones} from "svelte-dnd-action";
+	import { overrideItemIdKeyNameBeforeInitialisingDndZones } from "svelte-dnd-action";
 	overrideItemIdKeyNameBeforeInitialisingDndZones("UUID");
 
 	console.info("?????");
 
+	let reordering = $state(false);
 	let searchInput: HTMLInputElement = $state();
+	let activeWorkspaceIndex = $state();
+	let derivedActiveWorkspaceIndex  = $derived(getActiveWorkspaceIndexState());
 	let selectedIndex = $state(0);
 	let homeWorkspace: Ext.Workspace = $state();
 	let _workspaces: Ext.Workspace[] = $derived(getWorkspacesState());
 	let workspaces: Ext.Workspace[] = $state([]);
 	let theme = $derived(getThemeState());
+	let systemTheme = $derived(getSystemThemeState());
+	let forceDefaultThemeIfDarkMode = $derived(getForceDefaultThemeIfDarkModeState());
 	let activeWorkspace: Ext.Workspace = $derived(homeWorkspace?.active ? homeWorkspace : workspaces?.find(({active}) => active));
 	let searchFilteredWorkspaceUUIDS: string[] = $state([]);
 	let viewWorkspaces: Ext.Workspace[] = $derived((() => {
@@ -36,21 +42,32 @@
 	let windowId: number;
 
 	$effect(() => {
+		if((activeWorkspaceIndex === undefined || activeWorkspaceIndex === null) && _workspaces.length) {
+			activeWorkspaceIndex = _workspaces.findIndex(({ active }) => active);
+		}
+	});
+
+	$effect(() => {
 		untrack(() => workspaces);
 		homeWorkspace = _workspaces[0];
 		workspaces = _workspaces.slice(1);
 	});
 
-	function switchWorkspace(workspace: Ext.Workspace) {
-		(async () => {
-			await Browser.runtime.sendMessage({
-				msg: "switchWorkspace",
-				workspaceUUID: workspace.UUID,
-			});
+	$effect(() => {
+		console.info(derivedActiveWorkspaceIndex);
+		derivedActiveWorkspaceIndex && (activeWorkspaceIndex = derivedActiveWorkspaceIndex);
+	});
 
-			searchInput.value = "";
-			window.close();
-		})();
+	async function switchWorkspace(workspace: Ext.Workspace, instant = false) {
+		console.info("MainView - switchWorkspace ", { workspace });
+		await Browser.runtime.sendMessage({
+			msg: "switchWorkspace",
+			workspaceUUID: workspace.UUID,
+			instant
+		});
+
+		searchInput.value = "";
+		window.close();
 	}
 
 	function createdTab({ tabId }: { tabId: number }) {
@@ -209,17 +226,24 @@
 	const debouncedSearch = debounceFunc(search, 500);
 
 	function handleDndConsider(e: CustomEvent<DndEvent<Ext.Workspace>>) {
+		reordering = true;
 		workspaces = e.detail.items;
 	}
 
 	function handleDndFinalize(e: CustomEvent<DndEvent<Ext.Workspace>>) {
+		reordering = false;
 		workspaces = e.detail.items;
+
+		const newActiveWorkspaceIndex = activeWorkspaceIndex === 0 ? 0 : workspaces.findIndex(({ active }) => active) + 1;
+		console.info(newActiveWorkspaceIndex);
+		activeWorkspaceIndex = newActiveWorkspaceIndex;
 
 		Browser.runtime.sendMessage({
 			msg: "reorderedWorkspaces",
 			sortedWorkspacesIds: workspaces.map(({ UUID }) => UUID),
 			windowId,
 		});
+
 	}
 
 	function openOptionsPage() {
@@ -240,14 +264,40 @@
 		sidebarColor && addToRootStyles(`--workspace-color: ${sidebarColor}`);
 		const workspaceActiveBg = colors?.sidebar_highlight;
 		workspaceActiveBg && addToRootStyles(`--workspace-active-bg: ${workspaceActiveBg}`);
-		const workspaceActiveColor = colors?.sidebar_highlight_text;
-		workspaceActiveColor && addToRootStyles(`--workspace-active-color: ${workspaceActiveColor}`);
+		// const workspaceActiveColor = colors?.sidebar_highlight_text;
+		// workspaceActiveColor && addToRootStyles(`--workspace-active-color: ${workspaceActiveColor}`);
 		const buttonBg = colors?.button_background_color || colors?.button_background_active || colors?.toolbar_field_background_color || colors?.icons;
 		buttonBg && addToRootStyles(`--button-bg: ${buttonBg}`);
 		const searchBg = colors?.searchbar_bg || colors?.toolbar_field_background_color;
 		searchBg && addToRootStyles(`--search-bg: ${searchBg}`);
 		const searchColor = colors?.searchbar_color || colors?.toolbar_field_color;
 		searchColor && addToRootStyles(`--search-color: ${searchColor}`);
+
+		await tick();
+		const activeWorkspace = document.querySelector('.workspace.active');
+		if(activeWorkspace){
+			const rgbVals = (() => {
+				const activeWorkspaceBackground = getComputedStyle(activeWorkspace)['background'];
+				const extractedRGB = activeWorkspaceBackground.match(/\d+/g);
+				return activeWorkspaceBackground.startsWith('color(') ? [+extractedRGB[1], +extractedRGB[2], +extractedRGB[3]] : extractedRGB.map(Number);
+			})();
+
+			if(rgbVals.filter(Number).length === 3){
+				// https://css-tricks.com/switch-font-color-for-different-backgrounds-with-css/
+				addToRootStyles(`
+					--red: ${rgbVals[0]};
+					--green: ${rgbVals[1]};
+					--blue: ${rgbVals[2]};
+					--r: calc(var(--red) * 0.299);
+	  			--g: calc(var(--green) * 0.587);
+				  --b: calc(var(--blue) * 0.114);
+					--sum: calc(var(--r) + var(--g) + var(--b));
+					--threshold: 0.5;
+					--perceived-lightness: calc(var(--sum) / 255);
+					--workspace-active-color: hsl(0, 0%, calc((var(--perceived-lightness) - var(--threshold)) * -10000000%));
+				`);
+			}
+		}
 	}
 
 	function unsetBrowserTheme(){
@@ -255,10 +305,36 @@
 		rootStyles = "";
 	}
 
+	$effect(() => {
+		console.info({theme});
+		(theme === "browser" && (systemTheme === "light" || (systemTheme === "dark" && !forceDefaultThemeIfDarkMode))) 
+			? setBrowserTheme() 
+			: unsetBrowserTheme();
+	});
 
 	$effect(() => {
-		console.info({ theme });
-		theme === "browser" ? setBrowserTheme() : unsetBrowserTheme();
+		document.documentElement.style.colorScheme = systemTheme;
+	});	
+
+	$inspect({ activeWorkspaceIndex });
+	$inspect({ _workspaces });
+	$inspect({ reordering });
+	
+	Browser.commands.onCommand.addListener(async (command) => {
+		const activeWindowId = (await Browser.windows.getLastFocused()).id!;
+		if(activeWindowId !== windowId) return;
+		switch (command) {
+			case "next-workspace":
+				activeWorkspaceIndex = Math.min(viewWorkspaces.length, activeWorkspaceIndex + 1);
+				switchWorkspace(_workspaces[activeWorkspaceIndex]);
+				break;
+			case "previous-workspace":
+				activeWorkspaceIndex = Math.max(0, activeWorkspaceIndex - 1);
+				switchWorkspace(_workspaces[activeWorkspaceIndex]);
+				break;
+			default:
+				break;
+		}
 	});
 
 	onMount(async () => {
@@ -273,8 +349,8 @@
 
 <div class="w-[100cqw] h-[100cqh] p-2 box-border overflow-auto [scrollbar-width:_thin]" style:--header-height="5rem">
 	<!-- <h1 class="mb-4">Workspaces</h1> -->
-	{#if false && import.meta.env.DEV}
-		<div class="flex flex-wrap gap-1 absolute top-0 right-0">
+	{#if true && import.meta.env.DEV}
+		<div class="flex flex-wrap gap-1 absolute top-0 right-0 z-[51]">
 			<details class="bg-neutral-950 p-1 rounded-md">
 				<summary></summary>
 				<button
@@ -335,18 +411,20 @@
 		{/each}
 	</div> -->
 	<!-- {#if viewWorkspaces.length && activeWorkspace} -->
+
 	{#snippet SWorkspace([workspace, i])}
 		{#if workspace}
 			<Workspace
 				{workspace}
-				active={workspace.active}
+				active={reordering ? workspace.active : activeWorkspaceIndex === i}
 				selected={i === selectedIndex}
 				index={i}
 				editWorkspace={({ icon, name }: {icon: string; name: string;}) => {
 					editWorkspace({ workspace, icon, name });
 				}}
 				switchWorkspace={() => {
-					switchWorkspace(workspace);
+					switchWorkspace(workspace, true);
+					activeWorkspaceIndex = i;
 				}}
 				removeWorkspace={() => {
 					removeWorkspace(workspace);
@@ -367,7 +445,7 @@
 		<div
 			class="w-full grid gap-4 @container mt-4 empty:mt-0"
 			use:dndzone={{
-				items: workspaces,
+				items: unstate(workspaces),
 				dropTargetStyle: {},
 				zoneTabIndex: -1,
 				dragDisabled:
@@ -376,13 +454,14 @@
 			on:consider={handleDndConsider}
 			on:finalize={handleDndFinalize}
 		>
-			{#key viewWorkspaces}
-				{#each viewWorkspaces as workspace, i (workspace.UUID)}
-					<li class="item relative max-w-[100cqw]">
-						{@render SWorkspace([workspace, i + 1])}
-					</li>
-				{/each}
-			{/key}
+			{#each viewWorkspaces as workspace, i (workspace.UUID)}
+				<li 
+					class="item relative max-w-[100cqw]"
+					transition:slide={{ delay: 0, duration: 175 }}
+				>
+					{@render SWorkspace([workspace, i + 1])}
+				</li>
+			{/each}
 		</div>
 	</ul>
 

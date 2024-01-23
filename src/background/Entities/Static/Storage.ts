@@ -36,4 +36,14 @@ export class BrowserStorage {
 	static setTheme(theme: "" | "browser"): Promise<void> {
 		return Browser.storage.local.set({ theme });
 	}
+
+	static getForceDefaultThemeIfDarkMode(): Promise<
+		Record<"forceDefaultThemeIfDarkMode", boolean>
+	> {
+		return Browser.storage.local.get("forceDefaultThemeIfDarkMode");
+	}
+
+	static setForceDefaultThemeIfDarkMode(bool: boolean) {
+		return Browser.storage.local.set({ forceDefaultThemeIfDarkMode: bool });
+	}
 }

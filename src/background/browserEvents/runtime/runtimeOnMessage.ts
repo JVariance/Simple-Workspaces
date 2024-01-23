@@ -3,6 +3,27 @@ import { WorkspaceStorage, Processes, BrowserStorage } from "../../Entities";
 import { informViews } from "../../informViews";
 import Browser from "webextension-polyfill";
 import * as API from "@root/browserAPI";
+import { debounceFunc } from "@root/utils";
+
+const runSwitchWorkspaceCommand = debounceFunc(switchWorkspaceCommand, 400);
+
+function switchWorkspaceCommand({ workspaceUUID }: { workspaceUUID: string }) {
+	console.info("switchWorkspaceCommand", workspaceUUID);
+	Processes.WorkspaceSwitch.start();
+	const nextWorkspace = WorkspaceStorage.windows
+		.get(WorkspaceStorage.focusedWindowId)!
+		.workspaces.find(({ UUID }) => UUID === workspaceUUID)!;
+
+	(async () => {
+		await WorkspaceStorage.activeWindow.switchWorkspace(nextWorkspace);
+		informViews(
+			WorkspaceStorage.activeWindow.windowId,
+			"updatedActiveWorkspace",
+			{ UUID: nextWorkspace.UUID }
+		);
+	})();
+	Processes.WorkspaceSwitch.finish();
+}
 
 export async function runtimeOnMessage(
 	message: any,
@@ -101,21 +122,9 @@ export async function runtimeOnMessage(
 				return resolve(tabIds);
 			});
 		case "switchWorkspace":
-			Processes.WorkspaceSwitch.start();
-			const { workspaceUUID } = message as { workspaceUUID: string };
-			const nextWorkspace = WorkspaceStorage.windows
-				.get(WorkspaceStorage.focusedWindowId)!
-				.workspaces.find(({ UUID }) => UUID === workspaceUUID)!;
-
-			(async () => {
-				await WorkspaceStorage.activeWindow.switchWorkspace(nextWorkspace);
-				informViews(
-					WorkspaceStorage.activeWindow.windowId,
-					"updatedActiveWorkspace",
-					{ UUID: nextWorkspace.UUID }
-				);
-			})();
-			Processes.WorkspaceSwitch.finish();
+			message?.instant
+				? switchWorkspaceCommand(message)
+				: runSwitchWorkspaceCommand(message);
 			break;
 		case "setCurrentWorkspaces":
 			return new Promise<void>(async (resolve) => {
@@ -197,6 +206,18 @@ export async function runtimeOnMessage(
 				Browser.runtime.reload();
 				return resolve();
 			});
+		case "getSystemTheme":
+			return new Promise<"light" | "dark">(async (resolve) => {
+				return resolve(
+					window.matchMedia("(prefers-color-scheme: dark)").matches
+						? "dark"
+						: "light"
+				);
+			});
+		case "switchWorkspace":
+		// return new Promise<void>(async (resolve) => {
+		// 	runSwitchWorkspaceCommand();
+		// });
 		default:
 			break;
 	}

@@ -1,6 +1,7 @@
 @import "app.postcss";
 
 :root {
+	color-scheme: light dark;
 	--outline-color: light-dark(#5021ff, #5021ff);
 	--body-bg: light-dark(#fff, #252835);
 	--body-color: light-dark(#000, #fff);
@@ -46,11 +47,11 @@ html[theme="browser"] {
 	--search-bg: color-mix(in hsl, black 50%, transparent);
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
 	html {
 		color-scheme: dark;
 	}
-}
+} */
 
 body {
 	@apply bg-[--body-bg] text-[--body-text] min-h-[24rem] p-0 m-0 @container w-[100dvw] h-[100dvh] overflow-hidden;
