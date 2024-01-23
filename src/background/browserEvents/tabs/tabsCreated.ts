@@ -9,11 +9,18 @@ export async function tabsOnCreated(tab: Browser.Tabs.Tab) {
 	const window = await Browser.windows.get(tab.windowId!);
 	console.info({ manualTabAddition });
 
+	//TODO / BUG: tabSession WorkspaceUUID schon gesetzt, daher wird restoredtab immer ausgeführt
+
 	const tabSessionWorkspaceUUID = await API.getTabValue(
 		tab.id!,
 		"workspaceUUID"
 	);
 
+	console.info(
+		manualTabAddition,
+		tabSessionWorkspaceUUID,
+		manualTabAddition && !tabSessionWorkspaceUUID
+	);
 	if (manualTabAddition && !tabSessionWorkspaceUUID) {
 		console.info("Processes.manualTabAddition = true");
 		Processes.manualTabAddition = false;
@@ -25,6 +32,8 @@ export async function tabsOnCreated(tab: Browser.Tabs.Tab) {
 			tab.id!,
 			tabSessionWorkspaceUUID
 		));
+
+	if (manualTabAddition) return;
 
 	if (window?.type !== "normal" || Processes.WindowCreation.state === "pending")
 		return;

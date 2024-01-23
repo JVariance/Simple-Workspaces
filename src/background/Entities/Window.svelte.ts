@@ -420,7 +420,9 @@ export class Window {
 			newWorkspace.tabIds = tabIds;
 			newWorkspace.activeTabId = tabIds.at(-1);
 		} else {
+			Processes.manualTabAddition = true;
 			await createTab({ active: false }, newWorkspace);
+			Processes.manualTabAddition = false;
 		}
 
 		this.#workspaces = [...this.#workspaces, newWorkspace];

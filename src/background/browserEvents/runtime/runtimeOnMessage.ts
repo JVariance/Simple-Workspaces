@@ -9,6 +9,10 @@ const runSwitchWorkspaceCommand = debounceFunc(switchWorkspaceCommand, 400);
 
 function switchWorkspaceCommand({ workspaceUUID }: { workspaceUUID: string }) {
 	console.info("switchWorkspaceCommand", workspaceUUID);
+
+	if (workspaceUUID === WorkspaceStorage.activeWindow.activeWorkspace.UUID)
+		return;
+
 	Processes.WorkspaceSwitch.start();
 	const nextWorkspace = WorkspaceStorage.windows
 		.get(WorkspaceStorage.focusedWindowId)!
