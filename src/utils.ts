@@ -180,6 +180,6 @@ export class DeferredPromise<T> {
 	}
 }
 
-export function isDefined(value: any) {
+export function isNullish(value: any) {
 	return value == null;
 }

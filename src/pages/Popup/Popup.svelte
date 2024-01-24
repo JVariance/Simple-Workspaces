@@ -10,6 +10,6 @@
 	}
 
 	:global(body) {
-		@apply w-[40rem];
+		@apply w-[40rem] h-[600px];
 	}
 </style>

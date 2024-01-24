@@ -6,11 +6,11 @@
 	import Workspace from "@components/Workspace.svelte";
 	import Browser, { i18n } from "webextension-polyfill";
 	import Icon from "@root/components/Icon.svelte";
-	import { debounceFunc, isDefined } from "@root/utils";
+	import { debounceFunc, isNullish } from "@root/utils";
 	import Skeleton from "@root/components/Skeleton.svelte";
 	import { untrack, onMount, tick, unstate } from "svelte";
 	import { getWorkspacesState, getThemeState, getSystemThemeState, getForceDefaultThemeIfDarkModeState, getActiveWorkspaceIndexState } from "@pages/states.svelte";
-	import { fade, slide, scale,blur, crossfade, draw, fly } from "svelte/transition";
+	import { slide } from "svelte/transition";
 
 	import { overrideItemIdKeyNameBeforeInitialisingDndZones } from "svelte-dnd-action";
 	overrideItemIdKeyNameBeforeInitialisingDndZones("UUID");
@@ -43,7 +43,7 @@
 	let windowId: number;
 
 	$effect(() => {
-		if(isDefined(activeWorkspaceIndex) && _workspaces.length) {
+		if(isNullish(activeWorkspaceIndex) && _workspaces.length) {
 			activeWorkspaceIndex = _workspaces.findIndex(({ active }) => active);
 		}
 	});
@@ -55,7 +55,7 @@
 	});
 
 	$effect(() => {
-		isDefined(derivedActiveWorkspaceIndex) && (activeWorkspaceIndex = derivedActiveWorkspaceIndex);
+		!isNullish(derivedActiveWorkspaceIndex) && (activeWorkspaceIndex = derivedActiveWorkspaceIndex);
 	});
 
 	async function switchWorkspace(workspace: Ext.Workspace, instant = false) {
