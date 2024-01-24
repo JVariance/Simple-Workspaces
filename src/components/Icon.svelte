@@ -22,6 +22,7 @@
 		"chevron-right": "fluent:chevron-right-24-filled",
 		clear: "ant-design:clear-outlined",
 		clear2: "pajamas:clear",
+		copy: "icon-park-outline:copy",
 		cross: "iconoir:cancel",
 		"drag-handle": "radix-icons:drag-handle-dots-2",
 		edit: "fluent:edit-24-filled",

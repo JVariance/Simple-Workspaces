@@ -279,7 +279,12 @@
 			const rgbVals = (() => {
 				const activeWorkspaceBackground = getComputedStyle(activeWorkspace)['background'];
 				const extractedRGB = activeWorkspaceBackground.match(/\d+/g);
-				return activeWorkspaceBackground.startsWith('color(') ? [+extractedRGB[1], +extractedRGB[2], +extractedRGB[3]] : extractedRGB.map(Number);
+				console.info({extractedRGB, activeWorkspaceBackground});
+				return activeWorkspaceBackground.startsWith('color(')
+						? [+extractedRGB[1], +extractedRGB[2], +extractedRGB[3]] 
+						: activeWorkspaceBackground.startsWith('rgba(')
+						? [+extractedRGB[0], +extractedRGB[1], +extractedRGB[2]] 
+						: extractedRGB.map(Number);
 			})();
 
 			if(rgbVals.filter(Number).length === 3){

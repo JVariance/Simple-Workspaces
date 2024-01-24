@@ -2,7 +2,7 @@
 	import "@root/styles/specialPages.postcss";
 	import Icon from "@root/components/Icon.svelte";
 	import DefaultWorkspaces from "@root/components/ViewBlocks/DefaultWorkspaces.svelte";
-	import { onMount } from "svelte";
+	import { onMount, type Snippet } from "svelte";
 	import Browser, { i18n } from "webextension-polyfill";
 	import Layout from "../Special_Pages/Layout.svelte";
 	import Shortcuts from "@root/components/ViewBlocks/Shortcuts.svelte";
@@ -127,31 +127,37 @@
 	});
 </script>
 
-{#snippet ViewStart()}
+{#snippet ViewSection([id, content]: [number, Snippet])}
 	<section
-		id="view-1"
-		class="swipe-item dark:bg-[#23222b] rounded-xl w-[100cqw] p-8 aspect-square overflow-auto relative"
+		id="view-{id}" 
+		class="swipe-item h-full shadow-lg ring-1 dark:ring-0 shadow-purple-200 dark:shadow-black bg-purple-50 text-blue-950 dark:bg-[#23222b] dark:text-white rounded-xl w-[100cqw] p-8 aspect-square overflow-auto relative [scrollbar-width:none]"
 	>
+		{@render content()}
+	</section>
+{/snippet}
+
+{#snippet ViewStart()}
+	{#snippet content()}
 		<h2
-			class="flex flex-wrap items-center gap-2 m-0 mb-12 text-lg first-letter:uppercase w-full justify-center"
+				class="flex flex-wrap items-center gap-2 m-0 mb-12 text-lg first-letter:uppercase w-full justify-center"
 		>
 			<Logo
 				class="w-40"
 				draggable="false"
 			/>
-			<!-- <span class="basis-full w-full text-center text-2xl"
-		>Simple Workspaces</span
-		> -->
+				<!-- <span class="basis-full w-full text-center text-2xl"
+			>Simple Workspaces</span
+			> -->
 		</h2>
 		<h1 class="text-4xl font-bold text-center mb-8">
-			Welcome to Simple Workspaces!
+			{i18n.getMessage('welcome_welcome_message')}!
 		</h1>
 		<!-- <a href="about:preferences#browserRestoreSession" target="_blank"
 		>restore session</a
 		> -->
-		You may want to enable the "open previous windows and tabs" option in preferences.
+		{i18n.getMessage('you_may_want_to_enable_the_open_previous_windows_and_tabs_option_in_preferences')}.
 		<button
-			class="btn px-2 py-1 mt-2"
+			class="btn primary-btn px-2 py-1 mt-2"
 			onclick={(e) => {
 				window.navigator.clipboard.writeText(
 					"about:preferences#browserRestoreSession"
@@ -159,59 +165,56 @@
 				Browser.tabs.create({ active: true });
 			}}
 		>
-			copy link and open new tab
+			<Icon icon="copy" width={20}/>
+			{i18n.getMessage('copy_link_and_open_new tab')}
 		</button>
 
 		<div class="touch-icon absolute bottom-4 left-1/2 -translate-x-1/2 opacity-50">
 			<Icon icon="touch" width={42} />
 		</div>
-	</section>
+	{/snippet}
+	{@render ViewSection([1, content])}
 {/snippet}
 {#snippet ViewDefaultWorkspaces()}
-	<section
-		id="view-2"
-		class="swipe-item dark:bg-[#23222b] rounded-xl w-[100cqw] h-full p-8 justify-center overflow-auto grid"
-	>
+	{#snippet content()}
 		<div class="h-max flex flex-wrap">
 			<h2 class="m-0 mb-4 text-xl font-semibold first-letter:uppercase">{i18n.getMessage('default_workspaces')}</h2>
 			<!-- <Info>
 				{i18n.getMessage('changes_will_apply_for_new_windows')}
 			</Info> -->
 			<p class="mb-8 basis-full">
-				If you want to, you can set some default workspaces that will open with every window. 
-				You can change them at any time in the settings page which is accessible via the 'cog' symbol next to the search bar inside the extension pages
-				or via Firefox' Add-On Manager.
+				{i18n.getMessage('welcome_default_workspaces_message')}.
 			</p>
 			<DefaultWorkspaces dndFinish={() => {swiping = false; scrollViewIntoView();}} />
 		</div>
-	</section>
-{/snippet}
+	{/snippet}
+	{@render ViewSection([2, content])}
+	{/snippet}
 {#snippet ViewShortcuts()}
-	<section
-		id="view-3"
-		class="swipe-item dark:bg-[#23222b] rounded-xl w-[100cqw] h-full p-8 justify-center overflow-auto"
-	>
-	<h2 class="m-0 mb-4 text-xl flex gap-2 items-center font-semibold">
-		<span class="first-letter:uppercase">{i18n.getMessage('shortcuts')}</span>
-	</h2>
-	<Info class="w-full">
-		{i18n.getMessage('you_can_edit_shortcuts_for_commands_in_the_addons_page')}
-	</Info>
-	<Shortcuts />
-</section>
+	{#snippet content()}
+		<h2 class="m-0 mb-4 text-xl flex gap-2 items-center font-semibold">
+			<span class="first-letter:uppercase">{i18n.getMessage('shortcuts')}</span>
+		</h2>
+		<Info class="w-full">
+			{i18n.getMessage('you_can_edit_shortcuts_for_commands_in_the_addons_page')}
+		</Info>
+		<Shortcuts />
+	{/snippet}
+	{@render ViewSection([3, content])}	
 {/snippet}
 
 <Layout>
-	<div class="w-full h-full p-4">
+	<div class="w-full h-[100dvh] p-4">
 		<div class="relative h-full max-w-3xl mx-auto">
 			<div
 				id="wrapper"
 				class:swiping
 				class="
-				w-full h-full grid grid-cols-[100%] grid-flow-col gap-2 p-0 justify-items-center items-center overflow-auto content-center
+				w-full h-full grid grid-cols-[100%] grid-flow-col justify-items-center items-center overflow-auto content-center
 				scroll-smooth snap-both snap-mandatory overscroll-x-contain @container mx-auto
 				[&.swiping]:cursor-grabbing
 				[&.swiping]:select-none
+				scroll-p-8 p-8 gap-11
 			"
 				onpointerdown={swipeStart}
 				onpointermove={swipeMove}
@@ -225,14 +228,14 @@
 			<button
 				onclick={previousSection}
 				disabled={activeView <= 1}
-				class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 p-1 flex gap-2 rounded-full h-max disabled:hidden"
+				class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 p-1 flex gap-2 rounded-full h-max disabled:hidden light:text-[#8c88e3]"
 			>
 				<Icon icon="next-filled" class="rotate-180" />
 			</button>
 			<button
 				onclick={nextSection}
 				disabled={activeView >= viewCount}
-				class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 p-1 flex gap-2 rounded-full h-max disabled:hidden"
+				class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 p-1 flex gap-2 rounded-full h-max disabled:hidden light:text-[#8c88e3]"
 			>
 				<Icon icon="next-filled" />
 			</button>
@@ -244,7 +247,7 @@
 					{@const viewNum = i + 1}
 					<button
 						class:active={activeView === viewNum}
-						class="rounded-full w-3 h-3 [&.active]:bg-[#c6c4f4]"
+						class="rounded-full w-3 h-3 [&.active]:bg-[#c6c4f4] bg-purple-100 dark:bg-neutral-700"
 						onclick={() => {
 							activeView = viewNum;
 						}}
@@ -268,6 +271,31 @@
 	:global(body:not(.js-enabled)) {
 		#view-buttons {
 			@apply !hidden;
+		}
+	}
+
+	:global(.primary-btn){
+		@screen light {
+			@apply bg-[#8c88e3] hover:bg-[#746edd] focus:bg-[#746edd] text-white border-none;
+		}
+	}
+
+	:global(.secondary-btn){
+		@screen light {
+			@apply bg-[#eae9ff] hover:bg-[#e1e0f7] focus:bg-[#e1e0f7] text-[#59586f] border-none;
+		}
+	}
+
+	:global(details, summary) {
+		@screen light {
+			@apply !border-[#8c88e3];
+		}
+	}
+
+	:global(kbd){
+		@screen light {
+			@apply bg-[#8c88e3] text-white border-[#807cd5];
+  		box-shadow: inset 0 5px #9f9ce3;
 		}
 	}
 

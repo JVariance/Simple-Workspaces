@@ -52,7 +52,7 @@
 
 <button
 	title="choose icon"
-	class="btn w-12 h-auto aspect-square justify-center"
+	class="btn secondary-btn w-12 h-auto aspect-square justify-center"
 	style:font-family="Noto Color Emoji"
 	onclick={(e) => {
 		openEmojiPicker(e);
