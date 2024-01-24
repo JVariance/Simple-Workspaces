@@ -5,7 +5,7 @@ import Browser from "webextension-polyfill";
 import * as API from "@root/browserAPI";
 import { debounceFunc } from "@root/utils";
 
-const runSwitchWorkspaceCommand = debounceFunc(switchWorkspaceCommand, 400);
+const runSwitchWorkspaceCommand = debounceFunc(switchWorkspaceCommand, 250);
 
 function switchWorkspaceCommand({ workspaceUUID }: { workspaceUUID: string }) {
 	console.info("switchWorkspaceCommand", workspaceUUID);

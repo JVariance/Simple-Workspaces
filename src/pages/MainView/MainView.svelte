@@ -1,3 +1,4 @@
+
 <script lang="ts">
 	import { dndzone } from "svelte-dnd-action";
 	import { Key } from "ts-key-enum";
@@ -5,7 +6,7 @@
 	import Workspace from "@components/Workspace.svelte";
 	import Browser, { i18n } from "webextension-polyfill";
 	import Icon from "@root/components/Icon.svelte";
-	import { debounceFunc, isNotNullAndDefined } from "@root/utils";
+	import { debounceFunc, isDefined } from "@root/utils";
 	import Skeleton from "@root/components/Skeleton.svelte";
 	import { untrack, onMount, tick, unstate } from "svelte";
 	import { getWorkspacesState, getThemeState, getSystemThemeState, getForceDefaultThemeIfDarkModeState, getActiveWorkspaceIndexState } from "@pages/states.svelte";
@@ -42,7 +43,7 @@
 	let windowId: number;
 
 	$effect(() => {
-		if(isNotNullAndDefined(activeWorkspaceIndex) && _workspaces.length) {
+		if(isDefined(activeWorkspaceIndex) && _workspaces.length) {
 			activeWorkspaceIndex = _workspaces.findIndex(({ active }) => active);
 		}
 	});
@@ -54,7 +55,7 @@
 	});
 
 	$effect(() => {
-		isNotNullAndDefined(derivedActiveWorkspaceIndex) && (activeWorkspaceIndex = derivedActiveWorkspaceIndex);
+		isDefined(derivedActiveWorkspaceIndex) && (activeWorkspaceIndex = derivedActiveWorkspaceIndex);
 	});
 
 	async function switchWorkspace(workspace: Ext.Workspace, instant = false) {

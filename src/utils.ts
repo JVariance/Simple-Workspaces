@@ -180,6 +180,6 @@ export class DeferredPromise<T> {
 	}
 }
 
-export function isNotNullAndDefined(value: any) {
-	return value !== null && value !== undefined;
+export function isDefined(value: any) {
+	return value == null;
 }
