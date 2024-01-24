@@ -1,114 +1,132 @@
 {
-	"options": {
-		"message": "options",
-		"description": "options page title"
-	},
-	"general": {
-		"message": "general",
-		"description": "options page"
-	},
-	"reset": {
-		"message": "reset",
-		"description": "options page"
-	},
-	"language": {
-		"message": "language",
-		"description": ""
-	},
-	"search": {
-		"message": "search tabs",
-		"description": "search field placeholder"
-	},
-	"reset_default_workspaces": {
-		"message": "reset default workspaces",
-		"description": "options page"
-	},
-	"add_default_workspace": {
-		"message": "add default workspace",
-		"description": "options page"
-	},
-	"default_workspace": {
-		"message": "default workspace",
-		"description": "options page"
-	},
-	"default_workspaces": {
-		"message": "default workspaces",
-		"description": "options page"
-	},
-	"current_window": {
-		"message": "current window",
-		"description": ""
-	},
-	"current_workspaces": {
-		"message": "current workspaces",
-		"description": ""
-	},
-	"changes_will_apply_for_new_windows": {
-		"message": "changes will apply for new windows",
-		"description": "options page -> default workspaces"
-	},
-	"apply_changes": {
-		"message": "apply changes",
-		"description": "apply changes on default workspaces button"
-	},
-	"applying_changes": {
-		"message": "applying changes",
-		"description": "options page"
-	},
-	"applied_changes": {
-		"message": "applied changes",
-		"description": "options page"
-	},
-	"clear": {
-		"message": "clear extension data",
-		"description": "clear extension data"
-	},
-	"new_workspace": {
-		"message": "new workspace",
-		"description": ""
-	},
-	"workspace": {
-		"message": "workspace",
-		"description": ""
-	},
-	"workspaces": {
-		"message": "workspaces",
-		"description": ""
-	},
-	"send_to_workspace": {
-		"message": "send to workspace",
-		"description": ""
-	},
-	"create_new_workspace": {
-		"message": "create new workspace",
-		"description": ""
-	},
-	"command._execute_browser_action": {
-		"message": "Toggle toolbar popup",
-		"description": ""
-	},
-	"command._execute_sidebar_action": {
-		"message": "Toggle sidebar",
-		"description": ""
-	},
-	"command.next-workspace": {
-		"message": "Switch to next workspace",
-		"description": ""
-	},
-	"command.previous-workspace": {
-		"message": "Switch to previous workspace",
-		"description": ""
-	},
-	"command.new-workspace": {
-		"message": "Create new workspace",
-		"description": ""
-	},
-	"shortcuts": {
-		"message": "shortcuts",
-		"description": ""
-	},
-	"you_can_edit_shortcuts_for_commands_in_the_addons_page": {
-		"message": "You can edit shortcuts for commands via the add-ons page.",
-		"description": ""
-	}
+  "options": {
+    "message": "options",
+    "description": "options page title"
+  },
+  "general": {
+    "message": "general",
+    "description": "options page"
+  },
+  "reset": {
+    "message": "reset",
+    "description": "options page"
+  },
+  "language": {
+    "message": "language",
+    "description": ""
+  },
+  "search": {
+    "message": "search tabs",
+    "description": "search field placeholder"
+  },
+  "reset_default_workspaces": {
+    "message": "reset default workspaces",
+    "description": "options page"
+  },
+  "add_default_workspace": {
+    "message": "add default workspace",
+    "description": "options page"
+  },
+  "default_workspace": {
+    "message": "default workspace",
+    "description": "options page"
+  },
+  "default_workspaces": {
+    "message": "default workspaces",
+    "description": "options page"
+  },
+  "current_window": {
+    "message": "current window",
+    "description": ""
+  },
+  "current_workspaces": {
+    "message": "current workspaces",
+    "description": ""
+  },
+  "changes_will_apply_for_new_windows": {
+    "message": "changes will apply for new windows",
+    "description": "options page -> default workspaces"
+  },
+  "apply_changes": {
+    "message": "apply changes",
+    "description": "apply changes on default workspaces button"
+  },
+  "applying_changes": {
+    "message": "applying changes",
+    "description": "options page"
+  },
+  "applied_changes": {
+    "message": "applied changes",
+    "description": "options page"
+  },
+  "clear": {
+    "message": "clear extension data",
+    "description": "clear extension data"
+  },
+  "new_workspace": {
+    "message": "new workspace",
+    "description": ""
+  },
+  "workspace": {
+    "message": "workspace",
+    "description": ""
+  },
+  "workspaces": {
+    "message": "workspaces",
+    "description": ""
+  },
+  "send_to_workspace": {
+    "message": "send to workspace",
+    "description": ""
+  },
+  "create_new_workspace": {
+    "message": "create new workspace",
+    "description": ""
+  },
+  "command._execute_browser_action": {
+    "message": "Toggle toolbar popup",
+    "description": ""
+  },
+  "command._execute_sidebar_action": {
+    "message": "Toggle sidebar",
+    "description": ""
+  },
+  "command.next-workspace": {
+    "message": "Switch to next workspace",
+    "description": ""
+  },
+  "command.previous-workspace": {
+    "message": "Switch to previous workspace",
+    "description": ""
+  },
+  "command.new-workspace": {
+    "message": "Create new workspace",
+    "description": ""
+  },
+  "shortcuts": {
+    "message": "shortcuts",
+    "description": ""
+  },
+  "you_can_edit_shortcuts_for_commands_in_the_addons_page": {
+    "message": "You can edit shortcuts for commands via the add-ons page.",
+    "description": ""
+  },
+  "There_are_no_current_worspaces_in_this_window": {
+    "message": "There are no current worspaces in this window"
+  },
+  "want_to_see_the_welcome_page_again": {
+    "message": "Want to see the Welcome Page again?"
+  },
+  "open_welcome_page": {
+    "message": "Open Welcome Page"
+  },
+  "home_workspace": {
+    "message": "Home Workspace"
+  },
+  "theme": {
+    "message": "theme"
+  },
+  "feedback_and_feature_requests_heading": {
+    "message": "Feedback and Feature Requests?"
+  }
 }

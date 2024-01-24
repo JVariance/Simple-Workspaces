@@ -72,11 +72,11 @@
 				</select>
 			</section> -->
 			{#snippet Section_Theme()}
-				<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('theme') || 'theme'}</h2>
+				<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('theme')}</h2>
 				<ThemeSwitch />
 			{/snippet}
 			{#snippet Section_HomeWorkspace()}
-				<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('home_workspace') || 'Home Workspace'}</h2>
+				<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('home_workspace')}</h2>
 				<HomeWorkspace />
 			{/snippet}
 			{#snippet Section_CurrentWorkspaces()}
@@ -99,7 +99,7 @@
 						<span class="-mt-1">{i18n.getMessage('apply_changes')}</span>
 					</button>
 					{:else}
-					There are no current worspaces in this window.
+					{i18n.getMessage('There_are_no_current_worspaces_in_this_window')}.
 				{/if}
 			{/snippet}
 			{#snippet Section_DefaultWorkspaces()}
@@ -132,11 +132,11 @@
 				</Accordion>
 			{/snippet}
 			{#snippet Section_WelcomePage()}
-				<h2 class="m-0 mb-4 text-lg flex gap-2 items-center font-semibold first-letter:uppercase">Want to see the Welcome Page again?</h2>
-				<ButtonLink class="btn" href="{Browser.runtime.getURL('src/pages/Welcome/welcome.html')}" target="_blank">Open Welcome Page</ButtonLink>
+				<h2 class="m-0 mb-4 text-lg flex gap-2 items-center font-semibold first-letter:uppercase">{i18n.getMessage('want_to_see_the_welcome_page_again')}</h2>
+				<ButtonLink class="btn" href="{Browser.runtime.getURL('src/pages/Welcome/welcome.html')}" target="_blank">{i18n.getMessage('open_welcome_page')}</ButtonLink>
 			{/snippet}
 			{#snippet Section_FurtherLinks()}
-				<h2 class="m-0 mb-4 text-lg flex gap-2 items-center font-semibold first-letter:uppercase">Feedback and Feature Requests?</h2>
+				<h2 class="m-0 mb-4 text-lg flex gap-2 items-center font-semibold first-letter:uppercase">{i18n.getMessage("feedback_and_feature_requests_heading")}</h2>
 				<ButtonLink href="https://github.com/JVariance/Simple-Workspaces" target="_blank">
 					<img src="/images/github-mark/github-mark-white.svg" alt="GitHub Logo" class="w-8 aspect-square [@media_(prefers-color-scheme:_light)]:hidden">
 					<img src="/images/github-mark/github-mark.svg" alt="GitHub Logo" class="w-8 aspect-square dark:hidden">

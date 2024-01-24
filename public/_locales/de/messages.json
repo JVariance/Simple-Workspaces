@@ -1,114 +1,132 @@
 {
-	"options": {
-		"message": "Optionen",
-		"description": "options page title"
-	},
-	"general": {
-		"message": "allgemein",
-		"description": "options page"
-	},
-	"reset": {
-		"message": "zurücksetzen",
-		"description": "options page"
-	},
-	"language": {
-		"message": "Sprache",
-		"description": ""
-	},
-	"search": {
-		"message": "Tabs suchen",
-		"description": "search field placeholder"
-	},
-	"reset_default_workspaces": {
-		"message": "Standard-Arbeitsbereiche zurücksetzen",
-		"description": "options page"
-	},
-	"add_default_workspace": {
-		"message": "Standard-Arbeitsbereich hinzufügen",
-		"description": "options page"
-	},
-	"changes_will_apply_for_new_windows": {
-		"message": "Änderungen werden für neue Fenster angewendet",
-		"description": "options page -> default workspaces"
-	},
-	"default_workspace": {
-		"message": "Standard-Arbeitsbereich",
-		"description": "options page"
-	},
-	"default_workspaces": {
-		"message": "Standard-Arbeitsbereiche",
-		"description": "options page"
-	},
-	"current window": {
-		"message": "aktuelles Fenster",
-		"description": ""
-	},
-	"current_workspaces": {
-		"message": "aktuelle Arbeitsbereiche",
-		"description": "options page"
-	},
-	"apply_changes": {
-		"message": "Änderungen übernehmen",
-		"description": "options page"
-	},
-	"applying_changes": {
-		"message": "Änderungen werden übernommen",
-		"description": "options page"
-	},
-	"applied_changes": {
-		"message": "Änderungen erfolgreich übernommen",
-		"description": "options page"
-	},
-	"clear": {
-		"message": "Erweiterungsdaten löschen",
-		"description": "options page -> clear extension data"
-	},
-	"new_workspace": {
-		"message": "Neuer Arbeitsbereich",
-		"description": ""
-	},
-	"workspace": {
-		"message": "Arbeitsbereich",
-		"description": ""
-	},
-	"workspaces": {
-		"message": "Arbeitsbereiche",
-		"description": ""
-	},
-	"send_to_workspace": {
-		"message": "an Arbeitsbereich senden",
-		"description": ""
-	},
-	"create_new_workspace": {
-		"message": "neuen Arbeitsbereich erstellen",
-		"description": ""
-	},
-	"command._execute_browser_action": {
-		"message": "Symbolleisten-Popup ein-/ausblenden",
-		"description": ""
-	},
-	"command._execute_sidebar_action": {
-		"message": "Seitenleiste ein-/ausblenden",
-		"description": ""
-	},
-	"command.next-workspace": {
-		"message": "Nächster Arbeitsbereich",
-		"description": ""
-	},
-	"command.previous-workspace": {
-		"message": "Vorheriger Arbeitsbereich",
-		"description": ""
-	},
-	"command.new-workspace": {
-		"message": "Neuer Arbeitsbereich",
-		"description": ""
-	},
-	"shortcuts": {
-		"message": "Tastaturkürzel",
-		"description": ""
-	},
-	"you_can_edit_shortcuts_for_commands_in_the_addons_page": {
-		"message": "Du kannst Tastaturkürzel für die Befehle über die Add-Ons-Seite festlegen.",
-		"description": ""
-	}
+  "options": {
+    "message": "Optionen",
+    "description": "options page title"
+  },
+  "general": {
+    "message": "allgemein",
+    "description": "options page"
+  },
+  "reset": {
+    "message": "zurücksetzen",
+    "description": "options page"
+  },
+  "language": {
+    "message": "Sprache",
+    "description": ""
+  },
+  "search": {
+    "message": "Tabs suchen",
+    "description": "search field placeholder"
+  },
+  "reset_default_workspaces": {
+    "message": "Standard-Arbeitsbereiche zurücksetzen",
+    "description": "options page"
+  },
+  "add_default_workspace": {
+    "message": "Standard-Arbeitsbereich hinzufügen",
+    "description": "options page"
+  },
+  "changes_will_apply_for_new_windows": {
+    "message": "Änderungen werden für neue Fenster angewendet",
+    "description": "options page -> default workspaces"
+  },
+  "default_workspace": {
+    "message": "Standard-Arbeitsbereich",
+    "description": "options page"
+  },
+  "default_workspaces": {
+    "message": "Standard-Arbeitsbereiche",
+    "description": "options page"
+  },
+  "current window": {
+    "message": "aktuelles Fenster",
+    "description": ""
+  },
+  "current_workspaces": {
+    "message": "aktuelle Arbeitsbereiche",
+    "description": "options page"
+  },
+  "apply_changes": {
+    "message": "Änderungen übernehmen",
+    "description": "options page"
+  },
+  "applying_changes": {
+    "message": "Änderungen werden übernommen",
+    "description": "options page"
+  },
+  "applied_changes": {
+    "message": "Änderungen erfolgreich übernommen",
+    "description": "options page"
+  },
+  "clear": {
+    "message": "Erweiterungsdaten löschen",
+    "description": "options page -> clear extension data"
+  },
+  "new_workspace": {
+    "message": "Neuer Arbeitsbereich",
+    "description": ""
+  },
+  "workspace": {
+    "message": "Arbeitsbereich",
+    "description": ""
+  },
+  "workspaces": {
+    "message": "Arbeitsbereiche",
+    "description": ""
+  },
+  "send_to_workspace": {
+    "message": "an Arbeitsbereich senden",
+    "description": ""
+  },
+  "create_new_workspace": {
+    "message": "neuen Arbeitsbereich erstellen",
+    "description": ""
+  },
+  "command._execute_browser_action": {
+    "message": "Symbolleisten-Popup ein-/ausblenden",
+    "description": ""
+  },
+  "command._execute_sidebar_action": {
+    "message": "Seitenleiste ein-/ausblenden",
+    "description": ""
+  },
+  "command.next-workspace": {
+    "message": "Nächster Arbeitsbereich",
+    "description": ""
+  },
+  "command.previous-workspace": {
+    "message": "Vorheriger Arbeitsbereich",
+    "description": ""
+  },
+  "command.new-workspace": {
+    "message": "Neuer Arbeitsbereich",
+    "description": ""
+  },
+  "shortcuts": {
+    "message": "Tastaturkürzel",
+    "description": ""
+  },
+  "you_can_edit_shortcuts_for_commands_in_the_addons_page": {
+    "message": "Du kannst Tastaturkürzel für die Befehle über die Add-Ons-Seite festlegen.",
+    "description": ""
+  },
+  "There_are_no_current_worspaces_in_this_window": {
+    "message": "Das aktuelle Fenster hat noch keine Arbeitsbereiche"
+  },
+  "want_to_see_the_welcome_page_again": {
+    "message": "Du möchtest die Willkommensseite noch einmal sehen?"
+  },
+  "open_welcome_page": {
+    "message": "Willkommensseite öffnen"
+  },
+  "home_workspace": {
+    "message": "Home Arbeitsbereich"
+  },
+  "theme": {
+    "message": "Farbthema"
+  },
+  "feedback_and_feature_requests_heading": {
+    "message": "Rückmeldung und Feature Requests"
+  }
 }
