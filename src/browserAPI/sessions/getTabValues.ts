@@ -27,7 +27,11 @@ export function getTabValues(tabs: TabValueObj[]) {
 	return sequentialGetTabValues(tabs);
 }
 
-export async function getTabValue<T = any>(tabId: number, key: string) {
+export async function getTabValue<T = any>(
+	tabId: number | undefined,
+	key: string
+) {
+	if (!tabId) return undefined;
 	return Browser.sessions
 		.getTabValue(tabId, key)
 		.then((value) => value as T)

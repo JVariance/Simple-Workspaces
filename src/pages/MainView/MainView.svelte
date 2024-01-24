@@ -5,7 +5,7 @@
 	import Workspace from "@components/Workspace.svelte";
 	import Browser, { i18n } from "webextension-polyfill";
 	import Icon from "@root/components/Icon.svelte";
-	import { debounceFunc } from "@root/utils";
+	import { debounceFunc, isNotNullAndDefined } from "@root/utils";
 	import Skeleton from "@root/components/Skeleton.svelte";
 	import { untrack, onMount, tick, unstate } from "svelte";
 	import { getWorkspacesState, getThemeState, getSystemThemeState, getForceDefaultThemeIfDarkModeState, getActiveWorkspaceIndexState } from "@pages/states.svelte";
@@ -42,7 +42,7 @@
 	let windowId: number;
 
 	$effect(() => {
-		if((activeWorkspaceIndex === undefined || activeWorkspaceIndex === null) && _workspaces.length) {
+		if(isNotNullAndDefined(activeWorkspaceIndex) && _workspaces.length) {
 			activeWorkspaceIndex = _workspaces.findIndex(({ active }) => active);
 		}
 	});
@@ -54,8 +54,7 @@
 	});
 
 	$effect(() => {
-		console.info(derivedActiveWorkspaceIndex);
-		derivedActiveWorkspaceIndex && (activeWorkspaceIndex = derivedActiveWorkspaceIndex);
+		isNotNullAndDefined(derivedActiveWorkspaceIndex) && (activeWorkspaceIndex = derivedActiveWorkspaceIndex);
 	});
 
 	async function switchWorkspace(workspace: Ext.Workspace, instant = false) {

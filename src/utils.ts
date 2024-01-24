@@ -179,3 +179,7 @@ export class DeferredPromise<T> {
 		return this.#state;
 	}
 }
+
+export function isNotNullAndDefined(value: any) {
+	return value !== null && value !== undefined;
+}

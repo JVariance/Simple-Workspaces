@@ -1,8 +1,8 @@
 import type Browser from "webextension-polyfill";
 import { WorkspaceStorage, Processes } from "../../Entities";
-import { createTab } from "@root/browserAPI";
 import * as API from "@root/browserAPI";
 import { informViews } from "../../informViews";
+import { createTab } from "@root/background/browserAPIWrapper/tabCreation";
 
 export async function tabsOnRemoved(
 	tabId: number,
@@ -22,20 +22,45 @@ export async function tabsOnRemoved(
 		Processes.TabCreation,
 		Processes.TabAttachment,
 		Processes.TabDetachment,
-		// Processes.TabRemoval,
 	]);
 
 	console.info("tab removed");
 
 	const window = WorkspaceStorage.getWindow(info.windowId);
-	// const prevActiveWorkspace = window.activeWorkspace;
 	const prevActiveWorkspace = window.workspaces.find((workspace) =>
 		workspace.tabIds.includes(tabId)
 	)!;
 
+	const newActiveTab = (
+		await API.queryTabs({
+			active: true,
+			windowId: info.windowId,
+		})
+	).tabs?.at(0);
+
+	const newActiveWorkspaceUUID = await API.getTabValue(
+		newActiveTab?.id,
+		"workspaceUUID"
+	);
+
+	const newActiveWorkspace = window.workspaces.find(
+		({ UUID }) => UUID === newActiveWorkspaceUUID
+	)!;
+
 	await window.removeTab(tabId);
 
-	if (!prevActiveWorkspace.tabIds.length) {
+	informViews(window.windowId, "removedTab", { tabId });
+	Processes.TabRemoval.finish();
+
+	console.info({
+		prevActiveWorkspace,
+		newActiveWorkspace,
+	});
+
+	if (
+		prevActiveWorkspace.UUID !== newActiveWorkspace?.UUID &&
+		!prevActiveWorkspace.tabIds.length
+	) {
 		console.info("| activeWorkspace has no tabs");
 		const newTab = (await createTab(
 			{
@@ -48,41 +73,20 @@ export async function tabsOnRemoved(
 		await API.setTabValue(
 			newTab.id!,
 			"workspaceUUID",
-			window.activeWorkspace.UUID
+			prevActiveWorkspace.UUID
 		);
 
-		const activeTab = (
-			await API.queryTabs({
-				active: true,
-				windowId: window.windowId,
-			})
-		).tabs?.at(0)!;
-		const workspaceUUID = await API.getTabValue(activeTab.id!, "workspaceUUID");
-		const targetWorkspace = window.workspaces.find(
-			({ UUID }) => UUID === workspaceUUID
-		)!;
-		await window.switchWorkspace(targetWorkspace);
+		await window.switchWorkspace(newActiveWorkspace);
 
-		if (
-			window.workspaces.findIndex(
-				(w) => w.UUID === prevActiveWorkspace.UUID
-			) === 0
-		) {
+		if (prevActiveWorkspace.UUID === "HOME" && !info.isWindowClosing) {
 			console.info("?????");
-			// if first tab closed in first workspace hide active tab from different workspace and activate new created tab
-			const activeTab = (
-				await API.queryTabs({ active: true, windowId: window.windowId })
-			).tabs?.at(0);
-
+			// if first and only tab closed in first (home) workspace, hide active tab from other workspace and activate newly created tab
 			await API.updateTab(newTab.id!, { active: true });
-			activeTab && (await API.hideTab(activeTab.id!));
+			newActiveTab && (await API.hideTab(newActiveTab.id!));
 		}
 
 		informViews(window.windowId, "updatedActiveWorkspace", {
-			UUID: window.activeWorkspace.UUID,
+			UUID: newActiveWorkspace.UUID,
 		});
 	}
-
-	informViews(window.windowId, "removedTab", { tabId });
-	Processes.TabRemoval.finish();
 }
