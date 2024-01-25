@@ -5,6 +5,7 @@
 	} from "@pages/states.svelte";
 	import { BrowserStorage } from "@root/background/Entities";
 	import { i18n } from "webextension-polyfill";
+	import Tooltip from "../Tooltip.svelte";
 
 	let theme = $derived(getThemeState());
 	let forceDefaultThemeIfDarkMode = $derived(
@@ -31,9 +32,14 @@
 </div>
 
 <div class="flex gap-2 items-center">
-	<label for="force-default-dark-theme"
-		>{i18n.getMessage("force_default_dark_theme_in_dark_mode")}</label
-	>
+	<label for="force-default-dark-theme" class="flex gap-1 flex-wrap relative">
+		{i18n.getMessage("force_default_dark_theme_in_dark_mode")}
+		<Tooltip class="[&>svg]:w-4 [&>svg]:h-4" popupClasses="absolute top-0 right-0 w-[200px]">
+			{#snippet message()}
+				{i18n.getMessage('force_default_dark_theme_in_dark_mode_tooltip')}.
+			{/snippet}
+		</Tooltip>
+	</label>
 	<input
 		type="checkbox"
 		id="force-default-dark-theme"

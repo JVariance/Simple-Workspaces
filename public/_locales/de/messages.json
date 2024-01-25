@@ -164,5 +164,11 @@
   },
   "force_default_dark_theme_in_dark_mode": {
     "message": "dunkles Standard-Thema im dunklen Modus erzwingen"
+  },
+  "search_no_matches": {
+    "message": "keine Treffer"
+  },
+  "force_default_dark_theme_in_dark_mode_tooltip": {
+    "message": "Wenn das aktuelle Firefox-Theme den dunklen Modus nicht unterstützt, können Sie das Standard-Dark-Theme der Erweiterung anwenden"
   }
 }

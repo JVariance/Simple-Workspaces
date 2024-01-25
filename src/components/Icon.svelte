@@ -31,6 +31,7 @@
 		"next-filled": "carbon:next-filled",
 		reset: "radix-icons:reset",
 		remove: "ic:round-remove-circle",
+		"sad-face-2": "fluent-emoji:sad-but-relieved-face",
 		search: "tabler:search",
 		settings: "material-symbols:settings",
 		touch: "carbon:touch-1-filled",

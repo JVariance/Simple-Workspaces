@@ -9,7 +9,7 @@
 
 <p 
 	class="
-		{type} p-2 flex flex-wrap gap-2 items-center rounded-md
+		{type} p-2 flex flex-wrap gap-2 items-center rounded-md w-fit
 		[&.info]:bg-[--info-box-bg-info] [&.info]:text-[--info-box-color-info]
 		[&.success]:bg-[--info-box-bg-success] [&.success]:text-[--info-box-color-success]
 		[&.error]:bg-[--info-box-bg-error] [&.error]:text-[--info-box-color-error]

@@ -1,4 +1,3 @@
-
 <script lang="ts">
 	import { dndzone } from "svelte-dnd-action";
 	import { Key } from "ts-key-enum";
@@ -19,6 +18,7 @@
 
 	let reordering = $state(false);
 	let searchInput: HTMLInputElement = $state();
+	let searchValue = $state("");
 	let activeWorkspaceIndex = $state();
 	let derivedActiveWorkspaceIndex  = $derived(getActiveWorkspaceIndexState());
 	let selectedIndex = $state(0);
@@ -403,6 +403,7 @@
 				class="w-full bg-transparent p-1 !outline-none !outline-0"
 				data-focusid={-1}
 				bind:this={searchInput}
+				bind:value={searchValue}
 				oninput={debouncedSearch}
 				onkeydown={searchKeydown}
 				onfocus={() => selectedIndex = -1}
@@ -442,11 +443,19 @@
 		{/if}
 	{/snippet}
 
-	<ul class="w-full @container grid mt-[--header-height]">
+	<ul class="w-full @container grid mt-[calc(var(--header-height)_-_0.5rem)]">
 		{#if !homeWorkspace && !workspaces.length}
-			{#each [,,,] as _}
-				<Skeleton class="w-full h-16 rounded-md"/>
-			{/each}
+			<div class="grid gap-4">
+				{#each [,,,] as _}
+					<Skeleton class="w-full h-14 rounded-md"/>
+				{/each}
+			</div>
+		{/if}
+		{#if searchValue.length && searchUnmatchingWorkspaceUUIDS.length === _workspaces.length}
+			<p class="px-5 py-2 flex items-center gap-4">
+				<Icon icon="sad-face-2" width={24} />
+				{i18n.getMessage('search_no_matches')}
+			</p>
 		{/if}
 		<li class="">
 			{#if !searchUnmatchingWorkspaceUUIDS.includes('HOME')}

@@ -164,5 +164,11 @@
   },
   "force_default_dark_theme_in_dark_mode": {
     "message": "force default dark theme in dark mode"
+  },
+  "search_no_matches": {
+    "message": "no matches"
+  },
+  "force_default_dark_theme_in_dark_mode_tooltip": {
+    "message": "If the current Firefox theme does not support dark mode, you can apply the extension's default dark theme"
   }
 }

@@ -9,9 +9,9 @@
 
 <div
 	class="
-		skeleton inline-block relative overflow-hidden h-[1em]
-		bg-neutral-300 dark:bg-neutral-800
-		[--shimmer-color:_255,255,255] dark:[--shimmer-color:_64,64,64]
+		skeleton inline-block relative overflow-hidden min-h-[1em]
+		bg-[color-mix(in_srgb,black_10%,transparent)] dark:bg-[color-mix(in_srgb,black_20%,transparent)]
+		[--shimmer-color:var(--body-bg,_rgb(255,255,255))] dark:[--shimmer-color:var(--body-bg,_rgb(64,64,64))]
 		{classes}
 	"
 />
@@ -23,10 +23,10 @@
 			@apply absolute inset-0 -translate-x-full;
 			background-image: linear-gradient(
 				90deg,
-				rgba(var(--shimmer-color), 0) 0,
-				rgba(var(--shimmer-color), 0.2) 20%,
-				rgba(var(--shimmer-color), 0.5) 60%,
-				rgba(var(--shimmer-color), 0)
+				color-mix(in srgb, var(--shimmer-color) 0%, transparent) 0,
+				color-mix(in srgb, var(--shimmer-color) 20%, transparent) 20%,
+				color-mix(in srgb, var(--shimmer-color) 50%, transparent) 60%,
+				color-mix(in srgb, var(--shimmer-color) 0%, transparent)
 			);
 			animation: shimmer 3s infinite;
 		}

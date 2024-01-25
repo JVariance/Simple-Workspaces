@@ -165,10 +165,10 @@
 			{#snippet summary()}
 				<span>{i18n.getMessage('force_apply') || "force apply"}</span>
 			{/snippet}
-			<button class="btn primary-btn justify-center mt-4" style:width="-moz-available" onclick={forceApplyOnCurrentWindow}>
+			<button class="btn primary-btn justify-center mt-4 !w-auto" style:width="-moz-available" onclick={forceApplyOnCurrentWindow}>
 				{i18n.getMessage("force_apply_on_current_window") || "force apply on current window"}
 			</button>
-			<button class="btn primary-btn justify-center mt-4" style:width="-moz-available" onclick={forceApplyOnAllWindows}>
+			<button class="btn primary-btn justify-center mt-4 !w-auto" style:width="-moz-available" onclick={forceApplyOnAllWindows}>
 				{i18n.getMessage("force_apply_on_all_open_windows") || "force apply on all open windows"}
 			</button>
 		</Accordion>
@@ -176,7 +176,7 @@
 			{#snippet summary()}
 				<span class="-mt-[0.125rem]">{i18n.getMessage('reset')}</span>
 			{/snippet}
-			<button class="btn primary-btn justify-center mt-4" style:width="-moz-available" onclick={(e) => {defaultWorkspaces = [];}}><Icon icon="reset"/><span class="-mt-0">{i18n.getMessage('reset_default_workspaces')}</span></button>
+			<button class="btn primary-btn justify-center mt-4 !w-auto" style:width="-moz-available" onclick={(e) => {defaultWorkspaces = [];}}><Icon icon="reset"/><span class="-mt-0">{i18n.getMessage('reset_default_workspaces')}</span></button>
 		</Accordion>
 	</div>
 </div>

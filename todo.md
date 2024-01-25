@@ -1,14 +1,11 @@
 **Today**
 ### Styles
-[] force apply buttons max-width
-[] MainView Loading Placeholder gap
 ### Content
 [] Welcome: set about:config usercontext
-[] tooltip for 'force default dark theme in dark mode'
+[] search: show found tabs
 ### Translations
 ### Logic
 [] shortcut focusing sidebar
-[] search improvements
 [] better emoji picker focus handling
 [] highlight workspace which received new tabs (after send action)
 
