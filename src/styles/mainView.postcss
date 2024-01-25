@@ -3,13 +3,16 @@
 :root {
 	color-scheme: light dark;
 	--outline-color: light-dark(#5021ff, #5021ff);
+
 	--body-bg: light-dark(#fff, #252835);
 	--body-color: light-dark(#000, #fff);
+
 	--button-bg: light-dark(#fff, #030615);
 	--button-bg-hover: light-dark(#d8e2eb, #3e4852);
 	--button-bg-focus: light-dark(#b2cce3, #4d647a);
 	--button-border-color: light-dark(#d8e2eb, #3e4852);
 	--button-color: light-dark(#000, #fff);
+
 	--search-bg: light-dark(#e6eef5, #030615);
 	--search-bg-hover: light-dark(
 		color-mix(in hsl, var(--search-bg) 95%, black),
@@ -21,7 +24,20 @@
 	);
 	--search-color: light-dark(#000, #fff);
 	--search-border-color: light-dark(transparent, transparent);
+
 	--icon-fill: light-dark(#000, #fff);
+
+	--info-box-bg-info: light-dark(#93c5fd, #93c5fd);
+	--info-box-color-info: light-dark(#1e3a8a, #1e3a8a);
+	--info-box-bg-success: light-dark(#86efac, #86efac);
+	--info-box-color-success: light-dark(#052e16, #052e16);
+	--info-box-bg-error: light-dark(#fca5a5, #fca5a5);
+	--info-box-color-error: light-dark(#450a0a, #450a0a);
+	--info-box-bg-warning: light-dark(#fde047, #fde047);
+	--info-box-color-warning: light-dark(#713f12, #713f12);
+	--info-box-bg-neutral: light-dark(#d4d4d4, #d4d4d4);
+	--info-box-color-neutral: light-dark(#0a0a0a, #0a0a0a);
+
 	--workspace-bg: light-dark(transparent, transparent);
 	--workspace-color: light-dark(#000, #fff);
 	--workspace-bg-hover: light-dark(#ebf5fb, #3f5265);
@@ -46,12 +62,6 @@ html[theme="browser"] {
 	--workspace-bg-focus: color-mix(in hsl, var(--workspace-bg) 80%, black);
 	--search-bg: color-mix(in hsl, black 50%, transparent);
 }
-
-/* @media (prefers-color-scheme: dark) {
-	html {
-		color-scheme: dark;
-	}
-} */
 
 body {
 	@apply bg-[--body-bg] text-[--body-text] min-h-[24rem] p-0 m-0 @container w-[100dvw] h-[100dvh] overflow-hidden;

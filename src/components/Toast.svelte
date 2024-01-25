@@ -71,7 +71,7 @@
 		}
 
 		&.loading {
-			@apply text-neutral-950 bg-neutral-300;
+			@apply bg-[--toast-bg-neutral] text-[--toast-color-neutral];
 
 			.checkmark {
 				@apply hidden;
@@ -79,7 +79,7 @@
 		}
 
 		&.success {
-			@apply text-green-950 bg-green-300;
+			@apply bg-[--toast-bg-success] text-[--toast-color-success];
 
 			.loading-spinner {
 				@apply hidden;
@@ -87,7 +87,7 @@
 		}
 
 		&.error {
-			@apply text-red-950 bg-red-300;
+			@apply bg-[--toast-bg-error] text-[--toast-color-error];
 		}
 
 		span {

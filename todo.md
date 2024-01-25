@@ -1,11 +1,23 @@
 **Today**
-[] Alt+T: create new tab in tab-island/container if active tab is in one
-[] userChrome: style library windows (bookmarks etc.)
-[] check: move informViews to effect in Window.svelte.ts?
-[] fix popup overflow
+### Styles
+[] focus search bar on popup opening
+[] force apply buttons max-width
+[] MainView Loading Placeholder gap
+[] welome page - shortcuts: Info Component overflows
+### Content
+[] Info Component: @html-tag nutzen
+[] Welcome: set about:config usercontext
+[] tooltip for 'force default dark theme in dark mode'
+### Translations
+[x] ~~'use browser theme', 'force default dark theme in dark mode'~~
+### Logic
+[] shortcut focusing sidebar
 [] search improvements
-[] emoji picker improvements
-[x] fix: tab detachment
+[] better emoji picker focus handling
+[] highlight workspace which received new tabs (after send action)
+
+---
+[] create action-state diagram (e.g. state = 'one window, one tab' & action = 'close tab')
 
 
 # Scenarios
