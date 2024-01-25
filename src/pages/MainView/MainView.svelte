@@ -21,7 +21,6 @@
 	let searchValue = $state("");
 	let activeWorkspaceIndex = $state();
 	let derivedActiveWorkspaceIndex  = $derived(getActiveWorkspaceIndexState());
-	let selectedIndex = $state(0);
 	let homeWorkspace: Ext.Workspace = $state();
 	let _workspaces: Ext.Workspace[] = $derived(getWorkspacesState());
 	let workspaces: Ext.Workspace[] = $state([]);
@@ -152,17 +151,9 @@
 		});
 	}
 
-	function focusButton() {
-		(
-			document.querySelector(
-				`[data-focusid='${selectedIndex}']`
-			)! as HTMLButtonElement
-		)?.focus();
-	}
-
-	$effect(() => {
-		focusButton();
-	});
+	// $effect(() => {
+	// 	focusButton();
+	// });
 
 	function searchKeydown(e: KeyboardEvent) {
 		const { key } = e;
@@ -183,13 +174,11 @@
 		switch (key) {
 			case Key.ArrowDown:
 				e.preventDefault();
-				const newIndex = Math.min(viewWorkspaces.length + 1, selectedIndex + 1);
-				selectedIndex = newIndex === 0 && searchUnmatchingWorkspaceUUIDS.includes('HOME') ? newIndex + 1 : newIndex;
+				focusNextElement();
 				break;
-			case Key.ArrowUp:
-				e.preventDefault();
-				const newIndex2 = Math.max(-1, selectedIndex - 1);
-				selectedIndex = newIndex2 === 0 && searchUnmatchingWorkspaceUUIDS.includes('HOME')? newIndex2 - 1 : newIndex2;
+				case Key.ArrowUp:
+					e.preventDefault();
+					focusPreviousElement();
 				break;
 			case Key.Enter:
 				break;
@@ -322,7 +311,6 @@
 	$inspect({ _workspaces });
 	$inspect({ reordering });
 	$inspect({ searchUnmatchingWorkspaceUUIDS });
-	$inspect({ selectedIndex });
 
 	Browser.commands.onCommand.addListener(async (command) => {
 		const activeWindowId = (await Browser.windows.getLastFocused()).id!;
@@ -341,11 +329,33 @@
 		}
 	});
 
+	function getAllFocusableElements() {
+		return document.querySelectorAll('[data-focusable]');
+	}
+
+	function focusNextElement() {
+		const [elements, currentActiveElement] = [getAllFocusableElements(), document.activeElement];
+		const elementIndex = [].indexOf.call(elements, currentActiveElement);
+		const newIndex = Math.min(elements.length - 1, elementIndex + 1);
+		console.info({ elements, elementIndex, newIndex, el: elements[newIndex] });
+		elements[newIndex].focus();
+		activeWorkspaceIndex = currentActiveElement.dataset?.workspaceIndex || activeWorkspaceIndex;
+	}
+	
+	function focusPreviousElement() {
+		const [elements, currentActiveElement] = [getAllFocusableElements(), document.activeElement];
+		const elementIndex = [].indexOf.call(elements, currentActiveElement);
+		const newIndex = Math.max(0, elementIndex - 1);
+		console.info({ elements, elementIndex, newIndex, el: elements[newIndex] });
+		elements[newIndex].focus();
+		activeWorkspaceIndex = currentActiveElement.dataset?.workspaceIndex || activeWorkspaceIndex;
+	}
+
 	onMount(async () => {
 		windowId = (await Browser.windows.getCurrent()).id!;
 		await tick();
 		if(document.documentElement.dataset.page === 'popup') {
-			selectedIndex = -1;
+			searchInput.focus();
 		};
 	});
 </script>
@@ -401,12 +411,11 @@
 				id="search"
 				type="search"
 				class="w-full bg-transparent p-1 !outline-none !outline-0"
-				data-focusid={-1}
+				data-focusable
 				bind:this={searchInput}
 				bind:value={searchValue}
 				oninput={debouncedSearch}
 				onkeydown={searchKeydown}
-				onfocus={() => selectedIndex = -1}
 				placeholder="{i18n.getMessage('search')}..."
 			/>
 		</search>
@@ -427,7 +436,6 @@
 			<Workspace
 				{workspace}
 				active={reordering ? workspace.active : activeWorkspaceIndex === i}
-				selected={i === selectedIndex}
 				index={i}
 				editWorkspace={({ icon, name }: {icon: string; name: string;}) => {
 					editWorkspace({ workspace, icon, name });
@@ -489,8 +497,7 @@
 		id="add-workspace"
 		onclick={addWorkspaceByPointer}
 		onkeydown={addWorkspaceByKey}
-		data-focusid={viewWorkspaces.length + 1}
-		class:selected={selectedIndex === viewWorkspaces.length + 1}
+		data-focusable
 		class="ghost
 				!p-4 items-center flex gap-4 rounded-md text-left mt-4 w-full outline-none border
 			"

@@ -8,7 +8,6 @@
 		workspace: Ext.Workspace;
 		index: number;
 		active?: boolean;
-		selected?: boolean;
 		class?: string;
 		switchWorkspace: Function;
 		editWorkspace: Function;
@@ -19,7 +18,6 @@
 		workspace,
 		index,
 		active,
-		selected = false,
 		class: classes = "",
 		switchWorkspace,
 		editWorkspace,
@@ -105,20 +103,20 @@
 		picker.$set({ visible: true });
 	}
 
-	$effect(() => {
-		// console.log("workspace update");
-		const activeElement = document.activeElement;
-		if (
-			selected &&
-			activeElement?.tagName !== "search" &&
-			!activeElement?.closest("search")
-		) {
-			(async () => {
-				await tick();
-				workspaceButton?.focus();
-			})();
-		}
-	});
+	// $effect(() => {
+	// 	// console.log("workspace update");
+	// 	const activeElement = document.activeElement;
+	// 	if (
+	// 		selected &&
+	// 		activeElement?.tagName !== "search" &&
+	// 		!activeElement?.closest("search")
+	// 	) {
+	// 		(async () => {
+	// 			await tick();
+	// 			workspaceButton?.focus();
+	// 		})();
+	// 	}
+	// });
 </script>
 
 <dialog
@@ -146,7 +144,6 @@
 	-->
 	<div
 		class:active
-		class:selected
 		class="
 			workspace flex gap-2 @[360px]:gap-8 justify-center @[244px]:justify-start items-center p-4 rounded-md {classes} group
 			bg-[--workspace-bg] text-[--workspace-color] focus-within:bg-[--workspace-bg-focus] hover:bg-[--workspace-bg-hover]
@@ -210,7 +207,7 @@
 				class="reset w-full outline-transparent outline-none flex items-center gap-4 {active
 					? '!cursor-default'
 					: ''}"
-				data-focusid={index}
+				data-focusable
 				bind:this={workspaceButton}
 			>
 				<span
