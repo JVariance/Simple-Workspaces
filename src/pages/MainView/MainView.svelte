@@ -29,14 +29,9 @@
 	let systemTheme = $derived(getSystemThemeState());
 	let forceDefaultThemeIfDarkMode = $derived(getForceDefaultThemeIfDarkModeState());
 	let activeWorkspace: Ext.Workspace = $derived(homeWorkspace?.active ? homeWorkspace : workspaces?.find(({active}) => active));
-	let searchFilteredWorkspaceUUIDS: string[] = $state([]);
+	let searchUnmatchingWorkspaceUUIDS: string[] = $state([]);
 	let viewWorkspaces: Ext.Workspace[] = $derived((() => {
-		const filteredWorkspaces = searchFilteredWorkspaceUUIDS.reduce((_workspaces, uuid) => {
-			const workspace = workspaces.find(({ UUID }) => UUID === uuid);
-			if(workspace) _workspaces.push(workspace);
-			return _workspaces;
-		}, []);
-
+		const filteredWorkspaces = workspaces.filter(({ UUID }) => !searchUnmatchingWorkspaceUUIDS.includes(UUID));
 		return filteredWorkspaces.length ? filteredWorkspaces : searchInput?.value.length ? [] : workspaces;
 	})());
 
@@ -188,11 +183,13 @@
 		switch (key) {
 			case Key.ArrowDown:
 				e.preventDefault();
-				selectedIndex = Math.min(viewWorkspaces.length + 1, selectedIndex + 1);
+				const newIndex = Math.min(viewWorkspaces.length + 1, selectedIndex + 1);
+				selectedIndex = newIndex === 0 && searchUnmatchingWorkspaceUUIDS.includes('HOME') ? newIndex + 1 : newIndex;
 				break;
 			case Key.ArrowUp:
 				e.preventDefault();
-				selectedIndex = Math.max(-1, selectedIndex - 1);
+				const newIndex2 = Math.max(-1, selectedIndex - 1);
+				selectedIndex = newIndex2 === 0 && searchUnmatchingWorkspaceUUIDS.includes('HOME')? newIndex2 - 1 : newIndex2;
 				break;
 			case Key.Enter:
 				break;
@@ -204,7 +201,7 @@
 	async function search(e: InputEvent & { target: HTMLInputElement }) {
 		const { value } = e.target;
 		if (!value) {
-			searchFilteredWorkspaceUUIDS = [];
+			searchUnmatchingWorkspaceUUIDS = [];
 			return;
 		};
 
@@ -214,11 +211,11 @@
 			);
 			const matchingTabIds = matchingTabs.map(({ id }) => id!);
 
-			searchFilteredWorkspaceUUIDS = workspaces.reduce((acc, workspace) => {
+			searchUnmatchingWorkspaceUUIDS = _workspaces.reduce((acc, workspace) => {
 				const workspaceHasSomeMatchingTab = workspace.tabIds.some((tabId) =>
 					matchingTabIds.includes(tabId)
 				);
-				if (workspaceHasSomeMatchingTab) acc.push(workspace.UUID);
+				if (!workspaceHasSomeMatchingTab) acc.push(workspace.UUID);
 				return acc;
 			}, [] as string[]);
 	}
@@ -324,7 +321,9 @@
 	$inspect({ activeWorkspaceIndex });
 	$inspect({ _workspaces });
 	$inspect({ reordering });
-	
+	$inspect({ searchUnmatchingWorkspaceUUIDS });
+	$inspect({ selectedIndex });
+
 	Browser.commands.onCommand.addListener(async (command) => {
 		const activeWindowId = (await Browser.windows.getLastFocused()).id!;
 		if(activeWindowId !== windowId) return;
@@ -344,6 +343,10 @@
 
 	onMount(async () => {
 		windowId = (await Browser.windows.getCurrent()).id!;
+		await tick();
+		if(document.documentElement.dataset.page === 'popup') {
+			selectedIndex = -1;
+		};
 	});
 </script>
 
@@ -402,6 +405,7 @@
 				bind:this={searchInput}
 				oninput={debouncedSearch}
 				onkeydown={searchKeydown}
+				onfocus={() => selectedIndex = -1}
 				placeholder="{i18n.getMessage('search')}..."
 			/>
 		</search>
@@ -445,7 +449,9 @@
 			{/each}
 		{/if}
 		<li class="">
-			{@render SWorkspace([homeWorkspace, 0])}
+			{#if !searchUnmatchingWorkspaceUUIDS.includes('HOME')}
+				{@render SWorkspace([homeWorkspace, 0])}
+			{/if}
 		</li>
 		<div
 			class="w-full grid gap-4 @container mt-4 empty:mt-0"

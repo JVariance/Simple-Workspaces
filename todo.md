@@ -1,15 +1,11 @@
 **Today**
 ### Styles
-[] focus search bar on popup opening
 [] force apply buttons max-width
 [] MainView Loading Placeholder gap
-[] welome page - shortcuts: Info Component overflows
 ### Content
-[] Info Component: @html-tag nutzen
 [] Welcome: set about:config usercontext
 [] tooltip for 'force default dark theme in dark mode'
 ### Translations
-[x] ~~'use browser theme', 'force default dark theme in dark mode'~~
 ### Logic
 [] shortcut focusing sidebar
 [] search improvements

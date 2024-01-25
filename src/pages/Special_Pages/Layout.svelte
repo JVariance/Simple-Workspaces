@@ -1,4 +1,7 @@
 <script lang="ts">
+
+	import "@root/styles/specialPages.postcss";
+
 	let { children } = $props();
 </script>
 

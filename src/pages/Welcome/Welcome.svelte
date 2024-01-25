@@ -1,5 +1,4 @@
 <script lang="ts">
-	import "@root/styles/specialPages.postcss";
 	import Icon from "@root/components/Icon.svelte";
 	import DefaultWorkspaces from "@root/components/ViewBlocks/DefaultWorkspaces.svelte";
 	import { onMount, type Snippet } from "svelte";
@@ -130,7 +129,7 @@
 {#snippet ViewSection([id, content]: [number, Snippet])}
 	<section
 		id="view-{id}" 
-		class="swipe-item h-full shadow-lg ring-1 dark:ring-0 shadow-purple-200 dark:shadow-black bg-purple-50 text-blue-950 dark:bg-[#23222b] dark:text-white rounded-xl w-[100cqw] p-8 aspect-square overflow-auto relative [scrollbar-width:none]"
+		class="swipe-item h-full shadow-lg ring-1 dark:ring-0 shadow-purple-200 dark:shadow-black bg-purple-50 text-blue-950 dark:bg-[#23222b] dark:text-white rounded-xl w-[100cqw] p-8 @xl:aspect-square overflow-auto relative [scrollbar-width:none]"
 	>
 		{@render content()}
 	</section>
@@ -196,7 +195,7 @@
 			<span class="first-letter:uppercase">{i18n.getMessage('shortcuts')}</span>
 		</h2>
 		<Info class="w-full">
-			{i18n.getMessage('you_can_edit_shortcuts_for_commands_in_the_addons_page')}
+			{@html i18n.getMessage('you_can_edit_shortcuts_for_commands_in_the_addons_page')}
 		</Info>
 		<Shortcuts />
 	{/snippet}

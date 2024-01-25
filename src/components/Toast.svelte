@@ -37,7 +37,15 @@
 {#if visible}
 	<div
 		id="toast"
-		class="{classes} {_state}"
+		class="
+			{_state}
+			[&.info]:bg-[--toast-bg-info] [&.info]:text-[--toast-color-info]
+			[&.success]:bg-[--toast-bg-success] [&.success]:text-[--toast-color-success]
+			[&.error]:bg-[--toast-bg-error] [&.error]:text-[--toast-color-error]
+			[&.warning]:bg-[--toast-bg-warning] [&.warning]:text-[--toast-color-warning]
+			[&.rest]:bg-[--toast-bg-neutral] [&.neutral]:text-[--toast-color-neutral]
+			{classes}
+		"
 		in:fly={{ x: -200, duration: 500 }}
 		out:fly={{ x: -200, duration: 500 }}
 	>
