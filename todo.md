@@ -1,11 +1,9 @@
 **Today**
 ### Styles
 ### Content
-[] Welcome: set about:config usercontext
 [] search: show found tabs
 ### Translations
 ### Logic
-[] shortcut focusing sidebar
 [] better emoji picker focus handling
 [] highlight workspace which received new tabs (after send action)
 

@@ -168,6 +168,42 @@
 			{i18n.getMessage('copy_link_and_open_new tab')}
 		</button>
 
+		<div class="mt-8">
+			<p>
+				{@html i18n.getMessage('welcome_container_feature_proposal')}.
+			</p>
+			<ul class="flex flex-wrap gap-2 mt-2">
+				{#each ['privacy.userContext.enabled', 'privacy.userContext.ui.enabled'] as entry, i}
+					<li>
+						<button 
+							class="
+								px-2 py-1 bg-indigo-400 hover:bg-indigo-500 text-indigo-950 rounded-full w-fit flex gap-2 cursor-pointer items-center
+								group overflow-clip
+							" 
+							onclick={(e) => {
+								navigator.clipboard.writeText(entry);
+								e.currentTarget.querySelector('.copy-icon').dataset.animation = 'flyOut';
+								e.currentTarget.querySelector('.success-icon').dataset.animation = 'flyIn';
+								console.info(e.currentTarget);
+								setTimeout((currentTarget) => {
+									console.info(e.currentTarget);
+									currentTarget.querySelector('.copy-icon').dataset.animation = 'flyIn';
+									currentTarget.querySelector('.success-icon').dataset.animation = 'flyOut';
+								}, 1000, e.currentTarget);
+							}}
+						>
+							<div class="grid">
+								<!-- <span class="select-none w-6 aspect-square rounded-full font-bold bg-indigo-600 flex items-center justify-center">{i + 1}</span> -->
+								<span class="animated-icon copy-icon" data-animation=""><Icon icon="copy" width={20}/></span>
+								<span class="animated-icon success-icon translate-y-[120%]" data-animation=""><Icon icon="check" width={20}/></span>
+							</div>
+							<span class="-mt-[0.1rem]">{entry}</span>
+						</button>
+					</li>
+				{/each}
+			</ul>
+		</div>
+
 		<div class="touch-icon absolute bottom-4 left-1/2 -translate-x-1/2 opacity-50">
 			<Icon icon="touch" width={42} />
 		</div>
@@ -307,5 +343,20 @@
 
 	.touch-icon {
 		animation: rotate 6s infinite;
+	}
+
+	.animated-icon {
+		grid-column: 1;
+		grid-row: 1;
+		animation-duration: 0.5s;
+		animation-fill-mode: both;
+	}
+
+	:global([data-animation=flyIn]) {
+		animation-name: flyIn;
+	}
+
+	:global([data-animation=flyOut]) {
+		animation-name: flyOut;
 	}
 </style>

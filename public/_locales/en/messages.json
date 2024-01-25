@@ -170,5 +170,8 @@
   },
   "force_default_dark_theme_in_dark_mode_tooltip": {
     "message": "If the current Firefox theme does not support dark mode, you can apply the extension's default dark theme"
+  },
+  "welcome_container_feature_proposal": {
+    "message": "If you like to, enable Firefox' container feature by enabling the following options in about:config"
   }
 }

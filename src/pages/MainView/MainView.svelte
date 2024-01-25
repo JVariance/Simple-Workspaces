@@ -187,17 +187,24 @@
 		}
 	}
 
+	// const matchingTabsPerWorkspace = $state({});
+	let matchingTabs = $state([]);
+	// let matchingTabIds = $state([]);
+
 	async function search(e: InputEvent & { target: HTMLInputElement }) {
 		const { value } = e.target;
+		matchingTabs = [];
+		// matchingTabIds = [];
 		if (!value) {
 			searchUnmatchingWorkspaceUUIDS = [];
 			return;
 		};
 
 			const tabs = await Browser.tabs.query({ windowId });
-			const matchingTabs = tabs.filter((tab) =>
+			matchingTabs = tabs.filter((tab) =>
 				tab.url?.toLocaleLowerCase()?.includes(value.toLocaleLowerCase())
 			);
+
 			const matchingTabIds = matchingTabs.map(({ id }) => id!);
 
 			searchUnmatchingWorkspaceUUIDS = _workspaces.reduce((acc, workspace) => {
@@ -448,6 +455,20 @@
 					removeWorkspace(workspace);
 				}}
 			/>
+			{#if searchValue.length && matchingTabs.length}
+				<div class="flex gap-2 overflow-auto [scrollbar-width:_thin] w-[100cqw] mt-1">
+					{#each matchingTabs.filter(({ id }) => workspace.tabIds.includes(id)) as tab}
+						<button class="btn ghost h-max flex gap-2 items-center" data-focusable>
+							{#if tab.favIconUrl}
+								<img src={tab.favIconUrl} alt="{tab.title} favicon"/>
+							{/if}
+							<span class="max-w-[30ch] overflow-hidden text-ellipsis whitespace-nowrap">
+								{tab.title}
+							</span>
+						</button>
+					{/each}
+				</div>
+			{/if}
 		{/if}
 	{/snippet}
 

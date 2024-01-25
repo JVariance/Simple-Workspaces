@@ -31,7 +31,7 @@
 		},
 		"_execute_sidebar_action": {
 			"suggested_key": {
-				"default": "Ctrl+Alt+S"
+				"default": "Ctrl+Alt+E"
 			},
 			"description": "Toggles the sidebar."
 		},
