@@ -180,6 +180,10 @@ export class DeferredPromise<T> {
 	}
 }
 
-export function isNullish(value: any) {
+export function isNullish(value: any): value is null | undefined {
 	return value == null;
+}
+
+export function areNullish(...values: any[]): boolean {
+	return values.every((value) => value == null);
 }

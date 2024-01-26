@@ -16,6 +16,7 @@ class Processes {
 	extensionInitialized = false;
 	manualTabAddition = false;
 	manualTabRemoval = false;
+	searchWasUsed = false;
 
 	private constructor() {
 		// this.ExtensionInitialization.finish();

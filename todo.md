@@ -8,6 +8,10 @@
 [] highlight workspace which received new tabs (after send action)
 
 ---
+[] getWorkspaces -> if extension isn't initialized, try again periodically a limited number of times before returning undefined(*1)
+
+(*1) I experienced, that the extension didn't successfully initialized on browser restart/startup
+---
 [] create action-state diagram (e.g. state = 'one window, one tab' & action = 'close tab')
 
 

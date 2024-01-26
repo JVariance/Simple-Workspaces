@@ -18,6 +18,7 @@ import {
 import { themeOnUpdated } from "./browserEvents/theme/themeOnUpdated";
 import { WorkspaceStorage } from "./Entities";
 import { informViews } from "./informViews";
+import { tabsOnActivated } from "./browserEvents/tabs/tabsActivated";
 /* Event Order:
 Creation:
 1. browser.tabs.onCreated
@@ -44,6 +45,7 @@ browser.tabs.onCreated.addListener(tabsOnCreated);
 browser.tabs.onRemoved.addListener(tabsOnRemoved);
 browser.tabs.onAttached.addListener(tabsOnAttached);
 browser.tabs.onDetached.addListener(tabsOnDetached);
+browser.tabs.onActivated.addListener(tabsOnActivated);
 
 browser.storage.local.onChanged.addListener(storageOnChanged);
 

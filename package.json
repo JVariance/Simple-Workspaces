@@ -28,6 +28,7 @@
 	"dependencies": {
 		"@tailwindcss/container-queries": "^0.1.1",
 		"emoji-picker-element": "^1.21.0",
+		"fuse.js": "^7.0.0",
 		"ts-key-enum": "^2.0.12"
 	}
 }

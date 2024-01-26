@@ -10,6 +10,7 @@
 	import { untrack, onMount, tick, unstate } from "svelte";
 	import { getWorkspacesState, getThemeState, getSystemThemeState, getForceDefaultThemeIfDarkModeState, getActiveWorkspaceIndexState } from "@pages/states.svelte";
 	import { slide } from "svelte/transition";
+	import Fuse from "fuse.js";
 
 	import { overrideItemIdKeyNameBeforeInitialisingDndZones } from "svelte-dnd-action";
 	overrideItemIdKeyNameBeforeInitialisingDndZones("UUID");
@@ -191,6 +192,12 @@
 	let matchingTabs = $state([]);
 	// let matchingTabIds = $state([]);
 
+	const fuse = new Fuse([], {
+		keys: ['url', 'title'], 
+		threshold: 0.4, 
+		useExtendedSearch: true
+	});
+
 	async function search(e: InputEvent & { target: HTMLInputElement }) {
 		const { value } = e.target;
 		matchingTabs = [];
@@ -201,9 +208,17 @@
 		};
 
 			const tabs = await Browser.tabs.query({ windowId });
-			matchingTabs = tabs.filter((tab) =>
-				tab.url?.toLocaleLowerCase()?.includes(value.toLocaleLowerCase())
-			);
+
+			fuse.setCollection(tabs);
+			const fuseResults = fuse.search(value.normalize().toLocaleLowerCase());
+
+			matchingTabs = fuseResults.map(({ item }) => item);
+
+			// console.info({ fuseResults });
+
+			// matchingTabs = tabs.filter((tab) =>
+			// 	tab.url?.toLocaleLowerCase()?.includes(value.toLocaleLowerCase())
+			// );
 
 			const matchingTabIds = matchingTabs.map(({ id }) => id!);
 
@@ -358,6 +373,10 @@
 		activeWorkspaceIndex = currentActiveElement.dataset?.workspaceIndex || activeWorkspaceIndex;
 	}
 
+	function switchWorkspaceAndFocusTab(workspaceUUID: string, tabId: number) {
+		Browser.runtime.sendMessage({msg: 'switchWorkspaceAndFocusTab', workspaceUUID, tabId });
+	}
+
 	onMount(async () => {
 		windowId = (await Browser.windows.getCurrent()).id!;
 		await tick();
@@ -440,27 +459,37 @@
 
 	{#snippet SWorkspace([workspace, i])}
 		{#if workspace}
-			<Workspace
-				{workspace}
-				active={reordering ? workspace.active : activeWorkspaceIndex === i}
-				index={i}
-				editWorkspace={({ icon, name }: {icon: string; name: string;}) => {
-					editWorkspace({ workspace, icon, name });
-				}}
-				switchWorkspace={() => {
-					switchWorkspace(workspace, true);
-					activeWorkspaceIndex = i;
-				}}
-				removeWorkspace={() => {
-					removeWorkspace(workspace);
-				}}
-			/>
+			{#if !searchValue.length}
+				<Workspace
+					{workspace}
+					active={reordering ? workspace.active : activeWorkspaceIndex === i}
+					index={i}
+					editWorkspace={({ icon, name }: {icon: string; name: string;}) => {
+						editWorkspace({ workspace, icon, name });
+					}}
+					switchWorkspace={() => {
+						switchWorkspace(workspace, true);
+						activeWorkspaceIndex = i;
+					}}
+					removeWorkspace={() => {
+						removeWorkspace(workspace);
+					}}
+				/>
+			{/if}
 			{#if searchValue.length && matchingTabs.length}
-				<div class="flex gap-2 overflow-auto [scrollbar-width:_thin] w-[100cqw] mt-1">
+				<div class="flex gap-2 border-b border-[color-mix(in_srgb,light-dark(black,white)_50%,var(--body-bg))] pb-2">
+					<span>{workspace.icon}</span>
+					<span>{workspace.name}</span>
+				</div>
+				<div class="grid grid-rows-[repeat(3,_auto)] grid-flow-col gap-2 overflow-auto [scrollbar-width:_thin] [scrollbar-color:transparent_transparent] hover:[scrollbar-color:initial] pb-1 w-[100cqw] mt-1" onwheel={(e) => e.currentTarget.scrollBy({left: -e.wheelDelta})}>
 					{#each matchingTabs.filter(({ id }) => workspace.tabIds.includes(id)) as tab}
-						<button class="btn ghost h-max flex gap-2 items-center" data-focusable>
+						<button 
+							class="btn ghost h-max flex gap-2 items-center outline-none" 
+							data-focusable
+							onclick={() => {switchWorkspaceAndFocusTab(workspace.UUID, tab.id)}}
+						>
 							{#if tab.favIconUrl}
-								<img src={tab.favIconUrl} alt="{tab.title} favicon"/>
+								<img class="w-5 h-5" src={tab.favIconUrl} alt="{tab.title} favicon"/>
 							{/if}
 							<span class="max-w-[30ch] overflow-hidden text-ellipsis whitespace-nowrap">
 								{tab.title}
@@ -492,7 +521,7 @@
 			{/if}
 		</li>
 		<div
-			class="w-full grid gap-4 @container mt-4 empty:mt-0"
+			class="w-full grid gap-4 @container mt-4 empty:mt-0 {searchValue.length ? 'mt-0' : ''}"
 			use:dndzone={{
 				items: unstate(workspaces),
 				dropTargetStyle: {},

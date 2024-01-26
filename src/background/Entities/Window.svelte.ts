@@ -457,10 +457,18 @@ export class Window {
 		this.activeWorkspace.active = false;
 		workspace.active = true;
 
-		const activeTabId = workspace?.activeTabId || nextTabIds[0];
-
 		await API.showTabs(nextTabIds);
-		await API.updateTab(activeTabId, { active: true });
+		if (Processes.searchWasUsed) {
+			workspace.activeTabId = (
+				await API.queryTabs({
+					windowId: this.windowId,
+					active: true,
+				})
+			).tabs?.at(0)?.id!;
+		} else {
+			const activeTabId = workspace?.activeTabId || nextTabIds[0];
+			await API.updateTab(activeTabId, { active: true });
+		}
 		// if (currentTabIds.length) await API.hideTabs(currentTabIds);
 		if (currentTabIds.length)
 			API.hideTabs(currentTabIds).then(

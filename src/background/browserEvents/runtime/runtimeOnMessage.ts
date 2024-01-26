@@ -29,6 +29,27 @@ function switchWorkspaceCommand({ workspaceUUID }: { workspaceUUID: string }) {
 	Processes.WorkspaceSwitch.finish();
 }
 
+function switchWorkspaceAndFocusTab({
+	workspaceUUID,
+	tabId,
+}: {
+	workspaceUUID: string;
+	tabId: number;
+}) {
+	const window = WorkspaceStorage.activeWindow;
+	const workspace = window.workspaces.find(
+		({ UUID }) => UUID === workspaceUUID
+	);
+
+	if (workspace) {
+		workspace.activeTabId = tabId;
+		window.switchWorkspace(workspace);
+		informViews(window.windowId!, "updatedActiveWorkspace", {
+			UUID: workspaceUUID,
+		});
+	}
+}
+
 export async function runtimeOnMessage(
 	message: any,
 	sender: Browser.Runtime.MessageSender,
@@ -129,6 +150,9 @@ export async function runtimeOnMessage(
 			message?.instant
 				? switchWorkspaceCommand(message)
 				: runSwitchWorkspaceCommand(message);
+			break;
+		case "switchWorkspaceAndFocusTab":
+			switchWorkspaceAndFocusTab(message);
 			break;
 		case "setCurrentWorkspaces":
 			return new Promise<void>(async (resolve) => {
