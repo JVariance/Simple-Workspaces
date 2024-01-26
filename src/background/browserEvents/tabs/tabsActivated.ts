@@ -1,7 +1,6 @@
 import { Processes, WorkspaceStorage } from "@root/background/Entities";
 import { informViews } from "@root/background/informViews";
 import * as API from "@root/browserAPI";
-import { areNullish, isNullish } from "@root/utils";
 import type { Tabs } from "webextension-polyfill";
 
 export async function tabsOnActivated(
@@ -12,6 +11,7 @@ export async function tabsOnActivated(
 	*/
 
 	const previousTab = await API.getTab(activeInfo.previousTabId);
+	const currentTab = await API.getTab(activeInfo.tabId);
 	const previousTabWorkspaceUUID = await API.getTabValue<string>(
 		previousTab?.id,
 		"workspaceUUID"
@@ -26,7 +26,8 @@ export async function tabsOnActivated(
 	const firefoxSearchWasUsed =
 		// areNullish(activeTabWorkspaceUUID, previousTabWorkspaceUUID) &&
 		activeTabWorkspaceUUID !== previousTabWorkspaceUUID &&
-		activeTabWorkspaceUUID !== activeWindow.activeWorkspace.UUID;
+		activeTabWorkspaceUUID !== activeWindow.activeWorkspace.UUID &&
+		previousTab?.windowId === currentTab?.windowId;
 
 	console.info({ firefoxSearchWasUsed });
 

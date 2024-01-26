@@ -214,9 +214,17 @@ export class Window {
 			),
 		]);
 
-		if (workspace.UUID !== this.activeWorkspace?.UUID) {
-			await API.hideTabs(tabIds);
-		}
+		// if (
+		// 	workspace.UUID !== this.activeWorkspace?.UUID &&
+		// 	workspace.windowId === this.activeWorkspace.windowId
+		// ) {
+		// 	console.info("workspace has been sent");
+		// 	/*
+		// 		when tab has been sent to workspace
+		// 	*/
+		// 	await API.hideTabs(tabIds);
+		// }
+
 		Processes.manualTabAddition = false;
 	}
 
@@ -286,15 +294,15 @@ export class Window {
 			}
 		}
 
-		if (!currentWorkspace.tabIds.length) {
+		if (currentWorkspace.tabIds.length) {
+			await API.hideTabs(tabIds);
+		} else {
 			await createTab({
 				windowId: this.#windowId,
 				active: false,
 			});
 
 			await this.switchWorkspace(targetWorkspace);
-		} else {
-			await API.hideTabs(tabIds);
 		}
 
 		for (let tabId of tabIds) {
