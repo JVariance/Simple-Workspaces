@@ -12,6 +12,7 @@
 	import { slide } from "svelte/transition";
 	import Fuse from "fuse.js";
 	import { overflowSwipe } from "@root/actions/overflowSwipe";
+	import Accordion from "@root/components/Accordion.svelte";
 
 	import { overrideItemIdKeyNameBeforeInitialisingDndZones } from "svelte-dnd-action";
 	overrideItemIdKeyNameBeforeInitialisingDndZones("UUID");
@@ -353,7 +354,7 @@
 	});
 
 	function getAllFocusableElements() {
-		return document.querySelectorAll('[data-focusable]');
+		return [].filter.call(document.querySelectorAll('[data-focusable]'), (elem) => elem.offsetParent !== null);
 	}
 
 	function focusNextElement() {
@@ -478,35 +479,46 @@
 				/>
 			{/if}
 			{#if searchValue.length && matchingTabs.length}
-				<div class="flex gap-2 border-b border-[color-mix(in_srgb,light-dark(black,white)_50%,var(--body-bg))] pb-2">
-					<span>{workspace.icon}</span>
-					<span>{workspace.name}</span>
-				</div>
-				<div 
-					class="
-						swipe-item
-						grid grid-rows-[repeat(3,_auto)] grid-flow-col gap-2 overflow-auto 
-						[scrollbar-width:_thin] [scrollbar-color:transparent_transparent] hover:[scrollbar-color:initial] 
-						pb-1 w-[100cqw] mt-1
+				<Accordion 
+					detailsClasses="w-[100cqw] overflow-hidden" 
+					open
+					summaryAttributes={{'data-focusable': 'true'}} 
+					summaryClasses="
+						flex gap-2 border-[color-mix(in_srgb,light-dark(black,white)_50%,var(--body-bg))] pb-2
+						focus:bg-[--button-bg-focus] outline-none
 					"
-					use:overflowSwipe
-					onwheel={(e) => e.currentTarget.scrollBy({left: -e.wheelDelta})}
 				>
-					{#each matchingTabs.filter(({ id }) => workspace.tabIds.includes(id)) as tab}
-						<button 
-							class="btn ghost h-max flex gap-2 items-center outline-none" 
-							data-focusable
-							onclick={() => {switchWorkspaceAndFocusTab(workspace.UUID, tab.id)}}
-						>
-							{#if tab.favIconUrl}
-								<img class="w-5 h-5" src={tab.favIconUrl} alt="{tab.title} favicon"/>
-							{/if}
-							<span class="max-w-[30ch] overflow-hidden text-ellipsis whitespace-nowrap">
-								{tab.title}
-							</span>
-						</button>
-					{/each}
-				</div>
+					{#snippet summary()}
+						<span>{workspace.icon}</span>
+						<span>{workspace.name}</span>
+					{/snippet}
+					<div 
+						class="
+							swipe-item
+							grid grid-rows-[repeat(5,_auto)] grid-flow-col gap-2 overflow-auto 
+							[scrollbar-width:_thin] [scrollbar-color:transparent_transparent] hover:[scrollbar-color:initial] 
+							pb-1 w-[100cqw] mt-2
+							overscroll-contain
+						"
+						use:overflowSwipe
+						onwheel={(e) => e.currentTarget.scrollBy({left: -e.wheelDelta})}
+					>
+						{#each matchingTabs.filter(({ id }) => workspace.tabIds.includes(id)) as tab}
+							<button 
+								class="btn ghost h-max flex gap-2 items-center outline-none" 
+								data-focusable
+								onclick={() => {switchWorkspaceAndFocusTab(workspace.UUID, tab.id)}}
+							>
+								{#if tab.favIconUrl}
+									<img class="w-5 h-5" src={tab.favIconUrl} alt="{tab.title} favicon"/>
+								{/if}
+								<span class="max-w-[30ch] overflow-hidden text-ellipsis whitespace-nowrap -mt-[0.2rem]">
+									{tab.title}
+								</span>
+							</button>
+						{/each}
+					</div>
+				</Accordion>
 			{/if}
 		{/if}
 	{/snippet}
