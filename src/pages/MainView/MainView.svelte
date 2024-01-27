@@ -11,6 +11,7 @@
 	import { getWorkspacesState, getThemeState, getSystemThemeState, getForceDefaultThemeIfDarkModeState, getActiveWorkspaceIndexState } from "@pages/states.svelte";
 	import { slide } from "svelte/transition";
 	import Fuse from "fuse.js";
+	import { overflowSwipe } from "@root/actions/overflowSwipe";
 
 	import { overrideItemIdKeyNameBeforeInitialisingDndZones } from "svelte-dnd-action";
 	overrideItemIdKeyNameBeforeInitialisingDndZones("UUID");
@@ -481,7 +482,16 @@
 					<span>{workspace.icon}</span>
 					<span>{workspace.name}</span>
 				</div>
-				<div class="grid grid-rows-[repeat(3,_auto)] grid-flow-col gap-2 overflow-auto [scrollbar-width:_thin] [scrollbar-color:transparent_transparent] hover:[scrollbar-color:initial] pb-1 w-[100cqw] mt-1" onwheel={(e) => e.currentTarget.scrollBy({left: -e.wheelDelta})}>
+				<div 
+					class="
+						swipe-item
+						grid grid-rows-[repeat(3,_auto)] grid-flow-col gap-2 overflow-auto 
+						[scrollbar-width:_thin] [scrollbar-color:transparent_transparent] hover:[scrollbar-color:initial] 
+						pb-1 w-[100cqw] mt-1
+					"
+					use:overflowSwipe
+					onwheel={(e) => e.currentTarget.scrollBy({left: -e.wheelDelta})}
+				>
 					{#each matchingTabs.filter(({ id }) => workspace.tabIds.includes(id)) as tab}
 						<button 
 							class="btn ghost h-max flex gap-2 items-center outline-none" 

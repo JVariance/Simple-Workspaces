@@ -458,6 +458,7 @@ export class Window {
 		console.info("switchWorkspace()");
 		// Processes.WorkspaceSwitch.start();
 		this.switchingWorkspace = true;
+		const previousActiveWorkspaceUUID = this.activeWorkspace.UUID;
 
 		const currentTabIds = this.activeWorkspace.tabIds;
 		const nextTabIds = workspace.tabIds;
@@ -478,7 +479,10 @@ export class Window {
 			await API.updateTab(activeTabId, { active: true });
 		}
 		// if (currentTabIds.length) await API.hideTabs(currentTabIds);
-		if (currentTabIds.length)
+		if (
+			currentTabIds.length &&
+			previousActiveWorkspaceUUID !== workspace.UUID
+		) {
 			API.hideTabs(currentTabIds).then(
 				({ hiddenIds, errorIds, ignoredIds }) => {
 					if (!errorIds?.length) {
@@ -486,6 +490,7 @@ export class Window {
 					// this.switchingWorkspace = false;
 				}
 			);
+		}
 		this.switchingWorkspace = false;
 		// Processes.WorkspaceSwitch.finish();
 	}
