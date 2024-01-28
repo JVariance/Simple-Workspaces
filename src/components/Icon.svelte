@@ -35,6 +35,7 @@
 		search: "tabler:search",
 		settings: "material-symbols:settings",
 		touch: "carbon:touch-1-filled",
+		triangleUp: "ion:triangle-sharp",
 	};
 </script>
 

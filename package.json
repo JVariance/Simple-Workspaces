@@ -10,7 +10,7 @@
 	},
 	"devDependencies": {
 		"@iconify/svelte": "^3.1.6",
-		"@sveltejs/vite-plugin-svelte": "^3.0.1",
+		"@sveltejs/vite-plugin-svelte": "^3.0.2",
 		"@tsconfig/svelte": "^5.0.2",
 		"@types/webextension-polyfill": "^0.10.7",
 		"autoprefixer": "^10.4.17",
@@ -29,6 +29,7 @@
 		"@tailwindcss/container-queries": "^0.1.1",
 		"emoji-picker-element": "^1.21.0",
 		"fuse.js": "^7.0.0",
+		"svelte-intersection-observer-action": "^0.0.4",
 		"ts-key-enum": "^2.0.12"
 	}
 }

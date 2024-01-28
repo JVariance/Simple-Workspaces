@@ -4,6 +4,12 @@
 	import ButtonLink from "../ButtonLink.svelte";
 </script>
 
+{#snippet dt(command)}
+	<dt class="grow flex gap-1 relative">
+		{i18n.getMessage(`command.${command.name}`)}
+	</dt>
+{/snippet}
+
 <div class="mt-4 w-fit">
 	{#await Browser.commands.getAll()}
 		...
@@ -11,17 +17,17 @@
 		<dl class="grid gap-6 w-full">
 			{#each commands as command}
 				<div class="w-full flex flex-wrap gap-x-4 gap-y-2 items-center">
-					<dt class="grow flex gap-1 relative">
-						{i18n.getMessage(`command.${command.name}`)}
-						{#if ["new-container-tab"].includes(command.name!)}
-							<Tooltip class="[&>svg]:w-4 [&>svg]:h-4 absolute top-0 right-0" popupClasses="w-max">
-								{#snippet message()}
-									{@const link = i18n.getMessage(`command.${command.name}.link`)}
-									<ButtonLink href={link} target="_blank" class="ghost flex flex-nowrap items-center gap-1">{i18n.getMessage('read_more')}</ButtonLink>
-								{/snippet}
-							</Tooltip>
-						{/if}
-					</dt>
+					{#if ["new-container-tab"].includes(command.name!)}
+						<Tooltip class="[&>svg]:w-4 [&>svg]:h-4" popupClasses="w-max" id="shortcuts-read_more">
+							{@render dt(command)}
+							{#snippet message()}
+								{@const link = i18n.getMessage(`command.${command.name}.link`)}
+								<ButtonLink href={link} target="_blank" class="ghost flex flex-nowrap items-center gap-1">{i18n.getMessage('read_more')}</ButtonLink>
+							{/snippet}
+						</Tooltip>
+						{:else}
+							{@render dt(command)}
+					{/if}
 					<dd class="text-right"><kbd>{command.shortcut}</kbd></dd>
 				</div>
 			{/each}
