@@ -251,8 +251,8 @@
 {/snippet}
 
 
+<div id="noise" aria-hidden="true" />
 <div class="w-[100dvw] max-w-[48rem] h-max relative border-[1rem] border-transparent">
-	<div id="noise" />
 	<div class="relative h-max rounded-2xl mx-auto overflow-hidden">
 		<div
 			id="wrapper"
@@ -294,6 +294,7 @@
 		onclick={previousSection}
 		disabled={activeView <= 1}
 		class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 p-1 flex gap-2 rounded-full h-max disabled:hidden light:text-[#8c88e3]"
+		aria-label="Previous view"
 	>
 		<Icon icon="next-filled" class="rotate-180" />
 	</button>
@@ -301,6 +302,7 @@
 		onclick={nextSection}
 		disabled={activeView >= viewCount}
 		class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 p-1 flex gap-2 rounded-full h-max disabled:hidden light:text-[#8c88e3]"
+		aria-label="Next view"
 	>
 		<Icon icon="next-filled" />
 	</button>
@@ -338,7 +340,7 @@
 		/* background-image: url("/images/mesh-6.png");
   	background-size: cover;
 		background-position: right; */
-		background: rgba(0 0 55 / 0.25);
+		background: rgba(0 0 55 / 0.4);
 	}
 
 	:global(body) {
@@ -376,7 +378,7 @@
 	}
 
 	:global(:is(.primary-btn, .secondary-btn)) {
-		@apply rounded-md backdrop-blur-2xl p-2 border border-white/25 bg-white/25;
+		@apply rounded-md backdrop-blur-2xl p-2 border border-white/25 bg-white/25 font-semibold;
 		@apply hover:bg-white/20 focus:bg-white/20;
 	}
 
