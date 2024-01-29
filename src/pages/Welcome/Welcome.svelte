@@ -161,7 +161,7 @@
 		<!-- <a href="about:preferences#browserRestoreSession" target="_blank"
 		>restore session</a
 		> -->
-		<div class="touch-icon absolute bottom-4 left-1/2 -translate-x-1/2 text-[rgba(0_0_55_/_0.25)]">
+		<div class="touch-icon absolute bottom-4 left-1/2 -translate-x-1/2 text-white/25">
 			<Icon icon="touch" width={42} class="-translate-x-1/4" />
 		</div>
 	{/snippet}
@@ -242,7 +242,7 @@
 		<h2 class="m-0 mb-8 text-xl flex gap-2 items-center font-semibold">
 			<span class="first-letter:uppercase">{i18n.getMessage('shortcuts')}</span>
 		</h2>
-		<Info class="w-full">
+		<Info class="w-full mb-8">
 			{@html i18n.getMessage('you_can_edit_shortcuts_for_commands_in_the_addons_page')}
 		</Info>
 		<Shortcuts />
@@ -319,9 +319,6 @@
 
 	:root {
 		--body-bg: #625eb7;
-		/* 
-			section-bg: #241742, #531fc4, #524abd, #4e4a88, #403d77
-		*/
 		--section-bg: #5524c8;
 		--section-shadow-color: #8f8aee;
 	}
@@ -329,24 +326,11 @@
 	section.swipe-item {
 		--border-width: 0.1rem;
 		@apply rounded-2xl shadow-none backdrop-blur-md;
-		/* background: linear-gradient(to right, var(--section-bg), var(--section-bg)), linear-gradient(to right, #c6c4f4, #8c88e3); */
-		/* background-size: 100%, calc(100% + var(--border-width) * 2);
-  	background-clip: padding-box, border-box;
-		box-sizing: border-box;
-		background-position: calc(var(--border-width) * -1);
-		border-radius: 1rem;
-		border: var(--border-width) solid transparent;
-		background-origin: border-box; */
-		/* background-image: url("/images/mesh-6.png");
-  	background-size: cover;
-		background-position: right; */
 		background: rgba(0 0 55 / 0.4);
 	}
 
 	:global(body) {
 		@apply bg-[--body-bg] h-[100dvh] w-[100dvw] grid items-center justify-center;
-		/* background-image: radial-gradient(color-mix(in srgb, var(--body-bg) 90%, black) 0.55px, var(--body-bg) 2px);
-		background-size: 11px 11px; */
 		background-image: url("/images/mesh-6.png");
 		background-size: cover;
 	}
@@ -362,8 +346,8 @@
 	}
 
 	:global(kbd){
-		@apply bg-[#8c88e3] text-black border-[#807cd5];
-		box-shadow: inset 0 5px #9f9ce3;
+		@apply bg-white/40 text-black border-white/40;
+		box-shadow: inset 0 5px bg-white/80;
 	}
 
 	@keyframes rotate {
@@ -374,12 +358,12 @@
 	}
 
 	.touch-icon {
-		animation: rotate 6s infinite;
+		animation: rotate 4s infinite;
 	}
 
 	:global(:is(.primary-btn, .secondary-btn)) {
-		@apply rounded-md backdrop-blur-2xl p-2 border border-white/25 bg-white/25 font-semibold;
-		@apply hover:bg-white/20 focus:bg-white/20;
+		@apply rounded-md backdrop-blur-2xl p-2 border border-white/40 bg-white/40 font-semibold;
+		@apply hover:bg-white/35 focus:bg-white/35;
 	}
 
 	.animated-icon {
