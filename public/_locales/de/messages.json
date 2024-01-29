@@ -173,5 +173,14 @@
   },
   "welcome_container_feature_proposal": {
     "message": "Wenn Sie möchten, aktivieren Sie die Container-Funktion von Firefox, indem Sie die folgenden Optionen in about:config aktivieren"
+  },
+  "lets_get_you_started": {
+    "message": "Lass' uns loslegen"
+  },
+  "optional": {
+    "message": "optional"
+  },
+  "configure_firefox": {
+    "message": "Firefox konfigurieren"
   }
 }

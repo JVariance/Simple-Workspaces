@@ -29,7 +29,7 @@
 		checked={theme === "browser"}
 		onchange={themeChanged}
 		/>
-		<label for="use-browser-theme">{i18n.getMessage("use_browser_theme")}</label>
+		<label for="use-browser-theme" class="-mt-[0.2rem]">{i18n.getMessage("use_browser_theme")}</label>
 	</div>
 	<div class="flex gap-4 items-center w-full">
 		<input

@@ -8,7 +8,7 @@
 	import Info from "@root/components/Info.svelte";
 	import Logo from "@root/components/Logo.svelte";
 
-	const viewCount = 3;
+	const viewCount = 4;
 	let js_enabled = $state(false);
 	let activeView = $state(1);
 	let swiping = $state(false);
@@ -129,7 +129,7 @@
 {#snippet ViewSection([id, content]: [number, Snippet])}
 	<section
 		id="view-{id}" 
-		class="swipe-item h-full shadow-lg ring-1 dark:ring-0 shadow-purple-200 dark:shadow-black bg-purple-50 text-blue-950 dark:bg-[#23222b] dark:text-white rounded-xl w-[100cqw] p-8 @xl:aspect-square overflow-auto relative [scrollbar-width:none]"
+		class="swipe-item h-full shadow-lg shadow-[--section-shadow-color] w-[100cqw] p-8 @xl:aspect-square overflow-auto relative [scrollbar-width:none]"
 	>
 		{@render content()}
 	</section>
@@ -137,23 +137,40 @@
 
 {#snippet ViewStart()}
 	{#snippet content()}
-		<h2
-				class="flex flex-wrap items-center gap-2 m-0 mb-12 text-lg first-letter:uppercase w-full justify-center"
-		>
-			<Logo
-				class="w-40"
-				draggable="false"
-			/>
-				<!-- <span class="basis-full w-full text-center text-2xl"
-			>Simple Workspaces</span
-			> -->
-		</h2>
-		<h1 class="text-4xl font-bold text-center mb-8">
-			{i18n.getMessage('welcome_welcome_message')}!
-		</h1>
+		<div class="w-full h-full grid gap-16 items-center grid-cols-1 grid-rows-2">
+			<div class="flex gap-6 flex-wrap items-center row-start-1 col-span-full self-end justify-center">
+				<Logo
+					class="w-28"
+					draggable="false"
+				/>
+				<h1 class="text-4xl">
+					<!-- {i18n.getMessage('welcome_welcome_message')}! -->
+					Welcome to
+					<br/>
+					<span class="font-bold">Simple Workspaces!</span>
+				</h1>
+			</div>
+			<button 
+				class="primary-btn font-semibold text-center row-start-2 col-start-1 justify-self-end mb-16 self-end flex gap-2 items-center"
+				onclick={() => nextSection()}
+			>
+				<Icon icon="next-filled"/>
+				{i18n.getMessage('lets_get_you_started')}!
+			</button>
+		</div>
 		<!-- <a href="about:preferences#browserRestoreSession" target="_blank"
 		>restore session</a
 		> -->
+		<div class="touch-icon absolute bottom-4 left-1/2 -translate-x-1/2 text-[rgba(0_0_55_/_0.25)]">
+			<Icon icon="touch" width={42} class="-translate-x-1/4" />
+		</div>
+	{/snippet}
+	{@render ViewSection([1, content])}
+{/snippet}
+{#snippet ViewConfig()}
+	{#snippet content()}
+		<h2 class="m-0 mb-8 text-xl font-semibold first-letter:uppercase">{i18n.getMessage('configure_firefox')} ({i18n.getMessage('optional')})</h2>
+
 		{i18n.getMessage('you_may_want_to_enable_the_open_previous_windows_and_tabs_option_in_preferences')}.
 		<button
 			class="btn primary-btn px-2 py-1 mt-2"
@@ -167,7 +184,6 @@
 			<Icon icon="copy" width={20}/>
 			{i18n.getMessage('copy_link_and_open_new tab')}
 		</button>
-
 		<div class="mt-8">
 			<p>
 				{@html i18n.getMessage('welcome_container_feature_proposal')}.
@@ -203,17 +219,13 @@
 				{/each}
 			</ul>
 		</div>
-
-		<div class="touch-icon absolute bottom-4 left-1/2 -translate-x-1/2 opacity-50">
-			<Icon icon="touch" width={42} />
-		</div>
 	{/snippet}
-	{@render ViewSection([1, content])}
+	{@render ViewSection([2, content])}
 {/snippet}
 {#snippet ViewDefaultWorkspaces()}
 	{#snippet content()}
 		<div class="h-max flex flex-wrap">
-			<h2 class="m-0 mb-4 text-xl font-semibold first-letter:uppercase">{i18n.getMessage('default_workspaces')}</h2>
+			<h2 class="m-0 mb-8 text-xl font-semibold first-letter:uppercase">{i18n.getMessage('default_workspaces')}</h2>
 			<!-- <Info>
 				{i18n.getMessage('changes_will_apply_for_new_windows')}
 			</Info> -->
@@ -223,11 +235,11 @@
 			<DefaultWorkspaces dndFinish={() => {swiping = false; scrollViewIntoView();}} />
 		</div>
 	{/snippet}
-	{@render ViewSection([2, content])}
+	{@render ViewSection([3, content])}
 	{/snippet}
 {#snippet ViewShortcuts()}
 	{#snippet content()}
-		<h2 class="m-0 mb-4 text-xl flex gap-2 items-center font-semibold">
+		<h2 class="m-0 mb-8 text-xl flex gap-2 items-center font-semibold">
 			<span class="first-letter:uppercase">{i18n.getMessage('shortcuts')}</span>
 		</h2>
 		<Info class="w-full">
@@ -235,64 +247,64 @@
 		</Info>
 		<Shortcuts />
 	{/snippet}
-	{@render ViewSection([3, content])}	
+	{@render ViewSection([4, content])}	
 {/snippet}
 
-<Layout>
-	<div class="w-full h-[100dvh] p-4">
-		<div class="relative h-full max-w-3xl mx-auto">
-			<div
-				id="wrapper"
-				class:swiping
-				class="
-				w-full h-full grid grid-cols-[100%] grid-flow-col justify-items-center items-center overflow-auto content-center
-				scroll-smooth snap-both snap-mandatory overscroll-x-contain @container mx-auto
-				[&.swiping]:cursor-grabbing
-				[&.swiping]:select-none
-				scroll-p-8 p-8 gap-11
-			"
-				onpointerdown={swipeStart}
-				onpointermove={swipeMove}
-				onpointerup={swipeEnd}
-				onpointerleave={cancelSwipe}
-			>
-				{@render ViewStart()}
-				{@render ViewDefaultWorkspaces()}
-				{@render ViewShortcuts()}
-			</div>
-			<button
-				onclick={previousSection}
-				disabled={activeView <= 1}
-				class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 p-1 flex gap-2 rounded-full h-max disabled:hidden light:text-[#8c88e3]"
-			>
-				<Icon icon="next-filled" class="rotate-180" />
-			</button>
-			<button
-				onclick={nextSection}
-				disabled={activeView >= viewCount}
-				class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 p-1 flex gap-2 rounded-full h-max disabled:hidden light:text-[#8c88e3]"
-			>
-				<Icon icon="next-filled" />
-			</button>
-			<div
-				id="view-buttons"
-				class="fixed bottom-8 left-1/2 -translate-x-1/2 flex gap-2"
-			>
-				{#each Array(viewCount) as _, i}
-					{@const viewNum = i + 1}
-					<button
-						class:active={activeView === viewNum}
-						class="rounded-full w-3 h-3 [&.active]:bg-[#c6c4f4] bg-purple-100 dark:bg-neutral-700"
-						onclick={() => {
-							activeView = viewNum;
-						}}
-					>
-					</button>
-				{/each}
-			</div>
+
+<div class="w-full h-[100dvh] p-4">
+	<div class="relative h-full max-w-3xl mx-auto">
+		<div
+			id="wrapper"
+			class:swiping
+			class="
+			w-full h-full grid grid-cols-[100%] grid-flow-col justify-items-center items-center overflow-auto content-center
+			scroll-smooth snap-both snap-mandatory overscroll-x-contain @container mx-auto
+			[&.swiping]:cursor-grabbing
+			[&.swiping]:select-none
+			scroll-p-8 p-8 gap-11
+		"
+			onpointerdown={swipeStart}
+			onpointermove={swipeMove}
+			onpointerup={swipeEnd}
+			onpointerleave={cancelSwipe}
+		>
+			{@render ViewStart()}
+			{@render ViewConfig()}
+			{@render ViewDefaultWorkspaces()}
+			{@render ViewShortcuts()}
+		</div>
+		<button
+			onclick={previousSection}
+			disabled={activeView <= 1}
+			class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 p-1 flex gap-2 rounded-full h-max disabled:hidden light:text-[#8c88e3]"
+		>
+			<Icon icon="next-filled" class="rotate-180" />
+		</button>
+		<button
+			onclick={nextSection}
+			disabled={activeView >= viewCount}
+			class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 p-1 flex gap-2 rounded-full h-max disabled:hidden light:text-[#8c88e3]"
+		>
+			<Icon icon="next-filled" />
+		</button>
+		<div
+			id="view-buttons"
+			class="fixed bottom-8 left-1/2 -translate-x-1/2 flex gap-2"
+		>
+			{#each Array(viewCount) as _, i}
+				{@const viewNum = i + 1}
+				<button
+					class:active={activeView === viewNum}
+					class="rounded-full w-3 h-3 [&.active]:bg-[#c6c4f4] bg-purple-100 dark:bg-neutral-700"
+					onclick={() => {
+						activeView = viewNum;
+					}}
+				>
+				</button>
+			{/each}
 		</div>
 	</div>
-</Layout>
+</div>
 
 <style lang="postcss">
 	/* :global(body) {
@@ -303,35 +315,63 @@
 		scrollbar-width: none;
 	}
 
+	:root {
+		--body-bg: #625eb7;
+		/* 
+			section-bg: #241742, #531fc4, #524abd, #4e4a88, #403d77
+		*/
+		--section-bg: #5524c8;
+		--section-shadow-color: #8f8aee;
+	}
+
+	section.swipe-item {
+		--border-width: 0.1rem;
+		/* background: linear-gradient(to right, var(--section-bg), var(--section-bg)), linear-gradient(to right, #c6c4f4, #8c88e3); */
+		/* background-size: 100%, calc(100% + var(--border-width) * 2);
+  	background-clip: padding-box, border-box;
+		box-sizing: border-box;
+		background-position: calc(var(--border-width) * -1);
+		border-radius: 1rem;
+		border: var(--border-width) solid transparent;
+		background-origin: border-box; */
+		/* background-image: url("/images/mesh-6.png");
+  	background-size: cover;
+		background-position: right; */
+		background: rgba(0 0 55 / 0.25);
+		backdrop-filter: blur(10px);
+		border-radius: 1rem;
+		box-shadow: none;
+	}
+
+	:global(body) {
+		@apply bg-[--body-bg];
+		/* background-image: radial-gradient(color-mix(in srgb, var(--body-bg) 90%, black) 0.55px, var(--body-bg) 2px);
+		background-size: 11px 11px; */
+		background-image: url("/images/mesh-6.png");
+		background-size: cover;
+	}
+
 	:global(body:not(.js-enabled)) {
 		#view-buttons {
 			@apply !hidden;
 		}
 	}
 
-	:global(.primary-btn){
-		@screen light {
-			@apply bg-[#8c88e3] hover:bg-[#746edd] focus:bg-[#746edd] text-white border-none;
-		}
+	/* :global(.primary-btn){
+		@apply bg-[#8c88e3] hover:bg-[#746edd] focus:bg-[#746edd] text-black border-none;
 	}
 
 	:global(.secondary-btn){
-		@screen light {
-			@apply bg-[#eae9ff] hover:bg-[#e1e0f7] focus:bg-[#e1e0f7] text-[#59586f] border-none;
-		}
-	}
+		@apply bg-[#eae9ff] hover:bg-[#e1e0f7] focus:bg-[#e1e0f7] text-[#59586f] border-none;
+	} */
 
 	:global(details, summary) {
-		@screen light {
-			@apply !border-[#8c88e3];
-		}
+		@apply !border-[#8c88e3];
 	}
 
 	:global(kbd){
-		@screen light {
-			@apply bg-[#8c88e3] text-white border-[#807cd5];
-  		box-shadow: inset 0 5px #9f9ce3;
-		}
+		@apply bg-[#8c88e3] text-black border-[#807cd5];
+		box-shadow: inset 0 5px #9f9ce3;
 	}
 
 	@keyframes rotate {
@@ -343,6 +383,17 @@
 
 	.touch-icon {
 		animation: rotate 6s infinite;
+	}
+
+	.primary-btn {
+		/* @apply bg-indigo-400 hover:bg-indigo-500;
+		 */
+		background: rgba(255 255 255 / 0.25);
+  	padding: 0.5rem;
+  	border-radius: 6px;
+  	backdrop-filter: blur(50px);
+  	border: 1px solid rgba(255 255 255 / 0.25);
+  	font-size: larger;
 	}
 
 	.animated-icon {

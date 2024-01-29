@@ -38,27 +38,6 @@
 			popupPositionX = "right";
 			popup.style.width = `${Math.min(defaultWidth, groupRect.left - 20)}px`;
 		}
-
-		// const popupOverflowsBodyOnRight = groupRect.left + popupRect.width > bodyRect.width;
-		// const popupOverflowsBodyOnLeft = groupRect.right - popupRect.width < 0;
-		// // if(!popupOverflowsBodyOnRight && popupRect.left > 0) return;
-		// if((popupButtonOnLeft && !popupOverflowsBodyOnRight) || (!popupButtonOnLeft && !popupOverflowsBodyOnLeft)) return;
-		// console.info({groupRect, popupRect, bodyRect});
-		// console.info("processing");
-
-		// let newWidth;
-		// if(popupButtonOnLeft) {
-		// 	// newWidth = bodyRect.width - (popupRect.right - bodyRect.width) - groupRect.left;
-		// 	newWidth = bodyRect.width - groupRect.left;
-		// 	// newWidth = bodyRect.width >= defaultWidth ? defaultWidth - 20 : newWidth - 20;
-		// 	popupWidth = `${newWidth}px`;
-		// 	popupPositionX = "left";
-		// } else {
-		// 	newWidth = bodyRect.width - (bodyRect.width - popupRect.left);
-		// 	// newWidth = bodyRect.width >= defaultWidth ? defaultWidth - 20 : newWidth - 20;
-		// 	popupWidth = `${newWidth}px`;
-		// 	popupPositionX = "right";
-		// }
 	}
 
 	const options = { callback, root: null, rootMargin: "100% 0% 100% 0%", threshold: 1.00 } as Options;
@@ -83,7 +62,7 @@
 
 <svelte:window onresize={onResize}></svelte:window>
 
-<div class="flex flex-wrap gap-1" aria-describedby={id}>
+<div class="flex flex-wrap gap-1 items-center" aria-describedby={id}>
 	{#if children}
 		<div class="contents">
 			{@render children()}
