@@ -18,6 +18,7 @@
 	const icons = {
 		add: "ph:plus-bold",
 		bin: "fluent:bin-recycle-24-filled",
+		"caret-right": "ph:caret-right-bold",
 		check: "tabler:check",
 		"chevron-right": "fluent:chevron-right-24-filled",
 		clear: "ant-design:clear-outlined",

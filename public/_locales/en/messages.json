@@ -182,5 +182,8 @@
   },
   "configure_firefox": {
     "message": "Configure Firefox"
+  },
+  "welcome_to": {
+    "message": "Welcome to"
   }
 }

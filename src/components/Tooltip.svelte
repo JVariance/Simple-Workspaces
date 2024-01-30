@@ -95,7 +95,7 @@
 				group-[&.open]:visible
 				group-[&.open]:top-full
 			"
-			style:left={popupPositionX === "left" ? '0' :'unset'}
+			style:left={popupPositionX === "left" ? '-8px' :'unset'}
 			style:right={popupPositionX === "right" ? '0' : 'unset'}
 			style:width={popupWidth}
 			role="tooltip"

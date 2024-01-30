@@ -7,6 +7,8 @@
 	import Shortcuts from "@root/components/ViewBlocks/Shortcuts.svelte";
 	import Info from "@root/components/Info.svelte";
 	import Logo from "@root/components/Logo.svelte";
+	import { intersect } from "svelte-intersection-observer-action";
+	import OnMount from "@root/components/OnMount.svelte";
 
 	const viewCount = 4;
 	let js_enabled = $state(false);
@@ -129,7 +131,10 @@
 {#snippet ViewSection([id, content]: [number, Snippet])}
 	<section
 		id="view-{id}" 
-		class="swipe-item h-full shadow-lg shadow-[--section-shadow-color] w-[100cqw] p-8 @xl:aspect-square overflow-auto relative [scrollbar-width:none]"
+		class="
+			swipe-item h-full shadow-lg shadow-[--section-shadow-color] w-[100cqw] p-8 @xl:aspect-square overflow-auto relative [scrollbar-width:none]
+			text-[large]
+		"
 	>
 		{@render content()}
 	</section>
@@ -139,31 +144,41 @@
 	{#snippet content()}
 		<div class="w-full h-full grid gap-16 items-center grid-cols-1 grid-rows-2">
 			<div class="flex gap-6 flex-wrap items-center row-start-1 col-span-full self-end justify-center">
-				<Logo
-					class="w-28"
-					draggable="false"
-				/>
-				<h1 class="text-4xl">
-					<!-- {i18n.getMessage('welcome_welcome_message')}! -->
-					Welcome to
-					<br/>
-					<span class="font-bold">Simple Workspaces!</span>
-				</h1>
+				<OnMount>
+					<Logo
+						class="w-28 animate-fade-right animate-duration-1000"
+						draggable="false"
+					/>
+				</OnMount>
+				<OnMount>
+					<h1 class="text-4xl animate-fade-left animate-duration-1000">
+						{i18n.getMessage('welcome_to')}
+						<br/>
+						<span class="font-bold">Simple Workspaces!</span>
+					</h1>
+				</OnMount>
 			</div>
-			<button 
-				class="primary-btn font-semibold text-center row-start-2 col-start-1 justify-self-end mb-16 self-end flex gap-2 items-center"
-				onclick={() => nextSection()}
-			>
-				<Icon icon="next-filled"/>
-				{i18n.getMessage('lets_get_you_started')}!
+			<OnMount enableTimeOut={true} timeOutMs={1000} timeOutCallback={() => document.getElementById('start-button')?.classList.add('show')}>
+				<button 
+					id="start-button"
+					class="
+					font-semibold text-center row-start-2 col-start-1 justify-self-end mb-16 self-end flex gap-2 items-center 
+					bg-white text-neutral-900 p-2 rounded-md
+					animate-fade animate-duration-500 animate-delay-1000
+					"
+					onclick={() => nextSection()}
+				>
+					<Icon icon="caret-right"/>
+					{i18n.getMessage('lets_get_you_started')}!
 			</button>
+		</OnMount>
 		</div>
 		<!-- <a href="about:preferences#browserRestoreSession" target="_blank"
 		>restore session</a
 		> -->
-		<div class="touch-icon absolute bottom-4 left-1/2 -translate-x-1/2 text-white/25">
+		<!-- <div class="swipe-icon absolute bottom-4 left-1/2 -translate-x-1/2 text-white/25">
 			<Icon icon="touch" width={42} class="-translate-x-1/4" />
-		</div>
+		</div> -->
 	{/snippet}
 	{@render ViewSection([1, content])}
 {/snippet}
@@ -171,19 +186,21 @@
 	{#snippet content()}
 		<h2 class="m-0 mb-8 text-xl font-semibold first-letter:uppercase">{i18n.getMessage('configure_firefox')} ({i18n.getMessage('optional')})</h2>
 
-		{i18n.getMessage('you_may_want_to_enable_the_open_previous_windows_and_tabs_option_in_preferences')}.
-		<button
-			class="btn primary-btn px-2 py-1 mt-2"
-			onclick={(e) => {
-				window.navigator.clipboard.writeText(
-					"about:preferences#browserRestoreSession"
-				);
-				Browser.tabs.create({ active: true });
-			}}
-		>
-			<Icon icon="copy" width={20}/>
-			{i18n.getMessage('copy_link_and_open_new tab')}
-		</button>
+		<div>
+			{i18n.getMessage('you_may_want_to_enable_the_open_previous_windows_and_tabs_option_in_preferences')}.
+			<button
+				class="btn primary-btn px-2 py-1 mt-2"
+				onclick={(e) => {
+					window.navigator.clipboard.writeText(
+						"about:preferences#browserRestoreSession"
+					);
+					Browser.tabs.create({ active: true });
+				}}
+			>
+				<Icon icon="copy" width={20}/>
+				{i18n.getMessage('copy_link_and_open_new tab')}
+			</button>
+		</div>
 		<div class="mt-8">
 			<p>
 				{@html i18n.getMessage('welcome_container_feature_proposal')}.
@@ -211,7 +228,7 @@
 							<div class="grid">
 								<!-- <span class="select-none w-6 aspect-square rounded-full font-bold bg-indigo-600 flex items-center justify-center">{i + 1}</span> -->
 								<span class="animated-icon copy-icon" data-animation=""><Icon icon="copy" width={20}/></span>
-								<span class="animated-icon success-icon translate-y-[120%]" data-animation=""><Icon icon="check" width={20}/></span>
+								<span class="animated-icon success-icon translate-y-[calc(100%_+_10px)]" data-animation=""><Icon icon="check" width={20}/></span>
 							</div>
 							<span class="-mt-[0.1rem]">{entry}</span>
 						</button>
@@ -254,6 +271,7 @@
 <div id="noise" aria-hidden="true" />
 <div class="w-[100dvw] max-w-[48rem] h-max relative border-[1rem] border-transparent">
 	<div class="relative h-max rounded-2xl mx-auto overflow-hidden">
+		<img src="https://images.unsplash.com/photo-1693588312088-a37c2a329982?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxjb2xsZWN0aW9uLXBhZ2V8MnxlZDZiUDZ3X3JTSXx8ZW58MHx8fHx8" alt="" class="absolute inset-0 pointer-events-none [filter:hue-rotate(58deg)_opacity(0.1)] w-full h-full object-cover"/>
 		<div
 			id="wrapper"
 			class:swiping
@@ -325,14 +343,47 @@
 
 	section.swipe-item {
 		--border-width: 0.1rem;
-		@apply rounded-2xl shadow-none backdrop-blur-md;
-		background: rgba(0 0 55 / 0.4);
+		@apply rounded-2xl shadow-none;
+		/* @apply backdrop-blur-md; */
+		background: rgba(0 0 55 / 0.3);
+
+		/* &::before{ */
+			/* background-image: url('https://cdn.pixabay.com/photo/2014/09/30/22/50/sandstone-467714_960_720.jpg'); */
+			/* background-repeat: no-repeat;
+			background-size: cover;
+			background-blend-mode: luminosity;
+			content: "";
+			display: block;
+			position: absolute;
+			inset: 0;
+			background-color: #625eb7;
+			opacity: 0.1;
+			background-image: url('https://addons-media.operacdn.com/media/CACHE/images/themes/10/263410/1.0-rev1/images/3a74c254838a24916ab5bb97b61012d1/2af0f70f4e78e801304baf191f3268e8.jpg');
+			background-position: center;
+			background-size: 220%;
+		} */
 	}
 
 	:global(body) {
 		@apply bg-[--body-bg] h-[100dvh] w-[100dvw] grid items-center justify-center;
 		background-image: url("/images/mesh-6.png");
 		background-size: cover;
+
+		&::before{
+			background-image: url('https://cdn.pixabay.com/photo/2014/09/30/22/50/sandstone-467714_960_720.jpg');
+			background-repeat: no-repeat;
+			background-size: cover;
+			background-blend-mode: luminosity;
+			content: "";
+			display: block;
+			position: absolute;
+			inset: 0;
+			background-color: #625eb7;
+			opacity: 0.1;
+			background-image: url('https://images.unsplash.com/photo-1679768116177-809cf732bd6d?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+			background-position: center;
+			background-size: cover;
+		}
 	}
 
 	:global(body:not(.js-enabled)) {

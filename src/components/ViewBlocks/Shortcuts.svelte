@@ -18,7 +18,7 @@
 			{#each commands as command}
 				<div class="w-full flex flex-wrap gap-x-4 gap-y-2 items-center">
 					{#if ["new-container-tab"].includes(command.name!)}
-						<Tooltip class="[&>svg]:w-4 [&>svg]:h-4" popupClasses="w-max" id="shortcuts-read_more">
+						<Tooltip class="[&_svg]:w-4 [&_svg]:h-4" popupClasses="w-max" id="shortcuts-read_more">
 							{@render dt(command)}
 							{#snippet message()}
 								{@const link = i18n.getMessage(`command.${command.name}.link`)}

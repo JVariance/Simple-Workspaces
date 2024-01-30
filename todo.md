@@ -6,6 +6,7 @@
 [] better emoji picker focus handling
 [] highlight workspace which received new tabs (after send action)
 ### Bugs
+[] activeTabIndex not updated
 
 ---
 [] getWorkspaces -> if extension isn't initialized, try again periodically a limited number of times before returning undefined(*1)

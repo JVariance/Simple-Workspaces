@@ -38,7 +38,7 @@
 			checked={forceDefaultThemeIfDarkMode}
 			onchange={forceDefaultThemeIfDarkModeChanged}
 		/>
-		<Tooltip id="options-force_dark_theme" class="[&>svg]:w-4 [&>svg]:h-4" popupClasses="absolute top-0 right-0 w-[200px]">
+		<Tooltip id="options-force_dark_theme" class="[&_svg]:w-4 [&_svg]:h-4" popupClasses="absolute top-0 right-0 w-[200px]">
 			<label for="force-default-dark-theme" class="flex gap-1 flex-wrap relative">
 				{i18n.getMessage("force_default_dark_theme_in_dark_mode")}
 			</label>

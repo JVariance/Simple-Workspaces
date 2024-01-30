@@ -30,6 +30,7 @@
 		"emoji-picker-element": "^1.21.0",
 		"fuse.js": "^7.0.0",
 		"svelte-intersection-observer-action": "^0.0.4",
+		"tailwindcss-animated": "^1.0.1",
 		"ts-key-enum": "^2.0.12"
 	}
 }
