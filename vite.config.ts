@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
+import { enhancedImages } from "@sveltejs/enhanced-img";
 import webExtension, { readJsonFile } from "vite-plugin-web-extension";
 
 function generateManifest() {
@@ -31,6 +32,7 @@ export default defineConfig({
 		// drop: ["console", "debugger"],
 	},
 	plugins: [
+		enhancedImages(),
 		svelte(),
 		webExtension({
 			manifest: generateManifest,

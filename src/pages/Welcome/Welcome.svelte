@@ -271,7 +271,14 @@
 <div id="noise" aria-hidden="true" />
 <div class="w-[100dvw] max-w-[48rem] h-max relative border-[1rem] border-transparent">
 	<div class="relative h-max rounded-2xl mx-auto overflow-hidden">
-		<img src="https://images.unsplash.com/photo-1693588312088-a37c2a329982?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxjb2xsZWN0aW9uLXBhZ2V8MnxlZDZiUDZ3X3JTSXx8ZW58MHx8fHx8" alt="" class="absolute inset-0 pointer-events-none [filter:hue-rotate(58deg)_opacity(0.1)] w-full h-full object-cover"/>
+		<img 
+			src="/images/abstract/marble.jpg" 
+			alt="" 
+			class="
+				absolute inset-0 pointer-events-none [filter:hue-rotate(250deg)_opacity(40%)_saturate(240%)] w-full h-full object-cover object-bottom
+			"
+		/>
+		<!-- [filter:hue-rotate(58deg)_opacity(0.1)]  -->
 		<div
 			id="wrapper"
 			class:swiping
@@ -344,7 +351,7 @@
 	section.swipe-item {
 		--border-width: 0.1rem;
 		@apply rounded-2xl shadow-none;
-		/* @apply backdrop-blur-md; */
+		/* @apply backdrop-blur-sm; */
 		background: rgba(0 0 55 / 0.3);
 
 		/* &::before{ */
