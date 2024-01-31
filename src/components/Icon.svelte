@@ -17,8 +17,10 @@
 
 	const icons = {
 		add: "ph:plus-bold",
+		"arrow-right": "bitcoin-icons:arrow-right-outline",
+		"arrow-right-long": "heroicons:arrow-long-right",
 		bin: "fluent:bin-recycle-24-filled",
-		"caret-right": "ph:caret-right-bold",
+		"caret-right": "bitcoin-icons:caret-right-outline",
 		check: "tabler:check",
 		"chevron-right": "fluent:chevron-right-24-filled",
 		clear: "ant-design:clear-outlined",

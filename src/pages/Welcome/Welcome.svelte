@@ -142,8 +142,18 @@
 
 {#snippet ViewStart()}
 	{#snippet content()}
-		<div class="w-full h-full grid gap-16 items-center grid-cols-1 grid-rows-2">
-			<div class="flex gap-6 flex-wrap items-center row-start-1 col-span-full self-end justify-center">
+		<div 
+			class="
+				w-full h-full grid gap-y-16 items-center grid-cols-[1rem_1fr_1rem] @[571px]:grid-cols-[1fr_30rem_1fr] grid-rows-2
+				justify-center md:justify-start
+			"
+		>
+			<div 
+				class="
+					flex gap-6 flex-wrap items-center row-start-1 col-start-2 self-end
+					justify-center @[571px]:justify-between
+				"
+			>
 				<OnMount>
 					<Logo
 						class="w-28 animate-fade-right animate-duration-1000"
@@ -151,7 +161,7 @@
 					/>
 				</OnMount>
 				<OnMount>
-					<h1 class="text-4xl animate-fade-left animate-duration-1000">
+					<h1 class="text-4xl animate-fade-left animate-duration-1000 text-center @[571px]:text-left">
 						{i18n.getMessage('welcome_to')}
 						<br/>
 						<span class="font-bold">Simple Workspaces!</span>
@@ -162,14 +172,17 @@
 				<button 
 					id="start-button"
 					class="
-					font-semibold text-center row-start-2 col-start-1 justify-self-end mb-16 self-end flex gap-2 items-center 
-					bg-white text-neutral-900 p-2 rounded-md
-					animate-fade animate-duration-500 animate-delay-1000
+					primary-btn
+					text-center row-start-2 col-start-2 flex gap-2 items-center 
+					border mt-4  p-2 rounded-md self-start
+					animate-fade animate-duration-500 animate-delay-1000 
+					justify-self-center @[571px]:justify-self-end
+					italic !font-medium text-white/80 hover:text-white focus:text-white
 					"
 					onclick={() => nextSection()}
 				>
-					<Icon icon="caret-right"/>
-					{i18n.getMessage('lets_get_you_started')}!
+				<span class="-mt-[0.1rem]">{i18n.getMessage('lets_get_you_started')}!</span>
+				<Icon icon="arrow-right-long" class="stroke-[0.9]"/>
 			</button>
 		</OnMount>
 		</div>
@@ -338,6 +351,11 @@
 		@apply m-0 p-0 w-[100dvw] h-[100dvh] dark:bg-[#1c1b22];
 	} */
 
+	:global(:is(:focus, :focus-visible)){
+		outline-color: #ff65ee;
+		outline-style: solid;
+	}
+
 	:global(body.js-enabled #wrapper) {
 		scrollbar-width: none;
 	}
@@ -420,8 +438,8 @@
 	}
 
 	:global(:is(.primary-btn, .secondary-btn)) {
-		@apply rounded-md backdrop-blur-2xl p-2 border border-white/40 bg-white/40 font-semibold;
-		@apply hover:bg-white/35 focus:bg-white/35;
+		@apply rounded-md backdrop-blur-2xl p-2 border border-white/40 bg-[color-mix(in_srgb,_#5d4b84_90%,_transparent)] font-medium;
+		@apply hover:bg-[color-mix(in_srgb,_#5d4b84_80%,_transparent)] focus:bg-[color-mix(in_srgb,_#5d4b84_80%,_transparent)];
 	}
 
 	.animated-icon {
