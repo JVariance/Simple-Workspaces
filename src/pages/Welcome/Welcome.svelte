@@ -371,22 +371,6 @@
 		@apply rounded-2xl shadow-none;
 		/* @apply backdrop-blur-sm; */
 		background: rgba(0 0 55 / 0.3);
-
-		/* &::before{ */
-			/* background-image: url('https://cdn.pixabay.com/photo/2014/09/30/22/50/sandstone-467714_960_720.jpg'); */
-			/* background-repeat: no-repeat;
-			background-size: cover;
-			background-blend-mode: luminosity;
-			content: "";
-			display: block;
-			position: absolute;
-			inset: 0;
-			background-color: #625eb7;
-			opacity: 0.1;
-			background-image: url('https://addons-media.operacdn.com/media/CACHE/images/themes/10/263410/1.0-rev1/images/3a74c254838a24916ab5bb97b61012d1/2af0f70f4e78e801304baf191f3268e8.jpg');
-			background-position: center;
-			background-size: 220%;
-		} */
 	}
 
 	:global(body) {
@@ -395,7 +379,7 @@
 		background-size: cover;
 
 		&::before{
-			background-image: url('https://cdn.pixabay.com/photo/2014/09/30/22/50/sandstone-467714_960_720.jpg');
+			background-image: url('/images/abstract/welcome-bg.jpg');
 			background-repeat: no-repeat;
 			background-size: cover;
 			background-blend-mode: luminosity;
@@ -405,7 +389,6 @@
 			inset: 0;
 			background-color: #625eb7;
 			opacity: 0.1;
-			background-image: url('https://images.unsplash.com/photo-1679768116177-809cf732bd6d?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
 			background-position: center;
 			background-size: cover;
 		}

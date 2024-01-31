@@ -1,0 +1,25 @@
+/* Element | moz-extension://f3a90262-ee93-48ec-8502-bb6eef18c28a/src/pages/Welcome/welcome.html */
+
+img.absolute {
+	display: none;
+}
+
+/* Inline #6 | moz-extension://f3a90262-ee93-48ec-8502-bb6eef18c28a/src/pages/Welcome/welcome.html */
+
+section.swipe-item.svelte-mct76m {
+	/* background: rgba(0 0 55 / 0.3); */
+	background: rgba(0 0 55 / 0.05);
+	backdrop-filter: blur(14px);
+	border: 1px solid #fff1;
+}
+
+/* Element | moz-extension://f3a90262-ee93-48ec-8502-bb6eef18c28a/src/pages/Welcome/welcome.html */
+
+#start-button {
+	font-size: 16px;
+	font-style: normal;
+	color: #fff;
+	background: #625eb7;
+	border: none;
+	box-shadow: -3px 6px 18px -6px #6460c6;
+}

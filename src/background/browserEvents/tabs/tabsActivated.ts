@@ -31,11 +31,12 @@ export async function tabsOnActivated(
 
 	console.info({ firefoxSearchWasUsed });
 
+	const activeWorkspace = activeWindow.workspaces.find(
+		({ UUID }) => UUID === activeTabWorkspaceUUID
+	);
+
 	if (firefoxSearchWasUsed) {
 		Processes.searchWasUsed = true;
-		const activeWorkspace = activeWindow.workspaces.find(
-			({ UUID }) => UUID === activeTabWorkspaceUUID
-		);
 
 		if (activeWorkspace) {
 			activeWindow.switchWorkspace(activeWorkspace).finally(() => {
@@ -45,5 +46,7 @@ export async function tabsOnActivated(
 				UUID: activeWorkspace.UUID,
 			});
 		}
+	} else {
+		activeWorkspace && (activeWorkspace.activeTabId = activeInfo.tabId);
 	}
 }
