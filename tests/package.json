@@ -1,0 +1,21 @@
+{
+	"name": "tests",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "vitest --silent=false --disable-console-intercept=true"
+	},
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"get-port": "^7.0.0",
+		"playwright-firefox": "^1.41.2",
+		"puppeteer": "^21.10.0",
+		"vitest": "^1.2.2"
+	},
+	"devDependencies": {
+		"jsdom": "^24.0.0",
+		"web-ext": "^7.11.0"
+	}
+}

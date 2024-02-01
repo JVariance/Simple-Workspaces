@@ -23,10 +23,10 @@
 		defaultWorkspaces = unstate(_defaultWorkspaces);
 	});
 
-	let changesMade = $derived((() => {
+	let changesMade = $derived.call(() => {
 		console.info(JSON.stringify(fetchedDefaultWorkspaces) !== JSON.stringify(defaultWorkspaces));
 		return JSON.stringify(fetchedDefaultWorkspaces) !== JSON.stringify(defaultWorkspaces)
-	})());
+	});
 
 	function getNewWorkspace(){
 		return {

@@ -32,10 +32,10 @@
 	let forceDefaultThemeIfDarkMode = $derived(getForceDefaultThemeIfDarkModeState());
 	let activeWorkspace: Ext.Workspace = $derived(homeWorkspace?.active ? homeWorkspace : workspaces?.find(({active}) => active));
 	let searchUnmatchingWorkspaceUUIDS: string[] = $state([]);
-	let viewWorkspaces: Ext.Workspace[] = $derived((() => {
+	let viewWorkspaces: Ext.Workspace[] = $derived.call(() => {
 		const filteredWorkspaces = workspaces.filter(({ UUID }) => !searchUnmatchingWorkspaceUUIDS.includes(UUID));
 		return filteredWorkspaces.length ? filteredWorkspaces : searchInput?.value.length ? [] : workspaces;
-	})());
+	});
 
 	let windowId: number;
 
@@ -460,7 +460,7 @@
 	</div> -->
 	<!-- {#if viewWorkspaces.length && activeWorkspace} -->
 
-	{#snippet SWorkspace([workspace, i])}
+	{#snippet SWorkspace(workspace, i)}
 		{#if workspace}
 			{#if !searchValue.length}
 				<Workspace
@@ -540,7 +540,7 @@
 		{/if}
 		<li class="">
 			{#if !searchUnmatchingWorkspaceUUIDS.includes('HOME')}
-				{@render SWorkspace([homeWorkspace, 0])}
+				{@render SWorkspace(homeWorkspace, 0)}
 			{/if}
 		</li>
 		<div
@@ -560,7 +560,7 @@
 					class="item relative max-w-[100cqw]"
 					transition:slide={{ delay: 0, duration: 175 }}
 				>
-					{@render SWorkspace([workspace, i + 1])}
+					{@render SWorkspace(workspace, i + 1)}
 				</li>
 			{/each}
 		</div>

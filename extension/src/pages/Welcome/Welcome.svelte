@@ -128,7 +128,7 @@
 	});
 </script>
 
-{#snippet ViewSection([id, content]: [number, Snippet])}
+{#snippet ViewSection(id, content)}
 	<section
 		id="view-{id}" 
 		class="
@@ -179,6 +179,7 @@
 					src="/videos/video.mp4" 
 					autoplay
 					muted
+					onended={(e) => setTimeout(() => {(e.target as HTMLVideoElement).play()}, 5000)}
 				/>
 			</OnMount>
 			<OnMount>
@@ -206,7 +207,7 @@
 			<Icon icon="touch" width={42} class="-translate-x-1/4" />
 		</div> -->
 	{/snippet}
-	{@render ViewSection([1, content])}
+	{@render ViewSection(1, content)}
 {/snippet}
 {#snippet ViewConfig()}
 	{#snippet content()}
@@ -263,7 +264,7 @@
 			</ul>
 		</div>
 	{/snippet}
-	{@render ViewSection([2, content])}
+	{@render ViewSection(2, content)}
 {/snippet}
 {#snippet ViewDefaultWorkspaces()}
 	{#snippet content()}
@@ -278,7 +279,7 @@
 			<DefaultWorkspaces dndFinish={() => {swiping = false; scrollViewIntoView();}} />
 		</div>
 	{/snippet}
-	{@render ViewSection([3, content])}
+	{@render ViewSection(3, content)}
 	{/snippet}
 {#snippet ViewShortcuts()}
 	{#snippet content()}
@@ -290,7 +291,7 @@
 		</Info>
 		<Shortcuts />
 	{/snippet}
-	{@render ViewSection([4, content])}	
+	{@render ViewSection(4, content)}	
 {/snippet}
 
 
