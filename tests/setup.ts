@@ -1,37 +1,23 @@
 import { beforeAll, vi } from "vitest";
 import type Browser from "../extension/node_modules/webextension-polyfill";
-
 import type { Browser as PBrowser } from "puppeteer";
 import { afterEach, beforeEach } from "vitest";
 import { firefox } from "playwright-firefox";
 import puppeteer from "puppeteer";
 import path from "path";
-import child_process from "child_process";
 import { connect } from "./node_modules/web-ext/lib/firefox/remote.js";
 import getPort from "get-port";
-import webExt from "web-ext";
 import fs from "node:fs";
 
-// const EXTENSION_PATH = "../extension/dist";
-const EXTENSION_PATH = path.join(process.cwd(), "../extension/dist");
-// const EXTENSION_ID = "eb7c9a05-56f8-47bf-9c14-2c7da7529a02";
 export let browser: PBrowser;
 
+// https://github.com/mozilla/web-ext/issues/1927#issuecomment-1397225305
 export const ADDON_UUID = "eb7c9a05-56f8-47bf-9c14-2c7da7529a02";
 const ADDON_ID = JSON.parse(
 	fs.readFileSync(path.join("../extension/dist", "manifest.json"))
 ).browser_specific_settings.gecko.id;
 
 beforeEach(async () => {
-	// browser = await puppeteer.launch({
-	// 	headless: false,
-	// 	product: "firefox",
-	// 	args: [
-	// 		`--disable-extensions-except=${EXTENSION_PATH}`,
-	// 		`--load-extension=${EXTENSION_PATH}`,
-	// 	],
-	// });
-
 	const rppPort = await getPort();
 	browser = await puppeteer.launch({
 		headless: false,
@@ -49,10 +35,6 @@ beforeEach(async () => {
 
 	const rdp = await connect(rppPort);
 	await rdp.installTemporaryAddon(path.resolve("../extension/dist"));
-
-	// browser = await puppeteer.connect({
-	// 	browserWSEndpoint: "ws://localhost:6080",
-	// });
 });
 
 afterEach(async () => {

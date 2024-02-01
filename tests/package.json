@@ -12,10 +12,10 @@
 		"get-port": "^7.0.0",
 		"playwright-firefox": "^1.41.2",
 		"puppeteer": "^21.10.0",
-		"vitest": "^1.2.2"
+		"vitest": "^1.2.2",
+		"web-ext": "^7.11.0"
 	},
 	"devDependencies": {
-		"jsdom": "^24.0.0",
-		"web-ext": "^7.11.0"
+		"jsdom": "^24.0.0"
 	}
 }

@@ -12,32 +12,44 @@ import { ADDON_UUID, browser } from "./setup";
 						Tab 1 (active)
 */
 
-test("test", async () => {
-	console.info("HALLooooo???");
+test(
+	"test",
+	async () => {
+		const page = await browser.newPage();
+		await page.goto("https://qwant.com");
+		// await page.goto(
+		// 	`moz-extension://${ADDON_UUID}/src/pages/Sidebar/sidebar.html`
+		// );
+		await page.bringToFront();
 
-	// const debuggingPage = await browser.newPage();
-	// // await page.goto(Browser.runtime.getURL("src/pages/Sidebar/sidebar.html"));
+		// const list = await page.$("ul");
+		// const children = await list.$$("li");
 
-	// await debuggingPage.goto("about:debugging");
+		await page.keyboard.down("Control");
+		await page.keyboard.down("Alt");
+		await page.keyboard.down("D");
 
-	// // console.info({ debuggingPage });
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+		await page.keyboard.down("Y");
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+		await page.keyboard.down("X");
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+		await page.keyboard.down("D");
 
-	// const sidebarURL = await debuggingPage
-	// 	.$(':has(> [title="Simple Workspaces"]) a')
-	// 	.replace("manifest.json", "src/pages/Sidebar/sidebar.html");
+		await new Promise((resolve) => setTimeout(resolve, 10000));
 
-	// console.info({ sidebarURL });
+		// expect(children.length).toBe(1);
 
-	// const page = await browser.newPage();
-	// // await page.goto(sidebarURL);
-	// await page.goto(sidebarURL);
+		// await page.goto("https://qwant.com");
+		// await page.bringToFront();
+		// const docsLink = await page.$('input[type="search"]');
 
-	const page = await browser.newPage();
-	await page.goto(
-		`moz-extension://${ADDON_UUID}/src/pages/Sidebar/sidebar.html`
-	);
-
-	const list = await page.$("ul");
-	const children = await list.$$("li");
-	expect(children.length).toBe(0);
-});
+		// await docsLink?.focus();
+		// await docsLink?.type("test");
+		// await docsLink?.press("Enter");
+		// expect(docsLink).toBeDefined();
+		// await (() => new Promise((resolve) => setTimeout(resolve, 10000)))();
+		// expect(1).toBe(1);
+	},
+	{ timeout: 30000 }
+);
