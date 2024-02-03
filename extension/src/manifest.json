@@ -49,7 +49,7 @@
 		},
 		"new-workspace": {
 			"suggested_key": {
-				"default": "Ctrl+Alt+D"
+				"default": "Alt+Shift+5"
 			},
 			"description": "Creates a new workspace."
 		},

@@ -5,6 +5,7 @@ import { afterEach, beforeEach } from "vitest";
 import { firefox } from "playwright-firefox";
 import puppeteer from "puppeteer";
 import path from "path";
+// import { connect } from "web-ext/lib/firefox/remote.js";
 import { connect } from "./node_modules/web-ext/lib/firefox/remote.js";
 import getPort from "get-port";
 import fs from "node:fs";
@@ -22,12 +23,15 @@ beforeEach(async () => {
 	browser = await puppeteer.launch({
 		headless: false,
 		product: "firefox",
+		protocol: "webDriverBiDi",
 		args: [`--start-debugger-server=${rppPort}`],
 		extraPrefsFirefox: {
 			"devtools.chrome.enabled": true,
 			"devtools.debugger.prompt-connection": false,
 			"devtools.debugger.remote-enabled": true,
 			"toolkit.telemetry.reportingpolicy.firstRun": false,
+			// "extensions.webextension.restrictedAPIs.enabled": true,
+			// "extensions.webextension.experimentalAPIs": true,
 			"extensions.webextensions.uuids": `{"${ADDON_ID}": "${ADDON_UUID}"}`,
 		},
 		executablePath: firefox.executablePath(),
