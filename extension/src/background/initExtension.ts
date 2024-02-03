@@ -1,4 +1,9 @@
-import { Processes, TabMenu, WorkspaceStorage } from "./Entities";
+import {
+	BrowserStorage,
+	Processes,
+	TabMenu,
+	WorkspaceStorage,
+} from "./Entities";
 
 async function initTabMenu() {
 	console.info("initTabMenu");
@@ -23,6 +28,9 @@ export async function initExtension() {
 	console.info("initExtension 1");
 	Processes.ExtensionInitialization.start();
 	console.info("initExtension 2");
+
+	const { keepPinnedTabs } = await BrowserStorage.getKeepPinnedTabs();
+	Processes.keepPinnedTabs = keepPinnedTabs ?? false;
 
 	// await browser.storage.local.clear();
 	// if (!WorkspaceStorage.initialized && !TabMenu.initialized) {

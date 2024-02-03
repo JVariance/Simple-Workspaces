@@ -1,5 +1,5 @@
 import type Browser from "webextension-polyfill";
-import { WorkspaceStorage } from "../../Entities";
+import { Processes, WorkspaceStorage } from "../../Entities";
 import { informViews } from "../../informViews";
 
 export function storageOnChanged(
@@ -36,6 +36,9 @@ export function storageOnChanged(
 						bool: item.newValue,
 					});
 				});
+				break;
+			case "keepPinnedTabs":
+				Processes.keepPinnedTabs = item.newValue;
 				break;
 			default:
 				break;

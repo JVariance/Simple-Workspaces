@@ -29,6 +29,14 @@ export class BrowserStorage {
 		});
 	}
 
+	static getKeepPinnedTabs(): Promise<Record<"keepPinnedTabs", boolean>> {
+		return Browser.storage.local.get("keepPinnedTabs");
+	}
+
+	static setKeepPinnedTabs(keepPinnedTabs: boolean): Promise<void> {
+		return Browser.storage.local.set({ keepPinnedTabs });
+	}
+
 	static getTheme(): Promise<Record<"theme", "" | "browser">> {
 		return Browser.storage.local.get("theme");
 	}

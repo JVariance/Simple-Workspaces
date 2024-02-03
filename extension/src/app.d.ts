@@ -4,6 +4,7 @@ namespace Ext {
 		icon: string;
 		name: string;
 		tabIds: number[];
+		pinnedTabIds: number[];
 		active: boolean;
 		activeTabId?: number;
 		windowId: number;

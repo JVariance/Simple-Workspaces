@@ -1,4 +1,5 @@
 import { DeferredPromise } from "@root/utils";
+import { BrowserStorage } from "../Static/Storage";
 
 type Process = keyof typeof Processes;
 
@@ -17,6 +18,7 @@ class Processes {
 	manualTabAddition = false;
 	manualTabRemoval = false;
 	searchWasUsed = false;
+	keepPinnedTabs = false;
 
 	private constructor() {
 		// this.ExtensionInitialization.finish();

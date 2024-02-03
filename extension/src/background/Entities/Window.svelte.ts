@@ -5,6 +5,7 @@ import Browser from "webextension-polyfill";
 import { BrowserStorage } from "./Static/Storage";
 import { createTab } from "../browserAPIWrapper/tabCreation";
 import Processes from "./Singletons/Processes";
+import WorkspaceStorage from "./Singletons/WorkspaceStorage";
 
 type EnhancedTab = Browser.Tabs.Tab & { workspaceUUID?: string };
 
@@ -83,7 +84,10 @@ export class Window {
 
 			this.#workspaces = Array.from(localWorkspaces.values());
 		} else {
-			let tabIds = tabs.map((tab) => tab.id!);
+			const tabIds = tabs.map((tab) => tab.id!);
+			const pinnedTabIds = tabs
+				.filter(({ active }) => active)
+				.map(({ id }) => id!);
 
 			const { homeWorkspace: localHomeWorkspace } =
 				await Browser.storage.local.get("homeWorkspace");
@@ -98,6 +102,7 @@ export class Window {
 				active: true,
 				activeTabId: tabs.find(({ active }) => active)?.id!,
 				tabIds: [...tabIds],
+				pinnedTabIds: [...pinnedTabIds],
 			};
 
 			const blankTab = (
@@ -320,6 +325,7 @@ export class Window {
 			icon: "🐠",
 			name: `Workspace`,
 			tabIds: [],
+			pinnedTabIds: [],
 			active: true,
 			windowId: this.#windowId,
 			activeTabId: undefined,
@@ -458,15 +464,24 @@ export class Window {
 		console.info("switchWorkspace()");
 		// Processes.WorkspaceSwitch.start();
 		this.switchingWorkspace = true;
-		const previousActiveWorkspaceUUID = this.activeWorkspace.UUID;
+		const previousActiveWorkspace = this.activeWorkspace;
+		const previousActiveWorkspaceUUID = previousActiveWorkspace.UUID;
 
-		const currentTabIds = this.activeWorkspace.tabIds;
+		const currentTabIds = previousActiveWorkspace.tabIds;
 		const nextTabIds = workspace.tabIds;
 
 		this.activeWorkspace.active = false;
 		workspace.active = true;
 
 		await API.showTabs(nextTabIds);
+		if (!Processes.keepPinnedTabs) {
+			await API.updateTabs(
+				workspace.pinnedTabIds.map((id) => ({
+					id,
+					props: { pinned: true },
+				}))
+			);
+		}
 		if (Processes.searchWasUsed) {
 			workspace.activeTabId = (
 				await API.queryTabs({
@@ -483,6 +498,14 @@ export class Window {
 			currentTabIds.length &&
 			previousActiveWorkspaceUUID !== workspace.UUID
 		) {
+			if (!Processes.keepPinnedTabs) {
+				await API.updateTabs(
+					previousActiveWorkspace.pinnedTabIds.map((id) => ({
+						id,
+						props: { pinned: false },
+					}))
+				);
+			}
 			API.hideTabs(currentTabIds).then(
 				({ hiddenIds, errorIds, ignoredIds }) => {
 					if (!errorIds?.length) {
