@@ -13,7 +13,7 @@
 	) {
 		event.stopImmediatePropagation();
 		const toast = createRoot(Toast, {
-			target: document.body,
+			target: document.getElementById("toaster") ?? document.body,
 			props: {
 				state: "loading",
 				loadingMessage: i18n.getMessage("applying_changes"),

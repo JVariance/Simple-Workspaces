@@ -21,13 +21,14 @@
 
 	async function applyCurrentWorkspacesChanges() {
 		const toast = createRoot(Toast, {
-			target: document.body,
+			target: document.getElementById('toaster') ?? document.body,
 			props: {
-			state: "loading",
-			loadingMessage: i18n.getMessage("applying_changes"),
-			successMessage: i18n.getMessage("applied_changes"),
-			errorMessage: "something went wrong",
-		}});
+				state: "loading",
+				loadingMessage: i18n.getMessage("applying_changes"),
+				successMessage: i18n.getMessage("applied_changes"),
+				errorMessage: "something went wrong",
+			}
+		});
 
 		await persistCurrentWorkspaces();
 		toast.$set({state: 'success'});

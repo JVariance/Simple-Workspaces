@@ -6,7 +6,7 @@
 </script>
 
 {@render children()}
-<div id="toaster" class="grid gap-2 sticky bottom-4 ml-4"/>
+<div id="toaster" class="grid gap-2 sticky bottom-4 ml-4 pointer-events-none"/>
 
 <style lang="postcss">
 	:global(html) {
