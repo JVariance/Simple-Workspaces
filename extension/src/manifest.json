@@ -15,6 +15,7 @@
 		"<all_urls>",
 		"activeTab",
 		"cookies",
+		"contextualIdentities",
 		"menus",
 		"scripting",
 		"sessions",

@@ -3,8 +3,6 @@
 ### Content
 ### Translations
 ### Logic
-[] hide pinned tabs per workspaces if setting is enabled
- - tabs.onRemoved?
 [] better emoji picker focus handling
 [] highlight workspace which received new tabs (after send action)
 ### Bugs

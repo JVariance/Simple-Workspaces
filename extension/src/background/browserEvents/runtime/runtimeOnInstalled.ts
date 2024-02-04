@@ -2,6 +2,7 @@ import Browser from "webextension-polyfill";
 import * as API from "@root/browserAPI";
 import { initExtension } from "../../initExtension";
 import { Processes } from "../../Entities";
+import { createTab } from "@root/background/browserAPIWrapper/tabCreation";
 
 export async function runtimeOnInstalled(
 	details: Browser.Runtime.OnInstalledDetailsType
@@ -19,7 +20,7 @@ export async function runtimeOnInstalled(
 
 	switch (details.reason) {
 		case "install":
-			API.createTab({
+			createTab({
 				url: Browser.runtime.getURL("src/pages/Welcome/welcome.html"),
 				active: true,
 			});
