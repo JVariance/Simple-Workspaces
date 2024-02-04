@@ -117,8 +117,8 @@
     "message": "You can edit the command's shortcuts via Firefox' 'Manage Your Extensions' page.",
     "description": ""
   },
-  "There_are_no_current_worspaces_in_this_window": {
-    "message": "There are no current worspaces in this window"
+  "There_are_no_current_workspaces_in_this_window": {
+    "message": "There are no current workspaces in this window"
   },
   "want_to_see_the_welcome_page_again": {
     "message": "Want to see the Welcome Page again?"
@@ -191,5 +191,8 @@
   },
   "keep_pinned_tabs": {
     "message": "keep all pinned tabs visible"
+  },
+  "version": {
+    "message": "version"
   }
 }

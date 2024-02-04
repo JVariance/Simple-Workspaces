@@ -61,10 +61,13 @@
 
 <Layout>
 	<div class="p-8">
-		<h2 class="flex items-center gap-2 m-0 mb-4 text-lg first-letter:uppercase">
-			<Logo />
-			Simple Workspaces
-		</h2>
+		<div class="flex items-center gap-2 mb-4 justify-between">
+			<h2 class="flex items-center gap-2 m-0 text-lg first-letter:uppercase">
+				<Logo />
+				Simple Workspaces
+			</h2>
+			<p class="text-black/75 dark:text-white/75">{i18n.getMessage('version')}: {Browser.runtime.getManifest().version}</p>
+		</div>
 
 		<!-- <h1 class="first-letter:uppercase mb-2">{i18n.getMessage('options')}</h1> -->
 
@@ -105,7 +108,7 @@
 						<span class="-mt-1">{i18n.getMessage('apply_changes')}</span>
 					</button>
 					{:else}
-					{i18n.getMessage('There_are_no_current_worspaces_in_this_window')}.
+					{i18n.getMessage('There_are_no_current_workspaces_in_this_window')}.
 				{/if}
 			{/snippet}
 			{#snippet Section_DefaultWorkspaces()}

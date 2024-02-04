@@ -117,7 +117,7 @@
     "message": "Du kannst die Tastaturkürzel der Befehle über Firefox' &quot;Erweiterungen verwalten&quot;-Seite festlegen.",
     "description": ""
   },
-  "There_are_no_current_worspaces_in_this_window": {
+  "There_are_no_current_workspaces_in_this_window": {
     "message": "Das aktuelle Fenster hat noch keine Arbeitsbereiche"
   },
   "want_to_see_the_welcome_page_again": {
@@ -191,5 +191,8 @@
   },
   "keep_pinned_tabs": {
     "message": "alle angehefteten Tabs sichtbar halten"
+  },
+  "version": {
+    "message": "Version"
   }
 }
