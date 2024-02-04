@@ -185,5 +185,11 @@
   },
   "welcome_to": {
     "message": "Welcome to"
+  },
+  "tab_pinning": {
+    "message": "Tab Pinning"
+  },
+  "keep_pinned_tabs": {
+    "message": "keep all pinned tabs visible"
   }
 }

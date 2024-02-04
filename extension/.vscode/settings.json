@@ -1,7 +1,4 @@
 {
-	"i18n-ally.localesPaths": ["public/_locales"],
-	"i18n-ally.enabledFrameworks": ["svelte", "chrome-ext"],
-	"i18n-ally.keystyle": "nested",
 	"tailwindCSS.classAttributes": [
 		"class",
 		"className",
@@ -9,5 +6,5 @@
 		"detailsClasses",
 		"summaryClasses",
 		"contentClasses"
-	],
+	]
 }

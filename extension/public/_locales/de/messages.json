@@ -185,5 +185,11 @@
   },
   "welcome_to": {
     "message": "Willkommen bei"
+  },
+  "tab_pinning": {
+    "message": "Tab-Anheftung"
+  },
+  "keep_pinned_tabs": {
+    "message": "alle angehefteten Tabs sichtbar halten"
   }
 }

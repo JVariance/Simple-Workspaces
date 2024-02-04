@@ -86,7 +86,7 @@ export class Window {
 		} else {
 			const tabIds = tabs.map((tab) => tab.id!);
 			const pinnedTabIds = tabs
-				.filter(({ active }) => active)
+				.filter(({ pinned }) => pinned)
 				.map(({ id }) => id!);
 
 			const { homeWorkspace: localHomeWorkspace } =

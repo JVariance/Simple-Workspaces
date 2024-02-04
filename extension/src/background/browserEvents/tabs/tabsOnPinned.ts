@@ -1,25 +1,31 @@
 import type Browser from "webextension-polyfill";
 import * as API from "@root/browserAPI";
-import { WorkspaceStorage } from "@root/background/Entities";
+import { Processes, WorkspaceStorage } from "@root/background/Entities";
 
 export async function tabsOnPinned(
 	tabId: number,
-	pinned: Browser.Tabs.OnUpdatedChangeInfoType["pinned"],
+	changeInfo: Browser.Tabs.OnUpdatedChangeInfoType,
 	tab: Browser.Tabs.Tab
 ) {
-	const workspaceUUID = await API.getTabValue(tabId, "workspaceUUID");
+	const { pinned } = changeInfo;
 	const activeWindow = WorkspaceStorage.activeWindow;
+	const activeWorkspace = activeWindow.activeWorkspace;
+
+	const workspaceUUID = await API.getTabValue(tabId, "workspaceUUID");
 	const workspace = activeWindow.workspaces.find(
 		({ UUID }) => UUID === workspaceUUID
 	)!;
 
-	console.info("tabsOnPinned", { pinned, activeWindow, workspace });
+	console.info("tabsOnPinned", pinned, tabId, changeInfo, tab);
 
 	if (pinned) {
-		workspace.pinnedTabIds.push(tabId);
+		!workspace.pinnedTabIds.includes(tabId) &&
+			workspace.pinnedTabIds.push(tabId);
 	} else {
-		workspace.pinnedTabIds = workspace.pinnedTabIds.filter(
-			(id) => id !== tabId
-		);
+		const unpinningIsUserInitiated = workspace.UUID === activeWorkspace.UUID;
+		unpinningIsUserInitiated &&
+			(workspace.pinnedTabIds = workspace.pinnedTabIds.filter(
+				(id) => id !== tabId
+			));
 	}
 }

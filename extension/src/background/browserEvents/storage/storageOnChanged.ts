@@ -1,6 +1,7 @@
 import type Browser from "webextension-polyfill";
 import { Processes, WorkspaceStorage } from "../../Entities";
 import { informViews } from "../../informViews";
+import * as API from "@root/browserAPI";
 
 export function storageOnChanged(
 	changes: Browser.Storage.StorageAreaOnChangedChangesType
@@ -39,6 +40,35 @@ export function storageOnChanged(
 				break;
 			case "keepPinnedTabs":
 				Processes.keepPinnedTabs = item.newValue;
+				if (typeof item.newValue === "boolean") {
+					const activeWindow = WorkspaceStorage.activeWindow;
+					if (item.newValue) {
+						activeWindow?.workspaces.forEach((workspace) => {
+							API.updateTabs(
+								workspace.pinnedTabIds.map((tabId) => ({
+									id: tabId,
+									props: {
+										pinned: true,
+									},
+								}))
+							);
+						});
+					} else {
+						const activeWorkspace = activeWindow.activeWorkspace;
+						const nonActiveWorkspacePinnedTabIds = activeWindow.workspaces
+							.filter((workspace) => workspace.UUID !== activeWorkspace.UUID)
+							.flatMap((workspace) => workspace.pinnedTabIds);
+						API.updateTabs(
+							nonActiveWorkspacePinnedTabIds.map((tabId) => ({
+								id: tabId,
+								props: {
+									pinned: false,
+								},
+							}))
+						);
+						API.hideTabs(nonActiveWorkspacePinnedTabIds);
+					}
+				}
 				break;
 			default:
 				break;

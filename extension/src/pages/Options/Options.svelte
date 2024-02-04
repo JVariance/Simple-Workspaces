@@ -12,10 +12,12 @@
 	import Logo from "@root/components/Logo.svelte";
 	import HomeWorkspace from "@root/components/ViewBlocks/HomeWorkspace.svelte";
 	import Layout from "@pages/Special_Pages/Layout.svelte";
-	import { getWorkspacesState } from "@pages/states.svelte";
+	import { getKeepPinnedTabs, getWorkspacesState } from "@pages/states.svelte";
 	import ThemeSwitch from "@root/components/ViewBlocks/ThemeSwitch.svelte";
+	import { BrowserStorage } from "@root/background/Entities";
 
 	let windowWorkspaces = $derived(getWorkspacesState()?.filter(({ UUID }) => UUID !== "HOME") || []);
+	let keepPinnedTabs = $derived(getKeepPinnedTabs());
 
 	async function applyCurrentWorkspacesChanges() {
 		const toast = createRoot(Toast, {
@@ -44,9 +46,13 @@
 			msg: "clearExtensionData",
 		});
 	}
+
+	function keepPinnedTabsChanged(e) {
+		BrowserStorage.setKeepPinnedTabs(e.target.checked);
+	}
 </script>
 
-{#snippet Section([content, classes]: [Snippet, string])}
+{#snippet Section(content, classes)}
 	<section class="p-2 border border-solid rounded-md border-gray-100 dark:border-neutral-800 bg-neutral-50/30 dark:bg-[#23222b] {classes}">
 		{@render content()}
 	</section>
@@ -110,6 +116,18 @@
 					<DefaultWorkspaces />
 				</div>
 			{/snippet}
+			{#snippet Section_TabPinning()}
+				<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('tab_pinning')}</h2>
+				<div class="flex gap-4 items-center w-full">
+					<input
+					type="checkbox"
+					id="keep-pinned-tabs"
+					checked={keepPinnedTabs}
+					onchange={keepPinnedTabsChanged}
+					/>
+					<label for="keep-pinned-tabs" class="-mt-[0.2rem]">{i18n.getMessage("keep_pinned_tabs")}</label>
+				</div>
+			{/snippet}
 			{#snippet Section_Shortcuts()}
 				<h2 class="m-0 mb-4 text-lg flex gap-2 items-center font-semibold">
 					<span class="first-letter:uppercase">{i18n.getMessage('shortcuts')}</span>
@@ -143,14 +161,15 @@
 				</ButtonLink>
 			{/snippet}
 
-			{@render Section([Section_Theme, "basis-full flex-1"])}
-			{@render Section([Section_HomeWorkspace, "basis-full flex-1"])}
-			{@render Section([Section_CurrentWorkspaces, "flex-0"])}
-			{@render Section([Section_DefaultWorkspaces, "flex-1 w-full overflow-auto [scrollbar-gutter:_stable] sm:[scrollbar-gutter:_unset]"])}
-			{@render Section([Section_Shortcuts, "basis-full"])}
-			{@render Section([Section_ClearExtensionData, "basis-full"])}
-			{@render Section([Section_WelcomePage, "flex-0"])}
-			{@render Section([Section_FurtherLinks, "flex-0"])}
+			{@render Section(Section_Theme, "basis-full flex-1")}
+			{@render Section(Section_HomeWorkspace, "basis-full flex-1")}
+			{@render Section(Section_CurrentWorkspaces, "flex-0")}
+			{@render Section(Section_DefaultWorkspaces, "flex-1 w-full overflow-auto scrollbar-gutter:_stable] sm:scrollbar-gutter:_unset]")}
+			{@render Section(Section_TabPinning, "basis-full")}
+			{@render Section(Section_Shortcuts, "basis-full")}
+			{@render Section(Section_ClearExtensionData, "basis-full")}
+			{@render Section(Section_WelcomePage, "flex-0")}
+			{@render Section(Section_FurtherLinks, "flex-0")}
 		</div>
 	</div>
 </Layout>

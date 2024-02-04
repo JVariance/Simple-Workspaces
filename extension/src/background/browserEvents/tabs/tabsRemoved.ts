@@ -12,6 +12,7 @@ export async function tabsOnRemoved(
 	console.info({ tabId, info });
 	console.info({ manualTabRemoval: Processes.manualTabRemoval });
 	Processes.TabRemoval.start();
+	const currentActiveWorkspace = WorkspaceStorage.activeWindow.activeWorkspace;
 
 	if (Processes.manualTabRemoval) {
 		Processes.TabRemoval.finish();
@@ -27,9 +28,16 @@ export async function tabsOnRemoved(
 	console.info("tab removed");
 
 	const window = WorkspaceStorage.getWindow(info.windowId);
-	const prevActiveWorkspace = window.workspaces.find((workspace) =>
+	const removedTabsWorkspace = window.workspaces.find((workspace) =>
 		workspace.tabIds.includes(tabId)
 	)!;
+
+	const tabWasPinned = removedTabsWorkspace.pinnedTabIds.includes(tabId);
+
+	if (tabWasPinned) {
+		removedTabsWorkspace.pinnedTabIds =
+			removedTabsWorkspace.pinnedTabIds.filter((id) => id !== tabId);
+	}
 
 	const newActiveTab = (
 		await API.queryTabs({
@@ -53,32 +61,39 @@ export async function tabsOnRemoved(
 	Processes.TabRemoval.finish();
 
 	console.info({
-		prevActiveWorkspace,
+		removedTabsWorkspace,
 		newActiveWorkspace,
 	});
 
-	if (
-		prevActiveWorkspace.UUID !== newActiveWorkspace?.UUID &&
-		!prevActiveWorkspace.tabIds.length
-	) {
+	const removedTabsWorkspaceHasNoTabs =
+		removedTabsWorkspace.UUID !== newActiveWorkspace?.UUID &&
+		!removedTabsWorkspace.tabIds.length;
+
+	if (removedTabsWorkspaceHasNoTabs) {
 		console.info("| activeWorkspace has no tabs");
 		const newTab = (await createTab(
 			{
 				active: false,
 				windowId: window.windowId,
 			},
-			prevActiveWorkspace
+			removedTabsWorkspace
 		))!;
 
 		await API.setTabValue(
 			newTab.id!,
 			"workspaceUUID",
-			prevActiveWorkspace.UUID
+			removedTabsWorkspace.UUID
 		);
 
 		await window.switchWorkspace(newActiveWorkspace);
 
-		if (prevActiveWorkspace.UUID === "HOME" && !info.isWindowClosing) {
+		const tabWasPinnedAndClosedFromOutsideWorkspace =
+			tabWasPinned && currentActiveWorkspace.UUID === newActiveWorkspace.UUID;
+
+		tabWasPinnedAndClosedFromOutsideWorkspace &&
+			(await API.hideTab(newTab.id!));
+
+		if (removedTabsWorkspace.UUID === "HOME" && !info.isWindowClosing) {
 			console.info("?????");
 			// if first and only tab closed in first (home) workspace, hide active tab from other workspace and activate newly created tab
 			await API.updateTab(newTab.id!, { active: true });

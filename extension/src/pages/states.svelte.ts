@@ -10,6 +10,7 @@ let theme = $state<"browser" | "">("");
 let systemTheme = $state<"dark" | "light">("dark");
 let forceDefaultThemeIfDarkMode = $state<boolean>(false);
 let activeWorkspaceIndex = $state<number>();
+let keepPinnedTabs = $state<boolean>(false);
 
 export const getWorkspacesState = () => workspaces;
 export const getDefaultWorkspacesState = () => defaultWorkspaces;
@@ -19,6 +20,7 @@ export const getForceDefaultThemeIfDarkModeState = () =>
 	forceDefaultThemeIfDarkMode;
 export const getSystemThemeState = () => systemTheme;
 export const getActiveWorkspaceIndexState = () => activeWorkspaceIndex;
+export const getKeepPinnedTabs = () => keepPinnedTabs;
 
 function addedWorkspace({ workspace }: { workspace: Ext.Workspace }) {
 	console.info("states: addedWorkspace");
@@ -173,6 +175,12 @@ function forceDefaultThemeIfDarkModeChanged({ bool }: { bool: boolean }) {
 	forceDefaultThemeIfDarkMode = bool;
 }
 
+async function setKeepPinnedTabs() {
+	const { keepPinnedTabs: _keepPinnedTabs } =
+		await BrowserStorage.getKeepPinnedTabs();
+	keepPinnedTabs = _keepPinnedTabs;
+}
+
 Browser.runtime.onMessage.addListener((message) => {
 	console.info("browser runtime onmessage");
 	const { windowId: targetWindowId, msg } = message;
@@ -240,6 +248,7 @@ $effect.root(() => {
 				setHomeWorkspace(),
 				setSystemTheme(),
 				setTheme(),
+				setKeepPinnedTabs(),
 				setForceDefaultThemeIfDarkMode(),
 			]);
 		})();
