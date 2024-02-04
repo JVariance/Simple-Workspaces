@@ -33,7 +33,8 @@ async function batchHideTabs(tabIds: number[]) {
 	return { hiddenIds, errorIds, ignoredIds };
 }
 
-export async function hideTab(tabId: number) {
+export async function hideTab(tabId: number | undefined) {
+	if (!tabId) return undefined;
 	return Browser.tabs
 		.hide(tabId)
 		.then((tabs) => tabs?.at(0))

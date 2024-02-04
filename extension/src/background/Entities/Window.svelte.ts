@@ -5,7 +5,6 @@ import Browser from "webextension-polyfill";
 import { BrowserStorage } from "./Static/Storage";
 import { createTab } from "../browserAPIWrapper/tabCreation";
 import Processes from "./Singletons/Processes";
-import WorkspaceStorage from "./Singletons/WorkspaceStorage";
 
 type EnhancedTab = Browser.Tabs.Tab & { workspaceUUID?: string };
 
@@ -405,13 +404,18 @@ export class Window {
 					...defaultWorkspace,
 					active: false,
 				};
-				await createTab(
+
+				this.workspaces.push(newWorkspace);
+
+				const tab = await createTab(
 					{
 						active: false,
 						windowId: this.#windowId,
 					},
 					newWorkspace
 				);
+
+				await API.hideTab(tab?.id!);
 
 				console.info("lollilollo");
 			}

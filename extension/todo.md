@@ -3,7 +3,6 @@
 ### Content
 ### Translations
 ### Logic
-[] fix forcing default workspaces only apply up to existing workspace count
 [] better emoji picker focus handling
 [] highlight workspace which received new tabs (after send action)
 ### Bugs
