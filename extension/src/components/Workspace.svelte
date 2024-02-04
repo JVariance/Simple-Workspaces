@@ -206,15 +206,19 @@
 				onclick={_switchWorkspace}
 				class="reset w-full outline-transparent outline-none flex items-center gap-4 {active
 					? '!cursor-default'
-					: ''}"
+					: ''} min-w-0"
 				data-focusable
 				bind:this={workspaceButton}
 			>
 				<span
-					class="text-2xl w-[1ch] overflow-hidden text-center"
+					class="text-2xl w-[1.25ch] overflow-hidden text-center"
 					style:font-family="Noto Color Emoji">{icon}</span
 				>
-				<span class="{active ? 'font-bold' : ''} text-lg">{name}</span>
+				<span
+					class="{active
+						? 'font-bold'
+						: ''} text-lg w-full overflow-hidden text-ellipsis text-left">{name}</span
+				>
 				<!-- <span>({tabIds.join(",")})</span> -->
 			</button>
 			{#if UUID === "HOME"}

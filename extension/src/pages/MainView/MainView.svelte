@@ -400,27 +400,19 @@
 		<div class="flex flex-wrap gap-1 absolute top-0 right-0 z-[51]">
 			<details class="bg-neutral-950 p-1 rounded-md">
 				<summary></summary>
+				{#each [
+					["show all tabs", () => Browser.runtime.sendMessage({ msg: "showAllTabs" })], 
+					["reload all tabs", () => Browser.runtime.sendMessage({ msg: "reloadAllTabs" })],
+					["clear DB", () => Browser.storage.local.clear()],
+					["log windows", () => Browser.runtime.sendMessage({msg: "logWindows"})],
+					["open sidebar page", () => Browser.tabs.create({url: Browser.runtime.getURL('src/pages/Sidebar/sidebar.html')})]
+				] as btnEvent}
 				<button
 					class="mb-2 border rounded-md p-1"
 					onclick={() => {
-						Browser.runtime.sendMessage({ msg: "showAllTabs" });
-					}}>show all tabs</button
-				>
-				<button
-					class="mb-2 border rounded-md p-1"
-					onclick={() => {
-						Browser.runtime.sendMessage({ msg: "reloadAllTabs" });
-					}}>reload all tabs</button
-				>
-				<button
-					class="mb-2 border rounded-md p-1"
-					onclick={() => {
-						Browser.storage.local.clear();
-					}}>clear DB</button
-				>
-				<button class="mb-2 border rounded-md p-1" onclick={() => {Browser.runtime.sendMessage({msg: "logWindows"})}}>
-					log windows
-				</button>
+						btnEvent[1]();
+					}}>{btnEvent[0]}</button>
+				{/each}
 			</details>
 		</div>
 	{/if}
