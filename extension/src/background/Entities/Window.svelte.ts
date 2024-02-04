@@ -448,20 +448,26 @@ export class Window {
 		return newWorkspace;
 	}
 
-	async removeWorkspace(UUID: Ext.Workspace["UUID"]) {
+	async removeWorkspace(
+		UUID: Ext.Workspace["UUID"]
+	): Promise<Ext.Workspace | undefined> {
 		Processes.manualTabRemoval = true;
 		const workspace = this.#workspaces.find(
 			(workspace) => workspace.UUID === UUID
 		)!;
+		let previousWorkspace = undefined;
 
-		if (this.#workspaces.length <= 1) return;
+		if (this.#workspaces.length <= 1) return previousWorkspace;
 
-		if (workspace.active) await this.switchToPreviousWorkspace();
+		if (workspace.active)
+			previousWorkspace = await this.switchToPreviousWorkspace();
 		await API.removeTabs(workspace.tabIds);
 
 		this.#workspaces = this.#workspaces.filter(
 			(workspace) => workspace.UUID !== UUID
 		);
+
+		return previousWorkspace;
 	}
 
 	async switchWorkspace(workspace: Ext.Workspace) {

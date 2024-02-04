@@ -94,9 +94,18 @@ export async function runtimeOnMessage(
 				return resolve(unstate(workspaces));
 			});
 		case "removeWorkspace":
-			return WorkspaceStorage.getWindow(message.windowId).removeWorkspace(
-				message.workspaceUUID
-			);
+			(async () => {
+				const previousWorkspace = await WorkspaceStorage.getWindow(
+					message.windowId
+				).removeWorkspace(message.workspaceUUID);
+
+				previousWorkspace &&
+					informViews(
+						WorkspaceStorage.activeWindow.windowId,
+						"updatedActiveWorkspace",
+						{ UUID: previousWorkspace.UUID }
+					);
+			})();
 		case "reorderedWorkspaces":
 			(async () => {
 				const { sortedWorkspacesIds, windowId } = message as {
