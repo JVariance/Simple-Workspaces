@@ -177,6 +177,8 @@ export class Window {
 			({ UUID }) => UUID === workspaceUUID
 		);
 
+		console.info({ tabId, workspace, workspaceUUID });
+
 		if (workspace) {
 			workspace.tabIds.push(tabId);
 

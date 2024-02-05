@@ -9,6 +9,8 @@ export async function tabsOnActivated(
 	/* 
 		if user searched a tab via Firefox' search feature
 	*/
+	console.info("tabsOnActivated");
+	const runningTabsOnCreated = Processes.runningTabsOnCreated;
 
 	const previousTab = await API.getTab(activeInfo.previousTabId);
 	const currentTab = await API.getTab(activeInfo.tabId);
@@ -25,6 +27,7 @@ export async function tabsOnActivated(
 
 	const firefoxSearchWasUsed =
 		// areNullish(activeTabWorkspaceUUID, previousTabWorkspaceUUID) &&
+		!runningTabsOnCreated &&
 		activeTabWorkspaceUUID !== previousTabWorkspaceUUID &&
 		activeTabWorkspaceUUID !== activeWindow.activeWorkspace.UUID &&
 		previousTab?.windowId === currentTab?.windowId;

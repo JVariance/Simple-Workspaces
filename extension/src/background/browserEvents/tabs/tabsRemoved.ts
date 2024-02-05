@@ -79,11 +79,11 @@ export async function tabsOnRemoved(
 			removedTabsWorkspace
 		))!;
 
-		await API.setTabValue(
-			newTab.id!,
-			"workspaceUUID",
-			removedTabsWorkspace.UUID
-		);
+		// await API.setTabValue(
+		// 	newTab.id!,
+		// 	"workspaceUUID",
+		// 	removedTabsWorkspace.UUID
+		// );
 
 		await window.switchWorkspace(newActiveWorkspace);
 
