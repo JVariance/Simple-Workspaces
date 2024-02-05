@@ -191,7 +191,7 @@ export class Window {
 		}
 	}
 
-	async addTab(tabId: number, workspace = this.activeWorkspace) {
+	async addTab(tabId: number, workspace?: Ext.Workspace) {
 		console.info("addTab");
 		await this.addTabs([tabId], workspace);
 	}

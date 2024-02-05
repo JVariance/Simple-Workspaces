@@ -157,7 +157,7 @@ class WorkspaceStorage {
 		const parentWorkspace = window?.workspaces.find((workspace) =>
 			workspace.tabIds.includes(tabIds?.at(0)!)
 		);
-		await window?.removeTabs(tabIds);
+		await window?.removeTabs(tabIds, parentWorkspace);
 		const currentTabIds = parentWorkspace?.tabIds;
 
 		console.log({ currentTabIds, parentWorkspace, window });
