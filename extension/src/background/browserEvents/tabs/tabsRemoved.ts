@@ -55,7 +55,7 @@ export async function tabsOnRemoved(
 		({ UUID }) => UUID === newActiveWorkspaceUUID
 	)!;
 
-	await window.removeTab(tabId);
+	await window.removeTab(tabId, removedTabsWorkspace);
 
 	informViews(window.windowId, "removedTab", { tabId });
 	Processes.TabRemoval.finish();

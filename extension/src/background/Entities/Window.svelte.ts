@@ -234,8 +234,8 @@ export class Window {
 		Processes.manualTabAddition = false;
 	}
 
-	async removeTab(tabId: number) {
-		this.removeTabs([tabId]);
+	async removeTab(tabId: number, workspace?: Ext.Workspace) {
+		this.removeTabs([tabId], workspace);
 	}
 
 	async removeTabs(tabIds: number[], workspace = this.activeWorkspace) {
