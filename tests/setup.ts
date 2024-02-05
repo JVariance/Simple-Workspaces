@@ -33,8 +33,10 @@ beforeEach(async () => {
 			// "extensions.webextension.restrictedAPIs.enabled": true,
 			// "extensions.webextension.experimentalAPIs": true,
 			"extensions.webextensions.uuids": `{"${ADDON_ID}": "${ADDON_UUID}"}`,
+			// "remote.log.level": "Trace",
 		},
 		executablePath: firefox.executablePath(),
+		// dumpio: true,
 	});
 
 	const rdp = await connect(rppPort);

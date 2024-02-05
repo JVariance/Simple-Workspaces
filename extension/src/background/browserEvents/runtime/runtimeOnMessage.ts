@@ -99,12 +99,17 @@ export async function runtimeOnMessage(
 					message.windowId
 				).removeWorkspace(message.workspaceUUID);
 
-				previousWorkspace &&
+				if (previousWorkspace) {
+					await informViews(
+						WorkspaceStorage.activeWindow.windowId,
+						"updatedWorkspaces"
+					);
 					informViews(
 						WorkspaceStorage.activeWindow.windowId,
 						"updatedActiveWorkspace",
 						{ UUID: previousWorkspace.UUID }
 					);
+				}
 			})();
 		case "reorderedWorkspaces":
 			(async () => {

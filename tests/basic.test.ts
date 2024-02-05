@@ -57,14 +57,14 @@ test(
 
 		// await createNewWorkspace(page);
 		const page2 = await browser.newPage();
-		await page2.goto("https://qwant.com", { waitUntil: "networkidle0" });
+		await page2.goto("https://qwant.com", { waitUntil: "domcontentloaded" });
 		await page2.bringToFront();
+		await page2.keyboard.down("Control");
 		await page2.keyboard.down("Alt");
-		await page2.keyboard.down("Shift");
-		await page2.keyboard.down("5");
-		await page2.keyboard.up("5");
+		await page2.keyboard.down("D");
+		await page2.keyboard.up("D");
 		await page2.keyboard.up("Alt");
-		await page2.keyboard.up("Shift");
+		await page2.keyboard.up("Control");
 		// await page2.keyboard.type("welcome");
 		await sleep(3000);
 		const children = await list.$$("li");
