@@ -29,7 +29,7 @@ async function createNewContainerTab() {
 
 	console.info("createNewContainerTab");
 	console.log(currentTab?.cookieStoreId);
-	Processes.manualTabAddition = true;
+	Processes.ManualTabAddition.start();
 	if (currentTab?.cookieStoreId?.split("-")[1] === "container") {
 		await createTab(
 			{
@@ -40,7 +40,7 @@ async function createNewContainerTab() {
 			WorkspaceStorage.activeWindow.activeWorkspace
 		);
 	}
-	Processes.manualTabAddition = false;
+	Processes.ManualTabAddition.finish();
 }
 
 export async function commandsOnCommand(command: string) {

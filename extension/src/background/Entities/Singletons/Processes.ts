@@ -13,9 +13,9 @@ class Processes {
 	WindowCreation = new DeferredPromise<void>();
 	WindowRemoval = new DeferredPromise<void>();
 	WorkspaceSwitch = new DeferredPromise<void>();
+	ManualTabAddition = new DeferredPromise<void>();
 
 	extensionInitialized = false;
-	manualTabAddition = false;
 	manualTabRemoval = false;
 	searchWasUsed = false;
 	keepPinnedTabs = false;

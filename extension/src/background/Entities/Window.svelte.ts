@@ -110,12 +110,12 @@ export class Window {
 
 			if (blankTab.url === "about:blank") {
 				console.info("is blank tab");
-				Processes.manualTabAddition = true;
+				Processes.ManualTabAddition.start();
 				const newTab = (await API.createTab({
 					active: true,
 					windowId: this.#windowId,
 				}))!;
-				Processes.manualTabAddition = false;
+				Processes.ManualTabAddition.finish();
 
 				// if (newTab) {
 				// 	homeWorkspace.tabIds.push(newTab.id!);
@@ -195,7 +195,7 @@ export class Window {
 	}
 
 	async addTabs(tabIds: number[], workspace = this.activeWorkspace) {
-		Processes.manualTabAddition = true;
+		Processes.ManualTabAddition.start();
 		console.info(
 			!this.activeWorkspace && !workspace,
 			this.switchingWorkspace,
@@ -229,7 +229,7 @@ export class Window {
 		// 	await API.hideTabs(tabIds);
 		// }
 
-		Processes.manualTabAddition = false;
+		Processes.ManualTabAddition.finish();
 	}
 
 	async removeTab(tabId: number) {
@@ -359,7 +359,7 @@ export class Window {
 				windowId: this.#windowId,
 			});
 
-			Processes.manualTabAddition = true;
+			Processes.ManualTabAddition.start();
 			const newTab = (await API.createTab({
 				active: false,
 				windowId: this.#windowId,
@@ -369,7 +369,7 @@ export class Window {
 			newWorkspace.tabIds.push(newTab.id!);
 			newWorkspace.activeTabId = newTab.id!;
 			await API.setTabValue(newTab.id!, "workspaceUUID", newWorkspace.UUID);
-			Processes.manualTabAddition = false;
+			Processes.ManualTabAddition.finish();
 
 			console.info("after: ", { newWorkspace });
 
@@ -438,9 +438,9 @@ export class Window {
 			newWorkspace.tabIds = tabIds;
 			newWorkspace.activeTabId = tabIds.at(-1);
 		} else {
-			Processes.manualTabAddition = true;
+			Processes.ManualTabAddition.start();
 			await createTab({ active: false }, newWorkspace);
-			Processes.manualTabAddition = false;
+			Processes.ManualTabAddition.finish();
 		}
 
 		this.#workspaces = [...this.#workspaces, newWorkspace];

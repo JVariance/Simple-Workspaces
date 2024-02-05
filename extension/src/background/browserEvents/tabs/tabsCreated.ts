@@ -4,27 +4,35 @@ import { informViews } from "../../informViews";
 import * as API from "@root/browserAPI";
 
 export async function tabsOnCreated(tab: Browser.Tabs.Tab) {
-	await Processes.TabRemoval;
-	const manualTabAddition = Processes.manualTabAddition;
+	console.info("Tachjen");
+	console.info(Processes.ManualTabAddition);
+	console.info(Processes.ManualTabAddition.state);
+	await Promise.all([Processes.TabRemoval, Processes.ManualTabAddition]);
+	console.info("tabsOnCreated");
+	console.info(Processes.ManualTabAddition.state);
+	// const manualTabAddition =
+	// 	Processes.ManualTabAddition.state === "pending" ? true : false;
 	const window = await Browser.windows.get(tab.windowId!);
-	console.info({ manualTabAddition });
+	// console.info({ manualTabAddition });
 
 	const tabSessionWorkspaceUUID = await API.getTabValue(
 		tab.id!,
 		"workspaceUUID"
 	);
 
-	if (!manualTabAddition && tabSessionWorkspaceUUID) {
+	console.info({ tabSessionWorkspaceUUID });
+
+	if (tabSessionWorkspaceUUID) {
 		await WorkspaceStorage.getWindow(tab.windowId!).restoredTab(
 			tab.id!,
 			tabSessionWorkspaceUUID
 		);
 	}
 
-	if (manualTabAddition) {
-		Processes.manualTabAddition = false;
-		return;
-	}
+	// if (manualTabAddition) {
+	// 	Processes.ManualTabAddition.finish();
+	// 	return;
+	// }
 
 	if (window?.type !== "normal" || Processes.WindowCreation.state === "pending")
 		return;

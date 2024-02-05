@@ -9,7 +9,7 @@ export async function createTab(
 ) {
 	console.info("tabCreation - createTab");
 	// console.info({ WindowCreation: Processes.WindowCreation });
-	Processes.manualTabAddition = true;
+	Processes.ManualTabAddition.start();
 	const newTab = await API.createTab(props);
 
 	if (newTab) {
@@ -30,5 +30,6 @@ export async function createTab(
 
 	console.info({ newTab });
 
+	Processes.ManualTabAddition.finish();
 	return newTab;
 }
