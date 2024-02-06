@@ -336,10 +336,15 @@ export class Window {
 			);
 			await API.hideTabs(tabIds);
 		} else {
-			await createTab({
-				windowId: this.#windowId,
-				active: false,
-			});
+			const newTab = (await createTab(
+				{
+					windowId: this.#windowId,
+					active: false,
+				},
+				currentWorkspace
+			))!;
+
+			await API.setTabValue(newTab.id!, "workspaceUUID", currentWorkspace.UUID);
 
 			await this.switchWorkspace(targetWorkspace);
 		}
