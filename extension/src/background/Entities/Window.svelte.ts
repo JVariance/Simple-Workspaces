@@ -74,7 +74,9 @@ export class Window {
 				const activeTab = tabs.find(({ active }) => active);
 				const activeTabId = activeTab?.id!;
 				workspace.tabIds = tabs.flatMap(({ id }) => id!) || [];
-				//TODO: workspace.pinnedTabIds
+				workspace.pinnedTabIds = tabs
+					.filter(({ pinned }) => pinned)
+					.map(({ id }) => id!);
 				workspace.active = activeTab ? true : false;
 				workspace.activeTabId = activeTabId;
 				workspace.windowId = this.#windowId;
