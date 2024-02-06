@@ -48,7 +48,7 @@ export class Workspace {
 	async addTabs(tabIds: number[]) {
 		Processes.manualTabAddition = true;
 		if (tabIds.some((tabId) => this.tabIds.includes(tabId))) return;
-		console.info("addTabs", { tabIds });
+		console.info("addTabs");
 
 		this.activeTabId = tabIds.at(-1);
 		this.tabIds.push(...tabIds);

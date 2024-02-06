@@ -173,27 +173,19 @@ class WorkspaceStorage {
 
 			if (activeTab) {
 				console.info({ activeTab, window, workspaces: window.workspaces });
-
-				const workspaceUUIDOfActiveTab = await API.getTabValue(
-					activeTab.id,
-					"workspaceUUID"
+				const workspaceOfActiveTab = window.findWorkspace((workspace) =>
+					workspace.tabIds.includes(activeTab.id!)
 				);
-
-				const workspaceOfActiveTab = workspaceUUIDOfActiveTab
-					? window.workspacesMap.get(workspaceUUIDOfActiveTab)
-					: undefined;
 
 				console.info({ workspaceOfActiveTab });
 
-				const newTab = await createTab(
+				await createTab(
 					{
 						active: false,
 						windowId: window.windowId,
 					},
 					parentWorkspace
 				);
-
-				await API.hideTab(newTab?.id);
 
 				console.info("ADDED TAB");
 

@@ -1,11 +1,10 @@
 import type { Tabs } from "webextension-polyfill";
 import * as API from "../../browserAPI";
 import { Processes, WorkspaceStorage } from "../Entities";
-import type { Workspace } from "../Entities/Workspace";
 
 export async function createTab(
 	props: Tabs.CreateCreatePropertiesType,
-	workspace: Workspace | undefined = undefined,
+	workspace: Ext.Workspace | undefined = undefined,
 	updateActiveTabId: boolean = true
 ) {
 	console.info("tabCreation - createTab");
