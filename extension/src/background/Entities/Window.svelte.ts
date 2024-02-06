@@ -221,22 +221,16 @@ export class Window {
 		workspace.activeTabId = activeTab?.id ?? tabIds.at(-1);
 		workspace.tabIds.push(...tabIds);
 
+		for (let tabId of tabIds) {
+			const tab = await API.getTab(tabId);
+			tab && tab.pinned && workspace.pinnedTabIds.push(tabId);
+		}
+
 		await Promise.all([
 			tabIds.forEach((tabId) =>
 				API.setTabValue(tabId, "workspaceUUID", workspace.UUID)
 			),
 		]);
-
-		// if (
-		// 	workspace.UUID !== this.activeWorkspace?.UUID &&
-		// 	workspace.windowId === this.activeWorkspace.windowId
-		// ) {
-		// 	console.info("workspace has been sent");
-		// 	/*
-		// 		when tab has been sent to workspace
-		// 	*/
-		// 	await API.hideTabs(tabIds);
-		// }
 
 		Processes.manualTabAddition = false;
 	}
@@ -253,11 +247,17 @@ export class Window {
 		console.info("removeTabs 2");
 
 		workspace.tabIds = workspace.tabIds.filter((id) => !tabIds.includes(id));
+		workspace.pinnedTabIds = workspace.pinnedTabIds.filter(
+			(id) => !tabIds.includes(id)
+		);
 
 		this.#workspaces.forEach((workspace) => {
 			if (workspace.activeTabId) {
 				if (tabIds.includes(workspace.activeTabId)) {
 					workspace.tabIds = workspace.tabIds.filter(
+						(id) => !tabIds.includes(id)
+					);
+					workspace.pinnedTabIds = workspace.pinnedTabIds.filter(
 						(id) => !tabIds.includes(id)
 					);
 					workspace.activeTabId = workspace.tabIds?.at(-1);
