@@ -26,12 +26,14 @@ async function _handleDetachedTabs(tabIds: number[], currentWindowId: number) {
 		UUID: activeWorkspace.UUID,
 	});
 	Processes.TabDetachment.finish();
+	Processes.runningTabsOnDetached = false;
 }
 
 export function tabsOnDetached(
 	tabId: number,
 	detachInfo: Browser.Tabs.OnDetachedDetachInfoType
 ) {
+	Processes.runningTabsOnDetached = true;
 	const { oldWindowId } = detachInfo;
 	collectedDetachedTabs.push(tabId);
 	handleDetachedTabs(collectedDetachedTabs, oldWindowId);

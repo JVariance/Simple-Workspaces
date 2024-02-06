@@ -17,6 +17,7 @@ async function _handleAttachedTabs(tabIds: number[], targetWindowId: number) {
 	});
 	collectedAttachedTabs = [];
 	Processes.TabAttachment.finish();
+	Processes.runningTabsOnAttached = false;
 
 	informViews(targetWindowId, "updatedActiveWorkspace", {
 		UUID: activeWorkspace.UUID,
@@ -29,6 +30,7 @@ export function tabsOnAttached(
 	tabId: number,
 	attachInfo: Browser.Tabs.OnAttachedAttachInfoType
 ) {
+	Processes.runningTabsOnAttached = true;
 	const { newWindowId } = attachInfo;
 	collectedAttachedTabs.push(tabId);
 	handleAttachedTabs(collectedAttachedTabs, newWindowId);

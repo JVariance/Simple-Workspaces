@@ -211,7 +211,14 @@ export class Window {
 			return;
 		console.info("addTabs");
 
-		workspace.activeTabId = tabIds.at(-1);
+		const activeTab = (
+			await API.queryTabs({
+				active: true,
+				windowId: this.#windowId,
+			})
+		).tabs?.at(0);
+
+		workspace.activeTabId = activeTab?.id ?? tabIds.at(-1);
 		workspace.tabIds.push(...tabIds);
 
 		await Promise.all([

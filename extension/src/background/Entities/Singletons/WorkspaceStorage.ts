@@ -130,19 +130,16 @@ class WorkspaceStorage {
 		tabIds: number[];
 		targetWindowId: number;
 	}): Promise<Ext.Workspace> {
-		console.info("moveAttachedTabs");
 		const window = this.getWindow(targetWindowId);
-		await window?.addTabs(tabIds);
+		const activeWorkspace = window?.activeWorkspace;
+		console.info("moveAttachedTabs", activeWorkspace, tabIds);
+		await window?.addTabs(tabIds, activeWorkspace);
 		for (let tabId of tabIds) {
-			await API.setTabValue(
-				tabId,
-				"workspaceUUID",
-				window.activeWorkspace.UUID
-			);
+			await API.setTabValue(tabId, "workspaceUUID", activeWorkspace.UUID);
 		}
 		console.info("End of moveAttachedTabs func");
 
-		return window.activeWorkspace;
+		return activeWorkspace;
 	}
 
 	async moveDetachedTabs({

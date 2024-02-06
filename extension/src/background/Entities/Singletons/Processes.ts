@@ -13,7 +13,7 @@ class Processes {
 	WindowCreation = new DeferredPromise<void>();
 	WindowRemoval = new DeferredPromise<void>();
 	WorkspaceSwitch = new DeferredPromise<void>();
-	TabCreations: DeferredPromise<void>[] = [];
+	TabCreations = new DeferredPromise<void>();
 
 	extensionInitialized = false;
 	manualTabAddition = false;
@@ -21,6 +21,8 @@ class Processes {
 	searchWasUsed = false;
 	keepPinnedTabs = false;
 	runningTabsOnCreated = false;
+	runningTabsOnAttached = false;
+	runningTabsOnDetached = false;
 
 	private constructor() {
 		// this.ExtensionInitialization.finish();
