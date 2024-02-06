@@ -56,7 +56,7 @@ export function storageOnChanged(
 					} else {
 						const activeWorkspace = activeWindow.activeWorkspace;
 						const nonActiveWorkspacePinnedTabIds = activeWindow.workspaces
-							.filter((workspace) => workspace.UUID !== activeWorkspace.UUID)
+							.filter((workspace) => workspace.UUID !== activeWorkspace?.UUID)
 							.flatMap((workspace) => workspace.pinnedTabIds);
 						API.updateTabs(
 							nonActiveWorkspacePinnedTabIds.map((tabId) => ({
