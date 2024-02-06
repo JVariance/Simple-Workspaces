@@ -28,6 +28,14 @@ export async function tabsOnRemoved(
 		workspace.tabIds.includes(tabId)
 	)!;
 
+	const tabWasPinned = removedTabsWorkspace.pinnedTabIds.includes(tabId);
+
+	console.info({ tabWasPinned });
+	if (tabWasPinned) {
+		removedTabsWorkspace.pinnedTabIds =
+			removedTabsWorkspace.pinnedTabIds.filter((id) => id !== tabId);
+	}
+
 	const newActiveTab = (
 		await API.queryTabs({
 			active: true,
@@ -71,6 +79,15 @@ export async function tabsOnRemoved(
 		);
 
 		await window.switchWorkspace(newActiveWorkspace);
+
+		const tabWasPinnedAndClosedFromOutsideWorkspace =
+			tabWasPinned && window.activeWorkspace.UUID === newActiveWorkspace.UUID;
+
+		console.info({ tabWasPinnedAndClosedFromOutsideWorkspace });
+
+		if (tabWasPinnedAndClosedFromOutsideWorkspace) {
+			await API.hideTab(newTab.id!);
+		}
 
 		if (removedTabsWorkspace.UUID === "HOME" && !info.isWindowClosing) {
 			console.info("?????");
