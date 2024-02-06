@@ -3,6 +3,7 @@
 ### Content
 ### Translations
 ### Logic
+[] remove workspace.hidden attribute?
 [] better emoji picker focus handling
 [] highlight workspace which received new tabs (after send action)
 ### Bugs
