@@ -10,13 +10,13 @@ const runSwitchWorkspaceCommand = debounceFunc(switchWorkspaceCommand, 250);
 function switchWorkspaceCommand({ workspaceUUID }: { workspaceUUID: string }) {
 	console.info("switchWorkspaceCommand", workspaceUUID);
 
-	if (workspaceUUID === WorkspaceStorage.activeWindow.activeWorkspace?.UUID)
+	if (workspaceUUID === WorkspaceStorage.activeWindow.activeWorkspace.UUID)
 		return;
 
 	Processes.WorkspaceSwitch.start();
 	const nextWorkspace = WorkspaceStorage.windows
 		.get(WorkspaceStorage.focusedWindowId)!
-		.findWorkspace(({ UUID }) => UUID === workspaceUUID)!;
+		.workspaces.find(({ UUID }) => UUID === workspaceUUID)!;
 
 	(async () => {
 		await WorkspaceStorage.activeWindow.switchWorkspace(nextWorkspace);
@@ -37,7 +37,9 @@ function switchWorkspaceAndFocusTab({
 	tabId: number;
 }) {
 	const window = WorkspaceStorage.activeWindow;
-	const workspace = window.findWorkspace(({ UUID }) => UUID === workspaceUUID);
+	const workspace = window.workspaces.find(
+		({ UUID }) => UUID === workspaceUUID
+	);
 
 	if (workspace) {
 		workspace.activeTabId = tabId;

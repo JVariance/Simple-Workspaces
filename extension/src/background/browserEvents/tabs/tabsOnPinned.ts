@@ -12,7 +12,7 @@ export async function tabsOnPinned(
 	const activeWorkspace = activeWindow.activeWorkspace;
 
 	const workspaceUUID = await API.getTabValue(tabId, "workspaceUUID");
-	const workspace = activeWindow.findWorkspace(
+	const workspace = activeWindow.workspaces.find(
 		({ UUID }) => UUID === workspaceUUID
 	)!;
 
@@ -22,7 +22,7 @@ export async function tabsOnPinned(
 		!workspace.pinnedTabIds.includes(tabId) &&
 			workspace.pinnedTabIds.push(tabId);
 	} else {
-		const unpinningIsUserInitiated = workspace.UUID === activeWorkspace?.UUID;
+		const unpinningIsUserInitiated = workspace.UUID === activeWorkspace.UUID;
 		unpinningIsUserInitiated &&
 			(workspace.pinnedTabIds = workspace.pinnedTabIds.filter(
 				(id) => id !== tabId
