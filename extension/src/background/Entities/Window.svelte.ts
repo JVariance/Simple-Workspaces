@@ -74,6 +74,7 @@ export class Window {
 				const activeTab = tabs.find(({ active }) => active);
 				const activeTabId = activeTab?.id!;
 				workspace.tabIds = tabs.flatMap(({ id }) => id!) || [];
+				//TODO: workspace.pinnedTabIds
 				workspace.active = activeTab ? true : false;
 				workspace.activeTabId = activeTabId;
 				workspace.windowId = this.#windowId;
@@ -181,11 +182,14 @@ export class Window {
 
 		if (workspace) {
 			workspace.tabIds.push(tabId);
+			const tab = await API.getTab(tabId);
+			tab?.pinned && workspace.pinnedTabIds.push(tabId);
 
 			if (workspace !== this.activeWorkspace) {
 				await Browser.tabs.update(this.activeWorkspace.tabIds.at(-1), {
 					active: true,
 				});
+				await API.updateTab(tabId, { pinned: false });
 				await API.hideTab(tabId);
 			}
 		}
@@ -286,9 +290,26 @@ export class Window {
 			targetWorkspace.activeTabId = tabIds.at(-1);
 		targetWorkspace.tabIds.push(...tabIds);
 
+		const pinnedTabIds: number[] = [];
+		for (let tabId of tabIds) {
+			const tab = await API.getTab(tabId);
+			tab?.pinned && pinnedTabIds.push(tabId);
+			tab?.pinned &&
+				!targetWorkspace.pinnedTabIds.includes(tabId) &&
+				targetWorkspace.pinnedTabIds.push(tabId);
+		}
+
 		currentWorkspace.tabIds = currentWorkspace.tabIds.filter(
 			(tabId) => !tabIds.includes(tabId)
 		);
+
+		currentWorkspace.pinnedTabIds = currentWorkspace.pinnedTabIds.filter(
+			(tabId) => !tabIds.includes(tabId)
+		);
+
+		// if (!Processes.keepPinnedTabs) {
+		// 	await API.updateTab();
+		// }
 
 		const activeTabId = currentWorkspace.activeTabId;
 
@@ -308,6 +329,9 @@ export class Window {
 		}
 
 		if (currentWorkspace.tabIds.length) {
+			await API.updateTabs(
+				pinnedTabIds.map((id) => ({ id, props: { pinned: false } }))
+			);
 			await API.hideTabs(tabIds);
 		} else {
 			await createTab({
@@ -525,7 +549,7 @@ export class Window {
 					}))
 				);
 			}
-			API.hideTabs(currentTabIds).then(
+			await API.hideTabs(currentTabIds).then(
 				({ hiddenIds, errorIds, ignoredIds }) => {
 					if (!errorIds?.length) {
 					}

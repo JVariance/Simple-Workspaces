@@ -16,16 +16,34 @@ export async function tabsOnPinned(
 		({ UUID }) => UUID === workspaceUUID
 	)!;
 
-	console.info("tabsOnPinned", pinned, tabId, changeInfo, tab);
+	console.info(
+		"tabsOnPinned",
+		pinned,
+		tabId,
+		changeInfo,
+		tab,
+		workspace,
+		activeWorkspace
+	);
 
 	if (pinned) {
 		!workspace.pinnedTabIds.includes(tabId) &&
 			workspace.pinnedTabIds.push(tabId);
 	} else {
-		const unpinningIsUserInitiated = workspace.UUID === activeWorkspace.UUID;
-		unpinningIsUserInitiated &&
-			(workspace.pinnedTabIds = workspace.pinnedTabIds.filter(
+		const unpinningIsUserInitiated =
+			workspace.UUID === activeWorkspace.UUID ||
+			(Processes.keepPinnedTabs && workspace.UUID !== activeWorkspace.UUID);
+
+		console.info({ unpinningIsUserInitiated });
+
+		if (unpinningIsUserInitiated) {
+			workspace.pinnedTabIds = workspace.pinnedTabIds.filter(
 				(id) => id !== tabId
-			));
+			);
+
+			if (workspace.UUID !== activeWorkspace.UUID) {
+				API.hideTab(tabId);
+			}
+		}
 	}
 }
