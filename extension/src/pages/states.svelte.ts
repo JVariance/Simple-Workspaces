@@ -99,7 +99,7 @@ function updatedActiveWorkspace({
 	if (activeWorkspace) {
 		activeWorkspace.active = false;
 		const workspace = workspaces.find(({ UUID }) => UUID === workspaceUUID)!;
-		(workspace as Ext.Workspace).active = true;
+		workspace.active = true;
 	}
 }
 

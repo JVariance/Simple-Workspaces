@@ -3,6 +3,7 @@ import { WorkspaceStorage, Processes } from "../../Entities";
 import * as API from "@root/browserAPI";
 import { informViews } from "../../informViews";
 import { createTab } from "@root/background/browserAPIWrapper/tabCreation";
+
 export async function tabsOnRemoved(
 	tabId: number,
 	info: Browser.Tabs.OnRemovedRemoveInfoType
@@ -24,7 +25,7 @@ export async function tabsOnRemoved(
 	console.info("tab removed");
 
 	const window = WorkspaceStorage.getWindow(info.windowId);
-	const removedTabsWorkspace = window.workspaces.find((workspace) =>
+	const removedTabsWorkspace = window.findWorkspace((workspace) =>
 		workspace.tabIds.includes(tabId)
 	)!;
 
@@ -46,10 +47,10 @@ export async function tabsOnRemoved(
 		newActiveTab?.id,
 		"workspaceUUID"
 	);
-	const newActiveWorkspace = window.workspaces.find(
+	const newActiveWorkspace = window.findWorkspace(
 		({ UUID }) => UUID === newActiveWorkspaceUUID
 	)!;
-	await window.removeTab(tabId);
+	await window.removeTab(tabId, window.activeWorkspace?.UUID);
 	informViews(window.windowId, "removedTab", { tabId });
 	Processes.TabRemoval.finish();
 
@@ -81,7 +82,7 @@ export async function tabsOnRemoved(
 		await window.switchWorkspace(newActiveWorkspace);
 
 		const tabWasPinnedAndClosedFromOutsideWorkspace =
-			tabWasPinned && window.activeWorkspace.UUID === newActiveWorkspace.UUID;
+			tabWasPinned && window.activeWorkspace?.UUID === newActiveWorkspace.UUID;
 
 		console.info({ tabWasPinnedAndClosedFromOutsideWorkspace });
 

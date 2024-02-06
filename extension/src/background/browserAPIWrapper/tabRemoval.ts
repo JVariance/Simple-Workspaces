@@ -16,7 +16,7 @@ export async function removeTabs(
 		console.info({ window, workspace });
 		// await window.addTab(newTab.id!, workspace);
 		// await window.removeTabs(removedIds);
-		await window.removeTabs(tabIds, workspace);
+		await window.removeTabs(tabIds, workspace?.UUID);
 	}
 
 	Processes.manualTabRemoval = false;

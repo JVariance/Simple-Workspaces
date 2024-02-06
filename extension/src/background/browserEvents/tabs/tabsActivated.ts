@@ -29,12 +29,12 @@ export async function tabsOnActivated(
 		// areNullish(activeTabWorkspaceUUID, previousTabWorkspaceUUID) &&
 		!runningTabsOnCreated &&
 		activeTabWorkspaceUUID !== previousTabWorkspaceUUID &&
-		activeTabWorkspaceUUID !== activeWindow.activeWorkspace.UUID &&
+		activeTabWorkspaceUUID !== activeWindow.activeWorkspace?.UUID &&
 		previousTab?.windowId === currentTab?.windowId;
 
 	console.info({ firefoxSearchWasUsed });
 
-	const activeWorkspace = activeWindow.workspaces.find(
+	const activeWorkspace = activeWindow.findWorkspace(
 		({ UUID }) => UUID === activeTabWorkspaceUUID
 	);
 

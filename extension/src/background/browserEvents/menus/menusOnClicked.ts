@@ -54,7 +54,8 @@ export async function menusOnClicked(
 		}
 
 		if (
-			targetWorkspaceUUID === WorkspaceStorage.activeWindow.activeWorkspace.UUID
+			targetWorkspaceUUID ===
+			WorkspaceStorage.activeWindow.activeWorkspace?.UUID
 		) {
 			informViews(tab.windowId!, "updatedActiveWorkspace", {
 				UUID: targetWorkspaceUUID,

@@ -1,7 +1,7 @@
 import { promisedDebounceFunc } from "@root/utils";
 import Browser from "webextension-polyfill";
 import * as API from "@root/browserAPI";
-import { Window } from "@background/Entities/Window.svelte";
+import { Window } from "@background/Entities/Window";
 import { createTab } from "@root/background/browserAPIWrapper/tabCreation";
 
 enum StorageKeys {
@@ -132,17 +132,17 @@ class WorkspaceStorage {
 	}): Promise<Ext.Workspace> {
 		console.info("moveAttachedTabs");
 		const window = this.getWindow(targetWindowId);
-		await window?.addTabs(tabIds);
+		await window?.addTabs(tabIds, window.activeWorkspace?.UUID);
 		for (let tabId of tabIds) {
 			await API.setTabValue(
 				tabId,
 				"workspaceUUID",
-				window.activeWorkspace.UUID
+				window.activeWorkspace!.UUID
 			);
 		}
 		console.info("End of moveAttachedTabs func");
 
-		return window.activeWorkspace;
+		return window.activeWorkspace!;
 	}
 
 	async moveDetachedTabs({
@@ -154,10 +154,10 @@ class WorkspaceStorage {
 	}) {
 		console.info("moveDetachedTabs");
 		const window = this.getWindow(currentWindowId);
-		const parentWorkspace = window?.workspaces.find((workspace) =>
+		const parentWorkspace = window?.findWorkspace((workspace) =>
 			workspace.tabIds.includes(tabIds?.at(0)!)
-		);
-		await window?.removeTabs(tabIds, parentWorkspace);
+		)!;
+		await window?.removeTabs(tabIds, parentWorkspace.UUID);
 		const currentTabIds = parentWorkspace?.tabIds;
 
 		console.log({ currentTabIds, parentWorkspace, window });
@@ -173,7 +173,7 @@ class WorkspaceStorage {
 
 			if (activeTab) {
 				console.info({ activeTab, window, workspaces: window.workspaces });
-				const workspaceOfActiveTab = window.workspaces.find((workspace) =>
+				const workspaceOfActiveTab = window.findWorkspace((workspace) =>
 					workspace.tabIds.includes(activeTab.id!)
 				);
 

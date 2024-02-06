@@ -16,7 +16,7 @@ export async function createTab(
 		// const newWindow = await WorkspaceStorage.getOrCreateWindow(newTab.windowId!);
 		const window = WorkspaceStorage.getWindow(newTab.windowId!);
 		console.info({ window, workspace });
-		await window.addTab(newTab.id!, workspace);
+		await window.addTab(newTab.id!, workspace?.UUID);
 		// await API.setTabValue(
 		// 	newTab.id!,
 		// 	"workspaceUUID",
