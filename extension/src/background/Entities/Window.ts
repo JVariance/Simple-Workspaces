@@ -158,13 +158,13 @@ export class Window {
 		return this.#windowId;
 	}
 
-	get activeWorkspace(): Ext.Workspace | undefined {
+	get activeWorkspace(): Workspace | undefined {
 		// return this.#activeWorkspace;
 		// return this.#workspaces.get("active")?.asObject;
 		return this.#activeWorkspace;
 	}
 
-	set activeWorkspace(workspace: Ext.Workspace | undefined) {
+	set activeWorkspace(workspace: Workspace | undefined) {
 		if (!workspace) return;
 		this.#activeWorkspace = workspace;
 	}
@@ -260,9 +260,7 @@ export class Window {
 		});
 	}
 
-	findWorkspace(
-		callback: (workspace: Ext.Workspace) => {}
-	): Ext.Workspace | undefined {
+	findWorkspace(callback: (workspace: Workspace) => {}): Workspace | undefined {
 		for (let [_, workspace] of this.#workspaces) {
 			if (callback(workspace)) return workspace;
 		}
@@ -280,9 +278,6 @@ export class Window {
 			workspace.tabIds.includes(tabIds?.at(0)!)
 		)!;
 
-		// const targetWorkspace = this.findWorkspace(
-		// 	(workspace) => workspace.UUID === targetWorkspaceUUID
-		// )!;
 		const targetWorkspace = this.#workspaces.get(targetWorkspaceUUID)!;
 
 		if (!targetWorkspace.tabIds.length && tabIds.length)
@@ -347,6 +342,10 @@ export class Window {
 		return Array.from(this.#workspaces.values());
 	}
 
+	get workspacesMap(): Map<Ext.Workspace["UUID"], Workspace> {
+		return this.#workspaces;
+	}
+
 	/**
 	 * If the extension has been newly installed and no workspaces have been added to the window yet, apply the set default workspaces.
 	 */
@@ -402,14 +401,17 @@ export class Window {
 
 			let presentWorkspace = Array.from(this.#workspaces.values())
 				.filter(({ UUID }) => UUID !== "HOME")
-				?.at(index)?.asObject;
+				?.at(index);
 
 			if (presentWorkspace) {
 				console.info({ presentWorkspace, defaultWorkspace });
-				presentWorkspace = { ...presentWorkspace, ...defaultWorkspace };
+				// let _presentWorkspace = {
+				// 	...presentWorkspace.asObject,
+				// 	...defaultWorkspace,
+				// };
 				console.info({ presentWorkspace });
-
-				this.workspaces[index + 1] = presentWorkspace;
+				presentWorkspace.name = defaultWorkspace.name;
+				presentWorkspace.icon = defaultWorkspace.icon;
 			} else {
 				const newWorkspace = {
 					...this.#getNewWorkspaceObject(),
@@ -482,7 +484,7 @@ export class Window {
 		return previousWorkspace;
 	}
 
-	async switchWorkspace(workspace: Ext.Workspace) {
+	async switchWorkspace(workspace: Workspace) {
 		console.info("switchWorkspace()");
 		// Processes.WorkspaceSwitch.start();
 		this.switchingWorkspace = true;
@@ -541,20 +543,18 @@ export class Window {
 		// Processes.WorkspaceSwitch.finish();
 	}
 
-	getNextWorkspace(currentWorkspaceUUID: string): Ext.Workspace | undefined {
+	getNextWorkspace(currentWorkspaceUUID: string): Workspace | undefined {
 		let found = false;
 		for (let [UUID, workspace] of Array.from(this.#workspaces)) {
-			if (found) return workspace.asObject;
+			if (found) return workspace;
 			found = UUID === currentWorkspaceUUID;
 		}
 	}
 
-	getPreviousWorkspace(
-		currentWorkspaceUUID: string
-	): Ext.Workspace | undefined {
+	getPreviousWorkspace(currentWorkspaceUUID: string): Workspace | undefined {
 		let found = false;
 		for (let [UUID, workspace] of Array.from(this.#workspaces).reverse()) {
-			if (found) return workspace.asObject;
+			if (found) return workspace;
 			found = UUID === currentWorkspaceUUID;
 		}
 	}

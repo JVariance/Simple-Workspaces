@@ -34,8 +34,8 @@ export async function tabsOnActivated(
 
 	console.info({ firefoxSearchWasUsed });
 
-	const activeWorkspace = activeWindow.findWorkspace(
-		({ UUID }) => UUID === activeTabWorkspaceUUID
+	const activeWorkspace = activeWindow.workspacesMap.get(
+		activeTabWorkspaceUUID
 	);
 
 	if (firefoxSearchWasUsed) {

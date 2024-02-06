@@ -47,9 +47,7 @@ export async function tabsOnRemoved(
 		newActiveTab?.id,
 		"workspaceUUID"
 	);
-	const newActiveWorkspace = window.findWorkspace(
-		({ UUID }) => UUID === newActiveWorkspaceUUID
-	)!;
+	const newActiveWorkspace = window.workspacesMap.get(newActiveWorkspaceUUID)!;
 	await window.removeTab(tabId, window.activeWorkspace?.UUID);
 	informViews(window.windowId, "removedTab", { tabId });
 	Processes.TabRemoval.finish();
