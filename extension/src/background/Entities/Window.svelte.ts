@@ -279,78 +279,65 @@ export class Window {
 		targetWorkspaceUUID: string;
 		tabIds: number[];
 	}) {
-		// const currentWorkspace = this.activeWorkspace;
-		const currentWorkspace = this.#workspaces.find((workspace) =>
-			workspace.tabIds.includes(tabIds?.at(0)!)
-		)!;
-
+		const activeWorkspace = this.activeWorkspace;
 		const targetWorkspace = this.#workspaces.find(
-			(workspace) => workspace.UUID === targetWorkspaceUUID
-		)!;
+			({ UUID }) => UUID === targetWorkspaceUUID
+		);
+		if (!targetWorkspace) return;
 
-		if (!targetWorkspace.tabIds.length && tabIds.length)
-			targetWorkspace.activeTabId = tabIds.at(-1);
-		targetWorkspace.tabIds.push(...tabIds);
+		const emptyWorkspaces = [];
 
-		const pinnedTabIds: number[] = [];
 		for (let tabId of tabIds) {
-			const tab = await API.getTab(tabId);
-			tab?.pinned && pinnedTabIds.push(tabId);
-			tab?.pinned &&
-				!targetWorkspace.pinnedTabIds.includes(tabId) &&
-				targetWorkspace.pinnedTabIds.push(tabId);
-		}
+			const workspaceUUID = (await API.getTabValue(
+				tabId,
+				"workspaceUUID"
+			)) as string;
+			const workspace = workspaceUUID
+				? this.#workspaces.find(({ UUID }) => UUID === workspaceUUID)
+				: undefined;
 
-		currentWorkspace.tabIds = currentWorkspace.tabIds.filter(
-			(tabId) => !tabIds.includes(tabId)
-		);
+			if (workspace) {
+				const isPinned = workspace.pinnedTabIds.includes(tabId);
 
-		currentWorkspace.pinnedTabIds = currentWorkspace.pinnedTabIds.filter(
-			(tabId) => !tabIds.includes(tabId)
-		);
+				workspace.tabIds = workspace.tabIds.filter((id) => id !== tabId);
+				targetWorkspace.tabIds.push(tabId);
 
-		// if (!Processes.keepPinnedTabs) {
-		// 	await API.updateTab();
-		// }
+				!workspace.tabIds.length && emptyWorkspaces.push(workspace);
 
-		const activeTabId = currentWorkspace.activeTabId;
+				if (isPinned) {
+					workspace.pinnedTabIds = workspace.pinnedTabIds.filter(
+						(id) => id !== tabId
+					);
+					targetWorkspace.pinnedTabIds.push(tabId);
+				}
 
-		console.info("moveTabs", { tabIds, activeTabId });
-
-		if (tabIds.includes(activeTabId!)) {
-			const newActiveTabId = [...currentWorkspace.tabIds].findLast(
-				(tabId) => !tabIds.includes(tabId)
-			);
-
-			console.info({ newActiveTabId });
-
-			if (newActiveTabId) {
-				currentWorkspace.activeTabId = newActiveTabId;
-				await Browser.tabs.update(newActiveTabId, { active: true });
+				if (!targetWorkspace.activeTabId) {
+					targetWorkspace.activeTabId = targetWorkspace.tabIds?.at(-1);
+				}
 			}
 		}
 
-		if (currentWorkspace.tabIds.length) {
-			await API.updateTabs(
-				pinnedTabIds.map((id) => ({ id, props: { pinned: false } }))
-			);
+		if (activeWorkspace.tabIds.length) {
+			const lastTabId = activeWorkspace.tabIds.at(-1);
+			lastTabId && (activeWorkspace.activeTabId = lastTabId);
+			lastTabId && (await API.updateTab(lastTabId, { active: true }));
 			await API.hideTabs(tabIds);
 		} else {
-			const newTab = (await createTab(
-				{
-					windowId: this.#windowId,
-					active: false,
-				},
-				currentWorkspace
-			))!;
-
-			await API.setTabValue(newTab.id!, "workspaceUUID", currentWorkspace.UUID);
-
 			await this.switchWorkspace(targetWorkspace);
 		}
 
 		for (let tabId of tabIds) {
 			await API.setTabValue(tabId, "workspaceUUID", targetWorkspace.UUID);
+		}
+
+		for (let emptyWorkspace of emptyWorkspaces) {
+			const newTab = (await createTab(
+				{ windowId: this.#windowId, active: false },
+				emptyWorkspace
+			))!;
+
+			await API.setTabValue(newTab.id!, "workspaceUUID", emptyWorkspace.UUID);
+			await API.hideTab(newTab.id);
 		}
 	}
 
@@ -532,6 +519,7 @@ export class Window {
 				}))
 			);
 		}
+
 		if (Processes.searchWasUsed) {
 			workspace.activeTabId = (
 				await API.queryTabs({
@@ -540,10 +528,15 @@ export class Window {
 				})
 			).tabs?.at(0)?.id!;
 		} else {
+			console.info("search was not used and workspace is ->", {
+				workspace,
+				activeTabId: JSON.stringify(workspace.activeTabId),
+				nextTabIds: JSON.stringify(nextTabIds),
+			});
 			const activeTabId = workspace?.activeTabId || nextTabIds[0];
 			await API.updateTab(activeTabId, { active: true });
 		}
-		// if (currentTabIds.length) await API.hideTabs(currentTabIds);
+
 		if (
 			currentTabIds.length &&
 			previousActiveWorkspaceUUID !== workspace.UUID
@@ -556,14 +549,11 @@ export class Window {
 					}))
 				);
 			}
-			await API.hideTabs(currentTabIds).then(
-				({ hiddenIds, errorIds, ignoredIds }) => {
-					if (!errorIds?.length) {
-					}
-					// this.switchingWorkspace = false;
-				}
-			);
+			await API.hideTabs(currentTabIds);
 		}
+
+		// this.activeWorkspace.active = false;
+		// workspace.active = true;
 		this.switchingWorkspace = false;
 		// Processes.WorkspaceSwitch.finish();
 	}
