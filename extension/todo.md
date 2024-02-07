@@ -3,11 +3,9 @@
 ### Content
 ### Translations
 ### Logic
-[] handle moveTabs when pinned tabs of multiple workspaces are moved
 [] better emoji picker focus handling
 [] highlight workspace which received new tabs (after send action)
 ### Bugs
-[x] ~~when moving all tabs from first workspace to another workspace, a bug occurs -> activetabid not updated? newtab not focused and other hidden?~~
 ### Other
 - https://www.npmjs.com/package/p-maps
 ---

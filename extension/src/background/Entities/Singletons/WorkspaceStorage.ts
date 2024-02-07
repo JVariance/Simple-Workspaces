@@ -142,6 +142,11 @@ class WorkspaceStorage {
 		return activeWorkspace;
 	}
 
+	/*
+		moveDetachedTabs:
+		- 
+	*/
+
 	async moveDetachedTabs({
 		tabIds,
 		currentWindowId,
@@ -149,47 +154,120 @@ class WorkspaceStorage {
 		tabIds: number[];
 		currentWindowId: number;
 	}) {
-		console.info("moveDetachedTabs");
+		console.info("moveDetachedTabs", { tabIds, currentWindowId });
 		const window = this.getWindow(currentWindowId);
-		const parentWorkspace = window?.workspaces.find((workspace) =>
-			workspace.tabIds.includes(tabIds?.at(0)!)
+		const activeWorkspace = window.activeWorkspace;
+
+		const activeTab = (
+			await API.queryTabs({
+				active: true,
+				windowId: currentWindowId,
+			})
+		).tabs?.at(0);
+		const activeTabsWorkspaceUUID = await API.getTabValue(
+			activeTab?.id,
+			"workspaceUUID"
 		);
-		await window?.removeTabs(tabIds, parentWorkspace);
-		const currentTabIds = parentWorkspace?.tabIds;
+		const activeTabsWorkspace = window.workspaces.find(
+			({ UUID }) => UUID === activeTabsWorkspaceUUID
+		);
+		activeTabsWorkspace && (await window.switchWorkspace(activeTabsWorkspace));
 
-		console.log({ currentTabIds, parentWorkspace, window });
+		const emptyWorkspaces = [];
+		for (let tabId of tabIds) {
+			// const workspaceUUID = await API.getTabValue(tabId, "workspaceUUID");
+			// const workspace = workspaceUUID
+			// 	? window.workspaces.find(({ UUID }) => UUID === workspaceUUID)
+			// 	: undefined;
+			// console.info({ workspaceUUID, workspace });
 
-		if (window && !currentTabIds?.length) {
-			console.info("keine tabs mehr im workspace");
-			const activeTab = (
-				await API.queryTabs({
-					active: true,
-					windowId: window.windowId,
-				})
-			).tabs?.at(0);
+			const workspace = window.workspaces.find((workspace) =>
+				workspace.tabIds.includes(tabId)
+			);
 
-			if (activeTab) {
-				console.info({ activeTab, window, workspaces: window.workspaces });
-				const workspaceOfActiveTab = window.workspaces.find((workspace) =>
-					workspace.tabIds.includes(activeTab.id!)
+			if (workspace) {
+				workspace.tabIds = workspace.tabIds.filter((id) => id !== tabId);
+				workspace.pinnedTabIds = workspace.pinnedTabIds.filter(
+					(id) => id !== tabId
 				);
 
-				console.info({ workspaceOfActiveTab });
+				console.info({ workspace });
 
-				await createTab(
-					{
-						active: false,
-						windowId: window.windowId,
-					},
-					parentWorkspace
-				);
-
-				console.info("ADDED TAB");
-
-				workspaceOfActiveTab &&
-					(await window.switchWorkspace(workspaceOfActiveTab));
+				!workspace.tabIds.length && emptyWorkspaces.push(workspace);
+				// if (!workspace.activeTabId) {
+				workspace.activeTabId = workspace.tabIds?.at(-1);
+				// }
 			}
 		}
+
+		console.info({ emptyWorkspaces });
+
+		for (let emptyWorkspace of emptyWorkspaces) {
+			const newTab = (await createTab(
+				{ windowId: window.windowId, active: false },
+				emptyWorkspace
+			))!;
+
+			await API.setTabValue(newTab.id!, "workspaceUUID", emptyWorkspace.UUID);
+			if (emptyWorkspace.UUID !== window.activeWorkspace.UUID) {
+				await API.hideTab(newTab.id);
+			}
+		}
+
+		// if (!activeWorkspace.tabIds.length) {
+		// 	const activeTab = (
+		// 		await API.queryTabs({
+		// 			active: true,
+		// 			windowId: currentWindowId,
+		// 		})
+		// 	).tabs?.at(0);
+		// 	const activeTabsWorkspace = await API.getTabValue(
+		// 		activeTab?.id,
+		// 		"workspaceUUID"
+		// 	);
+
+		// 	await window.switchWorkspace(activeTabsWorkspace);
+		// }
+
+		// const parentWorkspace = window?.workspaces.find((workspace) =>
+		// 	workspace.tabIds.includes(tabIds?.at(0)!)
+		// );
+		// await window?.removeTabs(tabIds, parentWorkspace);
+		// const currentTabIds = parentWorkspace?.tabIds;
+
+		// console.log({ currentTabIds, parentWorkspace, window });
+
+		// if (window && !currentTabIds?.length) {
+		// 	console.info("keine tabs mehr im workspace");
+		// 	const activeTab = (
+		// 		await API.queryTabs({
+		// 			active: true,
+		// 			windowId: window.windowId,
+		// 		})
+		// 	).tabs?.at(0);
+
+		// 	if (activeTab) {
+		// 		console.info({ activeTab, window, workspaces: window.workspaces });
+		// 		const workspaceOfActiveTab = window.workspaces.find((workspace) =>
+		// 			workspace.tabIds.includes(activeTab.id!)
+		// 		);
+
+		// 		console.info({ workspaceOfActiveTab });
+
+		// 		await createTab(
+		// 			{
+		// 				active: false,
+		// 				windowId: window.windowId,
+		// 			},
+		// 			parentWorkspace
+		// 		);
+
+		// 		console.info("ADDED TAB");
+
+		// 		workspaceOfActiveTab &&
+		// 			(await window.switchWorkspace(workspaceOfActiveTab));
+		// 	}
+		// }
 
 		console.info("detachedTabs - Return ->", window?.activeWorkspace);
 		return window?.activeWorkspace;
