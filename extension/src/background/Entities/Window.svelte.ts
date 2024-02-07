@@ -321,6 +321,14 @@ export class Window {
 			const lastTabId = activeWorkspace.tabIds.at(-1);
 			lastTabId && (activeWorkspace.activeTabId = lastTabId);
 			lastTabId && (await API.updateTab(lastTabId, { active: true }));
+			if (!Processes.keepPinnedTabs) {
+				await API.updateTabs(
+					targetWorkspace.pinnedTabIds.map((id) => ({
+						id,
+						props: { pinned: false },
+					}))
+				);
+			}
 			await API.hideTabs(tabIds);
 		} else {
 			await this.switchWorkspace(targetWorkspace);
