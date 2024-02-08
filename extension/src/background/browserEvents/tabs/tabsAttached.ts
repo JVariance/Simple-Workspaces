@@ -6,7 +6,6 @@ import { WorkspaceStorage, Processes } from "../../Entities";
 let collectedAttachedTabs: number[] = [];
 
 async function _handleAttachedTabs(tabIds: number[], targetWindowId: number) {
-	console.info("_handleAttachedTabs");
 	await Promise.all([Processes.WindowCreation, Processes.TabDetachment]);
 	console.info("handleAttachedTabs", { tabIds, targetWindowId });
 

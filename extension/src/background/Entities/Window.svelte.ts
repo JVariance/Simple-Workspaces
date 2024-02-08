@@ -506,8 +506,9 @@ export class Window {
 	}
 
 	async switchWorkspace(workspace: Ext.Workspace) {
-		console.info("switchWorkspace()");
+		console.info("switchWorkspace() in window " + this.#windowId);
 		// Processes.WorkspaceSwitch.start();
+		const ongoingTabDetachment = Processes.TabDetachment.state === "pending";
 		this.switchingWorkspace = true;
 		const previousActiveWorkspace = this.activeWorkspace;
 		const previousActiveWorkspaceUUID = previousActiveWorkspace.UUID;
@@ -546,6 +547,7 @@ export class Window {
 		}
 
 		if (
+			!ongoingTabDetachment &&
 			currentTabIds.length &&
 			previousActiveWorkspaceUUID !== workspace.UUID
 		) {

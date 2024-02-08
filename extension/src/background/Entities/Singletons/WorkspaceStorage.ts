@@ -133,7 +133,11 @@ class WorkspaceStorage {
 	}): Promise<Ext.Workspace> {
 		const window = this.getWindow(targetWindowId);
 		const activeWorkspace = window?.activeWorkspace;
-		console.info("moveAttachedTabs", activeWorkspace, tabIds);
+		console.info("moveAttachedTabs", {
+			activeWorkspace,
+			currentActiveWorkspaceTabIds: structuredClone(activeWorkspace.tabIds),
+			tabIds,
+		});
 		await window?.addTabs(tabIds, activeWorkspace);
 		for (let tabId of tabIds) {
 			await API.setTabValue(tabId, "workspaceUUID", activeWorkspace.UUID);
@@ -149,7 +153,7 @@ class WorkspaceStorage {
 		- switch to active tab's workspace
 		- set new active tab's id as activetabid
 		- remove tabids from according workspaces (tabids/pinnedtabids)
-		- create new tabs for workspaces with no tabs left (empty workspaces)
+		- create new tabs for now empty workspaces
 			- set activetabid to new tab's id
 	*/
 
@@ -162,6 +166,7 @@ class WorkspaceStorage {
 	}) {
 		console.info("moveDetachedTabs", { tabIds, currentWindowId });
 		const window = this.getWindow(currentWindowId);
+		if (!window) return;
 		const activeWorkspace = window.activeWorkspace;
 
 		const activeTab = (
@@ -223,61 +228,6 @@ class WorkspaceStorage {
 				await API.hideTab(newTab.id);
 			}
 		}
-
-		// if (!activeWorkspace.tabIds.length) {
-		// 	const activeTab = (
-		// 		await API.queryTabs({
-		// 			active: true,
-		// 			windowId: currentWindowId,
-		// 		})
-		// 	).tabs?.at(0);
-		// 	const activeTabsWorkspace = await API.getTabValue(
-		// 		activeTab?.id,
-		// 		"workspaceUUID"
-		// 	);
-
-		// 	await window.switchWorkspace(activeTabsWorkspace);
-		// }
-
-		// const parentWorkspace = window?.workspaces.find((workspace) =>
-		// 	workspace.tabIds.includes(tabIds?.at(0)!)
-		// );
-		// await window?.removeTabs(tabIds, parentWorkspace);
-		// const currentTabIds = parentWorkspace?.tabIds;
-
-		// console.log({ currentTabIds, parentWorkspace, window });
-
-		// if (window && !currentTabIds?.length) {
-		// 	console.info("keine tabs mehr im workspace");
-		// 	const activeTab = (
-		// 		await API.queryTabs({
-		// 			active: true,
-		// 			windowId: window.windowId,
-		// 		})
-		// 	).tabs?.at(0);
-
-		// 	if (activeTab) {
-		// 		console.info({ activeTab, window, workspaces: window.workspaces });
-		// 		const workspaceOfActiveTab = window.workspaces.find((workspace) =>
-		// 			workspace.tabIds.includes(activeTab.id!)
-		// 		);
-
-		// 		console.info({ workspaceOfActiveTab });
-
-		// 		await createTab(
-		// 			{
-		// 				active: false,
-		// 				windowId: window.windowId,
-		// 			},
-		// 			parentWorkspace
-		// 		);
-
-		// 		console.info("ADDED TAB");
-
-		// 		workspaceOfActiveTab &&
-		// 			(await window.switchWorkspace(workspaceOfActiveTab));
-		// 	}
-		// }
 
 		console.info("detachedTabs - Return ->", window?.activeWorkspace);
 		return window?.activeWorkspace;
