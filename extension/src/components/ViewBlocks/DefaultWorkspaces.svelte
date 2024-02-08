@@ -120,7 +120,7 @@
 	<div 
 		class="w-full"
 	>
-		<div class="w-max list-wrapper [&:has(ul:empty)>button]:ml-0">
+		<div class="w-full list-wrapper [&:has(ul:empty)>button]:ml-0">
 			<Accordion detailsClasses="mb-2 max-w-[100cqw]" bind:this={existingWindowWorkspacesAccordionElem}>
 				{#snippet summary()}
 					<span>{i18n.getMessage('existing_windows_workspaces')}</span>
@@ -131,8 +131,8 @@
 				</Button>
 				<div 
 					class="
-						grid grid-flow-col auto-cols-[calc(100%_-_1rem)] gap-2 mt-2 overflow-auto [scrollbar-width:thin] [scrollbar-color:transparent_transparent] hover:[scrollbar-color:initial] pb-1
-						overscroll-contain
+						grid grid-flow-col auto-cols-[minmax(150px_auto)] gap-2 mt-2 overflow-auto [scrollbar-width:thin] [scrollbar-color:transparent_transparent] hover:[scrollbar-color:initial] pb-1
+						overscroll-contain select-none
 					"
 					use:overflowSwipe
 					onwheel={(e) => e.currentTarget.scrollBy({left: -e.wheelDelta})}
@@ -151,7 +151,7 @@
 								{/each}
 							</div>
 							{#if workspaces.length}
-								<Button class="mt-4" onclick={() => {existingWindowWorkspacesAccordionElem.close(); defaultWorkspaces = workspaces;}}>
+								<Button class="mt-4" onclick={() => {existingWindowWorkspacesAccordionElem.close(); defaultWorkspaces = workspaces.map(({name, icon}, i) => ({id: i, name, icon}));}}>
 									{i18n.getMessage('use_as_template')}
 								</Button>
 							{/if}

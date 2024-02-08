@@ -166,7 +166,7 @@
 			</button>
 			<div class="hidden @[244px]:contents">
 				<input
-					class="bg-transparent border-b disabled:border-transparent outline-none w-full flex-1"
+					class="min-w-0 bg-transparent border-b disabled:border-transparent outline-none w-full flex-1"
 					id={UUID}
 					type="text"
 					disabled={!editMode}

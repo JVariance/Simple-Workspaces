@@ -61,7 +61,7 @@
 	{workspace.icon}
 </button>
 <input
-	class="grow bg-transparent border border-solid dark:border-neutral-700 rounded-md dark:text-white p-2"
+	class="min-w-0 grow bg-transparent border border-solid dark:border-neutral-700 rounded-md dark:text-white p-2"
 	type="text"
 	on:input={(e) => {
 		updatedName(e.target.value);

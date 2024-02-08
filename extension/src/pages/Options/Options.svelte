@@ -15,6 +15,7 @@
 	import { getKeepPinnedTabs, getWorkspacesState } from "@pages/states.svelte";
 	import ThemeSwitch from "@root/components/ViewBlocks/ThemeSwitch.svelte";
 	import { BrowserStorage } from "@root/background/Entities";
+	import Tooltip from "@root/components/Tooltip.svelte";
 
 	let windowWorkspaces = $derived(getWorkspacesState()?.filter(({ UUID }) => UUID !== "HOME") || []);
 	let keepPinnedTabs = $derived(getKeepPinnedTabs());
@@ -54,7 +55,7 @@
 </script>
 
 {#snippet Section(content, classes)}
-	<section class="p-2 border border-solid rounded-md border-gray-100 dark:border-neutral-800 bg-neutral-50/30 dark:bg-[#23222b] {classes}">
+	<section class="p-2 border border-solid rounded-md border-gray-100 dark:border-neutral-800 bg-neutral-50/30 dark:bg-[#23222b] w-[100cqw] overflow-auto {classes}">
 		{@render content()}
 	</section>
 {/snippet}
@@ -71,7 +72,7 @@
 
 		<!-- <h1 class="first-letter:uppercase mb-2">{i18n.getMessage('options')}</h1> -->
 
-		<div class="flex flex-wrap gap-4 mt-16 flex-col sm:flex-row">
+		<div class="flex flex-wrap gap-4 mt-16 flex-col sm:flex-row @container">
 			<!-- <section>
 				<h2 class="m-0 mb-4 text-lg first-letter:uppercase">🌍 {i18n.getMessage('language')}</h2>
 				<select id="selectLanguage">
@@ -112,22 +113,20 @@
 				{/if}
 			{/snippet}
 			{#snippet Section_DefaultWorkspaces()}
-				<div class="@container">
-					<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('default_workspaces')}</h2>
-					<Info class="mb-4">
-						{i18n.getMessage('changes_will_apply_for_new_windows')}
-					</Info>
-					<DefaultWorkspaces />
-				</div>
+				<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('default_workspaces')}</h2>
+				<Info class="mb-4">
+					{i18n.getMessage('changes_will_apply_for_new_windows')}
+				</Info>
+				<DefaultWorkspaces />
 			{/snippet}
 			{#snippet Section_TabPinning()}
 				<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('tab_pinning')}</h2>
 				<div class="flex gap-4 items-center w-full">
 					<input
-					type="checkbox"
-					id="keep-pinned-tabs"
-					checked={keepPinnedTabs}
-					onchange={keepPinnedTabsChanged}
+						type="checkbox"
+						id="keep-pinned-tabs"
+						checked={keepPinnedTabs}
+						onchange={keepPinnedTabsChanged}
 					/>
 					<label for="keep-pinned-tabs" class="-mt-[0.2rem]">{i18n.getMessage("keep_pinned_tabs")}</label>
 				</div>
@@ -137,7 +136,14 @@
 					<span class="first-letter:uppercase">{i18n.getMessage('shortcuts')}</span>
 				</h2>
 				<Info>
-					{i18n.getMessage('you_can_edit_shortcuts_for_commands_in_the_addons_page')}
+					<Tooltip id="shortcuts-info" class="[&_svg]:w-4 [&_svg]:h-4" popupClasses="absolute top-0 right-0 w-max">
+						{@html i18n.getMessage('you_can_edit_shortcuts_for_commands_in_the_addons_page')}
+						{#snippet message()}
+							<ButtonLink href={i18n.getMessage('shortcuts.help.link')} target="_blank" class="ghost flex flex-nowrap items-center gap-1">
+								{i18n.getMessage('read_more')}
+							</ButtonLink>
+						{/snippet}
+					</Tooltip>
 				</Info>
 				<Shortcuts />
 			{/snippet}
@@ -154,11 +160,11 @@
 			{/snippet}
 			{#snippet Section_WelcomePage()}
 				<h2 class="m-0 mb-4 text-lg flex gap-2 items-center font-semibold first-letter:uppercase">{i18n.getMessage('want_to_see_the_welcome_page_again')}</h2>
-				<ButtonLink class="btn" href="{Browser.runtime.getURL('src/pages/Welcome/welcome.html')}" target="_blank">{i18n.getMessage('open_welcome_page')}</ButtonLink>
+				<ButtonLink class="btn w-max" href="{Browser.runtime.getURL('src/pages/Welcome/welcome.html')}" target="_blank">{i18n.getMessage('open_welcome_page')}</ButtonLink>
 			{/snippet}
 			{#snippet Section_FurtherLinks()}
 				<h2 class="m-0 mb-4 text-lg flex gap-2 items-center font-semibold first-letter:uppercase">{i18n.getMessage("feedback_and_feature_requests_heading")}</h2>
-				<ButtonLink href="https://github.com/JVariance/Simple-Workspaces" target="_blank">
+				<ButtonLink href="https://github.com/JVariance/Simple-Workspaces" target="_blank" class="btn w-max">
 					<img src="/images/github-mark/github-mark-white.svg" alt="GitHub Logo" class="w-8 aspect-square [@media_(prefers-color-scheme:_light)]:hidden">
 					<img src="/images/github-mark/github-mark.svg" alt="GitHub Logo" class="w-8 aspect-square dark:hidden">
 					GitHub Repository
@@ -166,14 +172,14 @@
 			{/snippet}
 
 			{@render Section(Section_Theme, "basis-full flex-1")}
-			{@render Section(Section_HomeWorkspace, "basis-full flex-1")}
-			{@render Section(Section_CurrentWorkspaces, "flex-[0_2_min-content] min-w-[250px]")}
-			{@render Section(Section_DefaultWorkspaces, "flex-1 w-full overflow-auto scrollbar-gutter:_stable] sm:scrollbar-gutter:_unset] min-w-[50%]")}
+			{@render Section(Section_HomeWorkspace, "flex-1")}
+			{@render Section(Section_CurrentWorkspaces, "flex-1")}
+			{@render Section(Section_DefaultWorkspaces, "flex-1 overflow-auto scrollbar-gutter:_stable] sm:scrollbar-gutter:_unset]")}
 			{@render Section(Section_TabPinning, "basis-full")}
 			{@render Section(Section_Shortcuts, "basis-full")}
 			{@render Section(Section_ClearExtensionData, "basis-full")}
-			{@render Section(Section_WelcomePage, "flex-0")}
-			{@render Section(Section_FurtherLinks, "flex-0")}
+			{@render Section(Section_WelcomePage, "flex-1")}
+			{@render Section(Section_FurtherLinks, "flex-1")}
 		</div>
 	</div>
 </Layout>

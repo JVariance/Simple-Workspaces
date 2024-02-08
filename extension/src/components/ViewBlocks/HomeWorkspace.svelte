@@ -33,19 +33,21 @@
 	}
 </script>
 
-<div class="flex flex-wrap gap-x-2">
+<div class="flex flex-col gap-x-2">
 	{#if homeWorkspace}
-		<SimpleWorkspace
-			workspace={homeWorkspace}
-			updatedName={(name) => {
-				homeWorkspace.name = name;
-			}}
-			updatedIcon={(icon) => {
-				homeWorkspace.icon = icon;
-			}}
-		/>
+		<div class="flex gap-2">
+			<SimpleWorkspace
+				workspace={homeWorkspace}
+				updatedName={(name) => {
+					homeWorkspace.name = name;
+				}}
+				updatedIcon={(icon) => {
+					homeWorkspace.icon = icon;
+				}}
+			/>
+		</div>
 		<button
-			class="btn justify-center mt-4 basis-full max-w-[100cqw]"
+			class="btn justify-center mt-4 max-w-fit"
 			style:width="-moz-available"
 			onclick={applyHomeWorkspaceChanges}
 		>

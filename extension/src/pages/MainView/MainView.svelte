@@ -431,7 +431,7 @@
 			<input
 				id="search"
 				type="search"
-				class="w-full bg-transparent p-1 !outline-none !outline-0"
+				class="min-w-0 w-full bg-transparent p-1 !outline-none !outline-0"
 				data-focusable
 				bind:this={searchInput}
 				bind:value={searchValue}
