@@ -14,6 +14,7 @@
 	let js_enabled = $state(false);
 	let activeView = $state(1);
 	let swiping = $state(false);
+	let swipeStarted = $state(false);
 	let startSwipePos = $state({ x: 0, y: 0 });
 	let endSwipePos = $state({ x: 0, y: 0 });
 	let currentSwipePos = $state({ x: 0, y: 0 });
@@ -28,7 +29,7 @@
 			!target.closest(".swipe-item")
 		)
 			return;
-		swiping = true;
+		swipeStarted = true;
 		startSwipePos.x = event.clientX;
 		startSwipePos.y = event.clientY;
 		currentSwipePos = { ...startSwipePos };
@@ -37,6 +38,11 @@
 	function swipeMove(
 		event: PointerEvent & { currentTarget: EventTarget & HTMLDivElement }
 	) {
+		if(swipeStarted && !swiping && Math.abs(startSwipePos.x - event.clientX) > 20) {
+			console.info("startSwiping");
+			swiping = true;
+		}
+		
 		if (swiping) {
 			const deltaPos = {
 				x: currentSwipePos.x - event.clientX,
@@ -56,6 +62,7 @@
 		}
 
 		swiping = false;
+		swipeStarted = false;
 	}
 
 	function scrollViewIntoView() {
@@ -74,6 +81,7 @@
 			!event.target.closest(".swipe-item")
 		) {
 			swiping = false;
+			swipeStarted = false;
 			finishSwipe(event);
 		}
 	}
@@ -276,7 +284,7 @@
 			<p class="mb-8 basis-full">
 				{i18n.getMessage('welcome_default_workspaces_message')}.
 			</p>
-			<DefaultWorkspaces dndFinish={() => {swiping = false; scrollViewIntoView();}} />
+			<DefaultWorkspaces dndFinish={() => {swiping = false; swipeStarted = false; scrollViewIntoView();}} />
 		</div>
 	{/snippet}
 	{@render ViewSection(3, content)}
@@ -415,7 +423,7 @@
 		}
 	}
 
-	:global(details, summary, input) {
+	:global(details, summary, input, details :is(div, button)) {
 		@apply !border-white/25;
 	}
 

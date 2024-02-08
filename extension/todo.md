@@ -1,7 +1,8 @@
 **Today**
 ### Features
-[] support bookmarks
-[] support history
+[] compress images & video
+[] support bookmarks?
+[] support history?
 ### Styles
 ### Content
 ### Translations

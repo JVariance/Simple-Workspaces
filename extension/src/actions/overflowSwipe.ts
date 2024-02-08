@@ -40,7 +40,11 @@ export function overflowSwipe(node: HTMLElement) {
 	function swipeMove(
 		event: PointerEvent & { currentTarget: EventTarget & HTMLElement }
 	) {
-		if (swipeStarted && !swiping) {
+		if (
+			swipeStarted &&
+			!swiping &&
+			Math.abs(startSwipePos.x - event.clientX) > 20
+		) {
 			node.classList.add("swiping");
 		}
 

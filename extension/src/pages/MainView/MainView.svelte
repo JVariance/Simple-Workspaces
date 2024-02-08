@@ -425,9 +425,9 @@
 				focus-within:shadow-xl rounded-md px-4 py-2
 			"
 		>
-			<label for="search"
-				><Icon icon="search" width={20} class="text-neutral-400" /></label
-			>
+			<label for="search">
+				<Icon icon="search" width={20} class="text-neutral-400" />
+			</label>
 			<input
 				id="search"
 				type="search"
@@ -439,10 +439,13 @@
 				onkeydown={searchKeydown}
 				placeholder="{i18n.getMessage('search')}..."
 			/>
+			<button class="ghost hover:bg-black/20 dark:hover:bg-white/10 rounded-full p-0" onclick={() => {searchValue = ""; searchUnmatchingWorkspaceUUIDS = [];}}>
+				<Icon icon="cross" width={16} />
+			</button>
 		</search>
-		<button class="ghost" on:click={openOptionsPage}
-			><Icon icon="settings" width={18} /></button
-		>
+		<button class="ghost" on:click={openOptionsPage}>
+			<Icon icon="settings" width={18} />
+		</button>
 	</section>
 	<!-- <hr class="border-neutral-800" /> -->
 	<!-- <div id="search-results" class="mb-6 grid gap-2">
