@@ -8,7 +8,6 @@ namespace Ext {
 		active: boolean;
 		activeTabId?: number;
 		windowId: number;
-		hidden?: boolean;
 	};
 
 	type Window = {

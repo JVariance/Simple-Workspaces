@@ -5,6 +5,7 @@ import Browser from "webextension-polyfill";
 import { BrowserStorage } from "./Static/Storage";
 import { createTab } from "../browserAPIWrapper/tabCreation";
 import Processes from "./Singletons/Processes";
+import { pinTabs, unpinTabs } from "../helper/tabsPinning";
 
 type EnhancedTab = Browser.Tabs.Tab & { workspaceUUID?: string };
 
@@ -191,7 +192,7 @@ export class Window {
 				await Browser.tabs.update(this.activeWorkspace.tabIds.at(-1), {
 					active: true,
 				});
-				await API.updateTab(tabId, { pinned: false });
+				await unpinTabs([tabId]);
 				await API.hideTab(tabId);
 			}
 		}
@@ -322,12 +323,7 @@ export class Window {
 			lastTabId && (activeWorkspace.activeTabId = lastTabId);
 			lastTabId && (await API.updateTab(lastTabId, { active: true }));
 			if (!Processes.keepPinnedTabs) {
-				await API.updateTabs(
-					targetWorkspace.pinnedTabIds.map((id) => ({
-						id,
-						props: { pinned: false },
-					}))
-				);
+				await unpinTabs(targetWorkspace.pinnedTabIds);
 			}
 			await API.hideTabs(tabIds);
 		} else {
@@ -521,12 +517,7 @@ export class Window {
 
 		await API.showTabs(nextTabIds);
 		if (!Processes.keepPinnedTabs) {
-			await API.updateTabs(
-				workspace.pinnedTabIds.map((id) => ({
-					id,
-					props: { pinned: true },
-				}))
-			);
+			await pinTabs(workspace.pinnedTabIds);
 		}
 
 		if (Processes.searchWasUsed) {
@@ -552,12 +543,7 @@ export class Window {
 			previousActiveWorkspaceUUID !== workspace.UUID
 		) {
 			if (!Processes.keepPinnedTabs) {
-				await API.updateTabs(
-					previousActiveWorkspace.pinnedTabIds.map((id) => ({
-						id,
-						props: { pinned: false },
-					}))
-				);
+				await unpinTabs(previousActiveWorkspace.pinnedTabIds);
 			}
 			await API.hideTabs(currentTabIds);
 		}
