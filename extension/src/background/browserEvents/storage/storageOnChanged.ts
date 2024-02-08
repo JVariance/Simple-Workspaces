@@ -40,25 +40,29 @@ export function storageOnChanged(
 				});
 				break;
 			case "keepPinnedTabs":
-				Processes.keepPinnedTabs = item.newValue;
-				if (typeof item.newValue === "boolean") {
-					if (item.newValue) {
-						for (let [_, window] of WorkspaceStorage.windows) {
-							for (let workspace of window.workspaces) {
-								pinTabs(workspace.pinnedTabIds);
+				(async () => {
+					Processes.keepPinnedTabs = item.newValue;
+					if (typeof item.newValue === "boolean") {
+						if (item.newValue) {
+							for (let [_, window] of WorkspaceStorage.windows) {
+								pinTabs(
+									window.workspaces.flatMap(({ pinnedTabIds }) => pinnedTabIds)
+								);
+							}
+						} else {
+							for (let [_, window] of WorkspaceStorage.windows) {
+								const activeWorkspace = window.activeWorkspace;
+								const nonActiveWorkspacePinnedTabIds = window.workspaces
+									.filter(
+										(workspace) => workspace.UUID !== activeWorkspace.UUID
+									)
+									.flatMap((workspace) => workspace.pinnedTabIds);
+								await unpinTabs(nonActiveWorkspacePinnedTabIds);
+								API.hideTabs(nonActiveWorkspacePinnedTabIds);
 							}
 						}
-					} else {
-						for (let [_, window] of WorkspaceStorage.windows) {
-							const activeWorkspace = window.activeWorkspace;
-							const nonActiveWorkspacePinnedTabIds = window.workspaces
-								.filter((workspace) => workspace.UUID !== activeWorkspace.UUID)
-								.flatMap((workspace) => workspace.pinnedTabIds);
-							unpinTabs(nonActiveWorkspacePinnedTabIds);
-							API.hideTabs(nonActiveWorkspacePinnedTabIds);
-						}
 					}
-				}
+				})();
 				break;
 			default:
 				break;
