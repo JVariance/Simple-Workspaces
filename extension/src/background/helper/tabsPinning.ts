@@ -1,3 +1,23 @@
-function pinTabs(tabIds: number[]) {}
+import * as API from "@root/browserAPI";
 
-function unpinTabs(tabIds: number[]) {}
+export function pinTabs(tabIds: number[]) {
+	return API.updateTabs(
+		tabIds.map((tabId) => ({
+			id: tabId,
+			props: {
+				pinned: true,
+			},
+		}))
+	);
+}
+
+export function unpinTabs(tabIds: number[]) {
+	return API.updateTabs(
+		tabIds.map((tabId) => ({
+			id: tabId,
+			props: {
+				pinned: false,
+			},
+		}))
+	);
+}
