@@ -3,9 +3,11 @@
 ### Content
 ### Translations
 ### Logic
+[] if tab-pinning changes, update all windows
 [] better emoji picker focus handling
 [] highlight workspace which received new tabs (after send action)
 ### Bugs
+[] detach tabs (bug case: debugging & options page) to new window results to hidden tab (bug case: debugging page)
 ### Other
 - https://www.npmjs.com/package/p-maps
 ---

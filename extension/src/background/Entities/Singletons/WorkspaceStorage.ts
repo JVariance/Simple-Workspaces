@@ -3,6 +3,7 @@ import Browser from "webextension-polyfill";
 import * as API from "@root/browserAPI";
 import { Window } from "@background/Entities/Window.svelte";
 import { createTab } from "@root/background/browserAPIWrapper/tabCreation";
+import { unstate } from "svelte";
 
 enum StorageKeys {
 	windowUUIDs = "windowIds",
@@ -144,7 +145,12 @@ class WorkspaceStorage {
 
 	/*
 		moveDetachedTabs:
-		- 
+		- get new active tab
+		- switch to active tab's workspace
+		- set new active tab's id as activetabid
+		- remove tabids from according workspaces (tabids/pinnedtabids)
+		- create new tabs for workspaces with no tabs left (empty workspaces)
+			- set activetabid to new tab's id
 	*/
 
 	async moveDetachedTabs({
@@ -168,19 +174,23 @@ class WorkspaceStorage {
 			activeTab?.id,
 			"workspaceUUID"
 		);
+
 		const activeTabsWorkspace = window.workspaces.find(
 			({ UUID }) => UUID === activeTabsWorkspaceUUID
 		);
-		activeTabsWorkspace && (await window.switchWorkspace(activeTabsWorkspace));
+
+		const isActiveWorkspace =
+			activeTabsWorkspace?.UUID === activeWorkspace.UUID;
+
+		if (isActiveWorkspace) {
+			activeTabsWorkspace.activeTabId = activeTab?.id;
+		} else {
+			activeTabsWorkspace &&
+				(await window.switchWorkspace(activeTabsWorkspace));
+		}
 
 		const emptyWorkspaces = [];
 		for (let tabId of tabIds) {
-			// const workspaceUUID = await API.getTabValue(tabId, "workspaceUUID");
-			// const workspace = workspaceUUID
-			// 	? window.workspaces.find(({ UUID }) => UUID === workspaceUUID)
-			// 	: undefined;
-			// console.info({ workspaceUUID, workspace });
-
 			const workspace = window.workspaces.find((workspace) =>
 				workspace.tabIds.includes(tabId)
 			);
