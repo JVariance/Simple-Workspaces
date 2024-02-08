@@ -138,7 +138,7 @@
 					onwheel={(e) => e.currentTarget.scrollBy({left: -e.wheelDelta})}
 				>
 					{#each existingWindowsWorkspaces as [i, workspaces]}
-						<div class="swipe-item p-1 rounded-md border w-full">
+						<div class="swipe-item p-1 rounded-md border w-full border-neutral-300 dark:border-neutral-600">
 							<h2 class="first-letter:uppercase text-black/50 dark:text-white/50">{i18n.getMessage('window')} {i + 1}</h2>
 							<div class="flex gap-4 mt-2 flex-wrap">
 								{#each workspaces as workspace}

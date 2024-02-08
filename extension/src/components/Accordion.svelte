@@ -42,7 +42,7 @@
 		onkeyup={onKeyPress}
 	>
 		{@render summary()}
-		<Icon icon="chevron-right" width={20} class="rotate-90 transition-transform duration-200 ml-auto group-open:rotate-[270deg] text-neutral-300 dark:text-neutral-600" />
+		<Icon icon="chevron-right" width={20} class="rotate-90 transition-transform duration-200 ml-auto group-open:rotate-[270deg] text-neutral-400 dark:text-neutral-500" />
 	</summary>
 	<div class="content p-2 pt-0 {contentClasses}">
 		{@render children()}

@@ -55,7 +55,7 @@
 </script>
 
 {#snippet Section(content, classes)}
-	<section class="p-2 border border-solid rounded-md border-gray-100 dark:border-neutral-800 bg-neutral-50/30 dark:bg-[#23222b] w-[100cqw] overflow-auto {classes}">
+	<section class="p-2 border border-solid rounded-md border-gray-100 dark:border-neutral-800 bg-neutral-50/30 dark:bg-[#23222b] w-[100cqw] overflow-auto sm:overflow-visible {classes}">
 		{@render content()}
 	</section>
 {/snippet}
@@ -165,9 +165,9 @@
 			{#snippet Section_FurtherLinks()}
 				<h2 class="m-0 mb-4 text-lg flex gap-2 items-center font-semibold first-letter:uppercase">{i18n.getMessage("feedback_and_feature_requests_heading")}</h2>
 				<ButtonLink href="https://github.com/JVariance/Simple-Workspaces" target="_blank" class="btn w-max">
-					<img src="/images/github-mark/github-mark-white.svg" alt="GitHub Logo" class="w-8 aspect-square [@media_(prefers-color-scheme:_light)]:hidden">
-					<img src="/images/github-mark/github-mark.svg" alt="GitHub Logo" class="w-8 aspect-square dark:hidden">
-					GitHub Repository
+					<img src="/images/github-mark/github-mark-white.svg" alt="GitHub Logo" class="w-6 aspect-square [@media_(prefers-color-scheme:_light)]:hidden">
+					<img src="/images/github-mark/github-mark.svg" alt="GitHub Logo" class="w-6 aspect-square dark:hidden">
+					{i18n.getMessage('github_repository')}
 				</ButtonLink>
 			{/snippet}
 

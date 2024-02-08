@@ -206,5 +206,8 @@
 	},
 	"use_as_template": {
 		"message": "Als Vorlage verwenden"
+	},
+	"github_repository": {
+		"message": "GitHub-Repository"
 	}
 }
