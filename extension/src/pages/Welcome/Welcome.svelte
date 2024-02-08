@@ -440,6 +440,10 @@
 		@apply hover:bg-[color-mix(in_srgb,_#5d4b84_80%,_transparent)] focus:bg-[color-mix(in_srgb,_#5d4b84_80%,_transparent)];
 	}
 
+	:global(:is(.btn.ghost)) {
+		@apply bg-transparent;
+	}
+
 	.animated-icon {
 		grid-column: 1;
 		grid-row: 1;

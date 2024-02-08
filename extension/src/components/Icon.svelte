@@ -32,6 +32,7 @@
 		external: "octicon:link-external-24",
 		info: "material-symbols:info",
 		"next-filled": "carbon:next-filled",
+		reload: "ion:reload-outline",
 		reset: "radix-icons:reset",
 		remove: "ic:round-remove-circle",
 		"sad-face-2": "fluent-emoji:sad-but-relieved-face",

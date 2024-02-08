@@ -112,7 +112,7 @@
 				{/if}
 			{/snippet}
 			{#snippet Section_DefaultWorkspaces()}
-				<div class="">
+				<div class="@container">
 					<h2 class="m-0 mb-4 text-lg font-semibold first-letter:uppercase">{i18n.getMessage('default_workspaces')}</h2>
 					<Info class="mb-4">
 						{i18n.getMessage('changes_will_apply_for_new_windows')}
@@ -167,8 +167,8 @@
 
 			{@render Section(Section_Theme, "basis-full flex-1")}
 			{@render Section(Section_HomeWorkspace, "basis-full flex-1")}
-			{@render Section(Section_CurrentWorkspaces, "flex-0")}
-			{@render Section(Section_DefaultWorkspaces, "flex-1 w-full overflow-auto scrollbar-gutter:_stable] sm:scrollbar-gutter:_unset]")}
+			{@render Section(Section_CurrentWorkspaces, "flex-[0_2_min-content] min-w-[250px]")}
+			{@render Section(Section_DefaultWorkspaces, "flex-1 w-full overflow-auto scrollbar-gutter:_stable] sm:scrollbar-gutter:_unset] min-w-[50%]")}
 			{@render Section(Section_TabPinning, "basis-full")}
 			{@render Section(Section_Shortcuts, "basis-full")}
 			{@render Section(Section_ClearExtensionData, "basis-full")}

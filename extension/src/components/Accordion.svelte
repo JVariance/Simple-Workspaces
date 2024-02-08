@@ -8,6 +8,14 @@
 
 	let detailsElement: HTMLDetailsElement;
 
+	export function open() {
+		detailsElement.open = true;
+	}
+
+	export function close() {
+		detailsElement.open = false;
+	}
+
 	function onKeyPress(event){
 		console.info({ event });
 		switch(event.key) {
@@ -34,7 +42,7 @@
 		onkeyup={onKeyPress}
 	>
 		{@render summary()}
-		<Icon icon="chevron-right" width={20} class="rotate-90 transition-transform duration-200 ml-auto group-open:rotate-[270deg]" />
+		<Icon icon="chevron-right" width={20} class="rotate-90 transition-transform duration-200 ml-auto group-open:rotate-[270deg] text-neutral-300 dark:text-neutral-600" />
 	</summary>
 	<div class="content p-2 pt-0 {contentClasses}">
 		{@render children()}

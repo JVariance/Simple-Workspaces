@@ -224,6 +224,16 @@ export async function runtimeOnMessage(
 					await BrowserStorage.getDefaultWorkspaces();
 				return resolve(defaultWorkspaces);
 			});
+		case "getExistingWindowsWorkspaces":
+			return new Promise(async (resolve) => {
+				const existingWindowsWorkspaces = Array.from(
+					WorkspaceStorage.windows.values()
+				).map((window, i) => [
+					i,
+					window.workspaces.slice(1).map(({ name, icon }) => ({ name, icon })),
+				]);
+				return resolve(existingWindowsWorkspaces);
+			});
 		case "forceApplyDefaultWorkspacesOnCurrentWindow":
 			return new Promise<void>(async (resolve) => {
 				await WorkspaceStorage.activeWindow.forceApplyDefaultWorkspaces();

@@ -127,7 +127,7 @@
     "message": "Willkommensseite öffnen"
   },
   "home_workspace": {
-    "message": "Home Arbeitsbereich"
+    "message": "Hauptarbeitsbereich"
   },
   "theme": {
     "message": "Farbthema"
@@ -194,5 +194,17 @@
   },
   "version": {
     "message": "Version"
+  },
+  "existing_windows_workspaces": {
+    "message": "Aktuelle Fenster-Arbeitsbereiche"
+  },
+  "window": {
+    "message": "Fenster"
+  },
+  "reload": {
+    "message": "aktualisieren"
+  },
+  "use_as_template": {
+    "message": "Als Vorlage verwenden"
   }
 }

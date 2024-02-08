@@ -7,7 +7,9 @@
 	import { SOURCES, dndzone } from "svelte-dnd-action";
 	import { createToast } from "../createToast";
 	import { immediateDebounceFunc } from "@root/utils";
-	import {getDefaultWorkspacesState} from "@pages/states.svelte";
+	import { getDefaultWorkspacesState } from "@pages/states.svelte";
+	import { overflowSwipe } from "@root/actions/overflowSwipe";
+	import Button from "../Button.svelte";
 
 	type Props = {dndFinish?: Function};
 
@@ -17,6 +19,8 @@
 	let fetchedDefaultWorkspaces: Ext.SimpleWorkspace[] = $state([]);
 	let _defaultWorkspaces = $derived(getDefaultWorkspacesState());
 	let defaultWorkspaces = $state((() => unstate(_defaultWorkspaces))());
+	let existingWindowsWorkspaces = $state<[number, Pick<Ext.SimpleWorkspace, 'name' | 'icon'>[]][]>([]);
+	let existingWindowWorkspacesAccordionElem: Accordion;
 
 	$effect(() => {
 		untrack(() => defaultWorkspaces);
@@ -69,11 +73,17 @@
 
 	const applyDefaultWorkspacesChanges = immediateDebounceFunc(_applyDefaultWorkspacesChanges, 500);
 
+	function getExistingWindowsWorkspaces(){
+		return Browser.runtime.sendMessage({ msg: "getExistingWindowsWorkspaces" });
+	}
+
 	onMount(async () => {
-		const localDefaultWorkspaces = await Browser.runtime.sendMessage({msg: "getDefaultWorkspaces"}) as Ext.SimpleWorkspace[];
+		const localDefaultWorkspaces = await Browser.runtime.sendMessage({ msg: "getDefaultWorkspaces" }) as Ext.SimpleWorkspace[];
 		localDefaultWorkspaces?.forEach((workspace, i) => {
 			workspace.id = i;
 		});
+
+		existingWindowsWorkspaces = await getExistingWindowsWorkspaces();
 
 		if(localDefaultWorkspaces) {
 			fetchedDefaultWorkspaces = [...localDefaultWorkspaces];
@@ -111,6 +121,44 @@
 		class="w-full"
 	>
 		<div class="w-max list-wrapper [&:has(ul:empty)>button]:ml-0">
+			<Accordion detailsClasses="mb-2 max-w-[100cqw]" bind:this={existingWindowWorkspacesAccordionElem}>
+				{#snippet summary()}
+					<span>{i18n.getMessage('existing_windows_workspaces')}</span>
+				{/snippet}
+				<Button class="ghost" onclick={async () => existingWindowsWorkspaces = await getExistingWindowsWorkspaces()}>
+					<Icon icon="reload" width={16} />
+					<span class="-mt-[0.1rem] text-base">{i18n.getMessage('reload')}</span>
+				</Button>
+				<div 
+					class="
+						grid grid-flow-col auto-cols-[calc(100%_-_1rem)] gap-2 mt-2 overflow-auto [scrollbar-width:thin] [scrollbar-color:transparent_transparent] hover:[scrollbar-color:initial] pb-1
+						overscroll-contain
+					"
+					use:overflowSwipe
+					onwheel={(e) => e.currentTarget.scrollBy({left: -e.wheelDelta})}
+				>
+					{#each existingWindowsWorkspaces as [i, workspaces]}
+						<div class="swipe-item p-1 rounded-md border w-full">
+							<h2 class="first-letter:uppercase text-black/50 dark:text-white/50">{i18n.getMessage('window')} {i + 1}</h2>
+							<div class="flex gap-4 mt-2 flex-wrap">
+								{#each workspaces as workspace}
+									<div class="flex gap-2 w-full">
+										<span class="[font-family:_Noto_Color_Emoji]">{workspace.icon}</span>
+										<p class="overflow-hidden text-ellipsis">{workspace.name}</p>
+									</div>
+									{:else}
+									<span>-</span>
+								{/each}
+							</div>
+							{#if workspaces.length}
+								<Button class="mt-4" onclick={() => {existingWindowWorkspacesAccordionElem.close(); defaultWorkspaces = workspaces;}}>
+									{i18n.getMessage('use_as_template')}
+								</Button>
+							{/if}
+						</div>
+					{/each}
+				</div>
+			</Accordion>
 			<ul
 				class="default-workspaces grid gap-2 [&:not(:empty)]:!mb-2"
 				use:dndzone={{
@@ -151,12 +199,18 @@
 			</ul>
 			<button
 				title="add default workspace"
-				class="btn primary-btn ml-6 w-full"
+				class="btn primary-btn ml-6 max-w-[100cqw]"
 				style:width="-moz-available"
 				onclick={addDefaultWorkspace}><Icon icon="add" width={16}/>
 				<span class="-mt-[0.1rem]">{i18n.getMessage('add_default_workspace')}</span>
 			</button>
-			<button class="btn primary-btn justify-center mt-4 [&:not(.changes-available)]:hidden" class:changes-available={changesMade} style:width="-moz-available" disabled={!changesMade} onclick={applyDefaultWorkspacesChanges}>
+			<button 
+				class="btn primary-btn justify-center mt-4 [&:not(.changes-available)]:hidden max-w-[100cqw]" 
+				class:changes-available={changesMade} 
+				style:width="-moz-available" 
+				disabled={!changesMade} 
+				onclick={applyDefaultWorkspacesChanges}
+			>
 				<Icon icon="check" />
 				<span class="-mt-1">{i18n.getMessage('apply_changes')}</span>
 			</button>

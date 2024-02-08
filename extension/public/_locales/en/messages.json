@@ -127,7 +127,7 @@
     "message": "Open Welcome Page"
   },
   "home_workspace": {
-    "message": "Home Workspace"
+    "message": "Main Workspace"
   },
   "theme": {
     "message": "theme"
@@ -194,5 +194,17 @@
   },
   "version": {
     "message": "version"
+  },
+  "existing_windows_workspaces": {
+    "message": "Existing windows' workspaces"
+  },
+  "window": {
+    "message": "window"
+  },
+  "reload": {
+    "message": "reload"
+  },
+  "use_as_template": {
+    "message": "use as template"
   }
 }

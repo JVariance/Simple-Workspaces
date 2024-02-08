@@ -45,7 +45,7 @@
 			}}
 		/>
 		<button
-			class="btn justify-center mt-4 basis-full"
+			class="btn justify-center mt-4 basis-full max-w-[100cqw]"
 			style:width="-moz-available"
 			onclick={applyHomeWorkspaceChanges}
 		>
