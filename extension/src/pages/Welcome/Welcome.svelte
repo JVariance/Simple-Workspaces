@@ -423,8 +423,17 @@
 		}
 	}
 
-	:global(details, summary, input, details :is(div, button)) {
+	:global(details) {
+		--accordion-border-color: color-mix(in srgb, white 25%, transparent) !important;
+	}
+
+	:global(input, details :where(div, button)) {
 		@apply !border-white/25;
+	}
+
+	:global(details summary) {
+		--accordion-summary-hover-bg: color-mix(in srgb, white 25% ,transparent);
+		--accordion-summary-hover-color: inherit;
 	}
 
 	:global(kbd){

@@ -1,8 +1,11 @@
 <script lang="ts">
 
 	import "@root/styles/specialPages.postcss";
+	import type { Snippet } from "svelte";
 
-	let { children } = $props();
+	type Props = { children: Snippet };
+
+	let { children } = $props<Props>();
 </script>
 
 {@render children()}

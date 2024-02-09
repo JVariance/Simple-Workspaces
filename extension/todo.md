@@ -3,6 +3,7 @@
 [] compress images & video
 [] support bookmarks?
 [] support history?
+[] choose default workspace emoji and name
 ### Styles
 ### Content
 ### Translations

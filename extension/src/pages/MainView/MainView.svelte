@@ -12,7 +12,8 @@
 	import { slide } from "svelte/transition";
 	import Fuse from "fuse.js";
 	import { overflowSwipe } from "@root/actions/overflowSwipe";
-	import Accordion from "@root/components/Accordion.svelte";
+	import Accordion from "@components/Accordion/Accordion.svelte";
+	import Summary from "@components/Accordion/Summary.svelte";
 
 	import { overrideItemIdKeyNameBeforeInitialisingDndZones } from "svelte-dnd-action";
 	overrideItemIdKeyNameBeforeInitialisingDndZones("UUID");
@@ -476,22 +477,25 @@
 			{/if}
 			{#if searchValue.length && matchingTabs.length}
 				<Accordion 
-					detailsClasses="w-[100cqw] overflow-hidden" 
+					class="w-[100cqw] overflow-hidden" 
 					open
-					summaryAttributes={{'data-focusable': 'true'}} 
-					summaryClasses="
-						flex gap-2 border-[color-mix(in_srgb,light-dark(black,white)_50%,var(--body-bg))] pb-2
-						focus:bg-[--button-bg-focus] outline-none
-					"
 				>
 					{#snippet summary()}
-						<span>{workspace.icon}</span>
-						<span>{workspace.name}</span>
+						<Summary 
+							data-focusable="true" 
+							class="
+								flex gap-2 border-[color-mix(in_srgb,light-dark(black,white)_50%,var(--body-bg))] pb-2
+								focus:bg-[--button-bg-focus] outline-none
+							"
+						>
+							<span>{workspace.icon}</span>
+							<span>{workspace.name}</span>
+						</Summary>
 					{/snippet}
 					<div 
 						class="
 							swipe-item
-							grid grid-rows-[repeat(5,_auto)] grid-flow-col gap-2 overflow-auto 
+							grid grid-rows-[repeat(5,_auto)] grid-flow-col overflow-auto 
 							[scrollbar-width:_thin] [scrollbar-color:transparent_transparent] hover:[scrollbar-color:initial] 
 							pb-1 w-[100cqw] mt-2
 							overscroll-contain
@@ -501,7 +505,7 @@
 					>
 						{#each matchingTabs.filter(({ id }) => workspace.tabIds.includes(id)) as tab}
 							<button 
-								class="btn ghost h-max flex gap-2 items-center outline-none" 
+								class="btn ghost h-max flex gap-2 items-center outline-none mt-2 [&:nth-child(1)]:mt-0 [&:nth-child(6)]:mt-0"
 								data-focusable
 								onclick={() => {switchWorkspaceAndFocusTab(workspace.UUID, tab.id)}}
 							>

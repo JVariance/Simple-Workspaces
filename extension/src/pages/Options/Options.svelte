@@ -2,7 +2,8 @@
 	import Icon from "@root/components/Icon.svelte";
 	import { createRoot, type Snippet} from "svelte";
 	import Browser, { i18n } from "webextension-polyfill";
-	import Accordion from "@root/components/Accordion.svelte";
+	import Accordion from "@components/Accordion/Accordion.svelte";
+	import Summary from "@components/Accordion/Summary.svelte";
 	import DefaultWorkspaces from "@root/components/ViewBlocks/DefaultWorkspaces.svelte";
 	import Info from "@root/components/Info.svelte";
 	import SimpleWorkspace from "@root/components/SimpleWorkspace.svelte";
@@ -148,12 +149,14 @@
 				<Shortcuts />
 			{/snippet}
 			{#snippet Section_ClearExtensionData()}
-				<Accordion summaryClasses="border-none" detailsClasses="border-none" contentClasses="mt-4">
+				<Accordion class="border-none">
 					{#snippet summary()}
-						<h2 class="m-0 text-lg flex gap-2 items-center font-semibold">
-							<Icon icon="clear" />
-							<span class="-mt-[0rem] first-letter:uppercase">{i18n.getMessage('clear')}</span>
-						</h2>
+						<Summary class="border-none">
+							<h2 class="m-0 text-lg flex gap-2 items-center font-semibold">
+								<Icon icon="clear" />
+								<span class="-mt-[0rem] first-letter:uppercase">{i18n.getMessage('clear')}</span>
+							</h2>
+						</Summary>
 					{/snippet}
 					<button class="btn" onclick={clearExtensionData}>{i18n.getMessage('clear')}</button>
 				</Accordion>

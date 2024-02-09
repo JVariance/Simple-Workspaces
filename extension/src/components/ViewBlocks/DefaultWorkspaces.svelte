@@ -2,14 +2,15 @@
 	import Browser, { i18n } from "webextension-polyfill";
 	import { onMount, unstate, untrack } from "svelte";
 	import Icon from "../Icon.svelte";
-	import Accordion from "../Accordion.svelte";
+	import Accordion from "@components/Accordion/Accordion.svelte";
+	import Summary from "@components/Accordion/Summary.svelte";
+	import Button from "@components/Button.svelte";
 	import SimpleWorkspace from "../SimpleWorkspace.svelte";
 	import { SOURCES, dndzone } from "svelte-dnd-action";
 	import { createToast } from "../createToast";
 	import { immediateDebounceFunc } from "@root/utils";
 	import { getDefaultWorkspacesState } from "@pages/states.svelte";
 	import { overflowSwipe } from "@root/actions/overflowSwipe";
-	import Button from "../Button.svelte";
 
 	type Props = {dndFinish?: Function};
 
@@ -121,11 +122,13 @@
 		class="w-full"
 	>
 		<div class="w-full list-wrapper [&:has(ul:empty)>button]:ml-0">
-			<Accordion detailsClasses="mb-2 max-w-[100cqw]" bind:this={existingWindowWorkspacesAccordionElem}>
+			<Accordion class="mb-2 max-w-[100cqw] group" bind:this={existingWindowWorkspacesAccordionElem}>
 				{#snippet summary()}
-					<span>{i18n.getMessage('existing_windows_workspaces')}</span>
+					<Summary>
+						<span>{i18n.getMessage('existing_windows_workspaces')}</span>
+					</Summary>
 				{/snippet}
-				<Button class="ghost" onclick={async () => existingWindowsWorkspaces = await getExistingWindowsWorkspaces()}>
+				<Button class="ghost mt-4" onclick={async () => existingWindowsWorkspaces = await getExistingWindowsWorkspaces()}>
 					<Icon icon="reload" width={16} />
 					<span class="-mt-[0.1rem] text-base">{i18n.getMessage('reload')}</span>
 				</Button>
@@ -139,7 +142,7 @@
 				>
 					{#each existingWindowsWorkspaces as [i, workspaces]}
 						<div class="swipe-item p-1 rounded-md border w-full border-neutral-300 dark:border-neutral-600">
-							<h2 class="first-letter:uppercase text-black/50 dark:text-white/50">{i18n.getMessage('window')} {i + 1}</h2>
+							<h2 class="first-letter:uppercase text-[color-mix(in_srgb,_currentColor_60%,_transparent)]">{i18n.getMessage('window')} {i + 1}</h2>
 							<div class="flex gap-4 mt-2 flex-wrap">
 								{#each workspaces as workspace}
 									<div class="flex gap-2 w-full">
@@ -151,7 +154,7 @@
 								{/each}
 							</div>
 							{#if workspaces.length}
-								<Button class="mt-4" onclick={() => {existingWindowWorkspacesAccordionElem.close(); defaultWorkspaces = workspaces.map(({name, icon}, i) => ({id: i, name, icon}));}}>
+								<Button class="primary-btn mt-4" onclick={() => {existingWindowWorkspacesAccordionElem.close(); defaultWorkspaces = workspaces.map(({name, icon}, i) => ({id: i, name, icon}));}}>
 									{i18n.getMessage('use_as_template')}
 								</Button>
 							{/if}
@@ -215,9 +218,11 @@
 				<span class="-mt-1">{i18n.getMessage('apply_changes')}</span>
 			</button>
 		</div>
-		<Accordion detailsClasses="mt-4">
+		<Accordion class="mt-4">
 			{#snippet summary()}
-				<span>{i18n.getMessage('force_apply') || "force apply"}</span>
+				<Summary>
+					<span>{i18n.getMessage('force_apply') || "force apply"}</span>
+				</Summary>
 			{/snippet}
 			<button class="btn primary-btn justify-center mt-4 !w-auto" style:width="-moz-available" onclick={forceApplyOnCurrentWindow}>
 				{i18n.getMessage("force_apply_on_current_window") || "force apply on current window"}
@@ -226,9 +231,11 @@
 				{i18n.getMessage("force_apply_on_all_open_windows") || "force apply on all open windows"}
 			</button>
 		</Accordion>
-		<Accordion detailsClasses="mt-4">
+		<Accordion class="mt-4">
 			{#snippet summary()}
-				<span class="-mt-[0.125rem]">{i18n.getMessage('reset')}</span>
+				<Summary>
+					<span class="-mt-[0.125rem]">{i18n.getMessage('reset')}</span>
+				</Summary>
 			{/snippet}
 			<button class="btn primary-btn justify-center mt-4 !w-auto" style:width="-moz-available" onclick={(e) => {defaultWorkspaces = [];}}><Icon icon="reset"/><span class="-mt-0">{i18n.getMessage('reset_default_workspaces')}</span></button>
 		</Accordion>

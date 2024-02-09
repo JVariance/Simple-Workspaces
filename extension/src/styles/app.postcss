@@ -67,3 +67,15 @@ input[type="checkbox"] {
 		transform: translateY(150%);
 	}
 }
+
+details {
+	&[open] {
+		summary {
+			@apply relative;
+			&::after {
+				content: "";
+				@apply absolute bottom-0 left-0 right-0 border-b block border-[--accordion-border-color];
+			}
+		}
+	}
+}
