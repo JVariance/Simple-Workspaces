@@ -28,7 +28,7 @@
 		defaultWorkspaces = unstate(_defaultWorkspaces);
 	});
 
-	let changesMade = $derived.call(() => {
+	let changesMade = $derived.by(() => {
 		console.info(JSON.stringify(fetchedDefaultWorkspaces) !== JSON.stringify(defaultWorkspaces));
 		return JSON.stringify(fetchedDefaultWorkspaces) !== JSON.stringify(defaultWorkspaces)
 	});

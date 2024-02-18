@@ -33,7 +33,7 @@
 	let forceDefaultThemeIfDarkMode = $derived(getForceDefaultThemeIfDarkModeState());
 	let activeWorkspace: Ext.Workspace = $derived(homeWorkspace?.active ? homeWorkspace : workspaces?.find(({active}) => active));
 	let searchUnmatchingWorkspaceUUIDS: string[] = $state([]);
-	let viewWorkspaces: Ext.Workspace[] = $derived.call(() => {
+	let viewWorkspaces: Ext.Workspace[] = $derived.by(() => {
 		const filteredWorkspaces = workspaces.filter(({ UUID }) => !searchUnmatchingWorkspaceUUIDS.includes(UUID));
 		return filteredWorkspaces.length ? filteredWorkspaces : searchInput?.value.length ? [] : workspaces;
 	});
