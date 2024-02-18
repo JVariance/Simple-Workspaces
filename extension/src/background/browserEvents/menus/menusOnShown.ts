@@ -1,5 +1,5 @@
 import type Browser from "webextension-polyfill";
-import { WorkspaceStorage, TabMenu } from "../../Entities";
+import { WorkspaceStorage, TabMenuMove, TabMenuCookies } from "../../Entities";
 
 export function menusOnShown(
 	info: Browser.Menus.OnShownInfoType,
@@ -10,7 +10,8 @@ export function menusOnShown(
 		.get(tab.windowId!)!
 		.workspaces.filter(({ active }) => !active);
 
-	TabMenu.update({
+	TabMenuMove.update({
 		workspaces,
 	});
+	TabMenuCookies.update();
 }

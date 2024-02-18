@@ -1,8 +1,8 @@
 import Browser, { i18n } from "webextension-polyfill";
 
-class TabMenu {
+class TabMenuMove {
 	#parentId!: string;
-	private static _instance: TabMenu;
+	private static _instance: TabMenuMove;
 
 	private constructor() {}
 
@@ -16,8 +16,8 @@ class TabMenu {
 
 	#createParentMenu() {
 		this.#parentId = Browser.menus.create({
-			id: "tab-menu",
-			title: "Send to Workspace",
+			id: "tab-menu-move",
+			title: i18n.getMessage("send_to_workspace"),
 			contexts: ["tab"],
 			// enabled: false,
 		}) as string;
@@ -61,4 +61,4 @@ class TabMenu {
 	}
 }
 
-export default TabMenu.Instance;
+export default TabMenuMove.Instance;

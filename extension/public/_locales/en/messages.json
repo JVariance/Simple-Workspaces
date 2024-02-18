@@ -1,213 +1,219 @@
 {
-	"options": {
-		"message": "options",
-		"description": "options page title"
-	},
-	"general": {
-		"message": "general",
-		"description": "options page"
-	},
-	"reset": {
-		"message": "reset",
-		"description": "options page"
-	},
-	"language": {
-		"message": "language",
-		"description": ""
-	},
-	"search": {
-		"message": "search tabs",
-		"description": "search field placeholder"
-	},
-	"reset_default_workspaces": {
-		"message": "reset default workspaces",
-		"description": "options page"
-	},
-	"add_default_workspace": {
-		"message": "add default workspace",
-		"description": "options page"
-	},
-	"default_workspace": {
-		"message": "default workspace",
-		"description": "options page"
-	},
-	"default_workspaces": {
-		"message": "default workspaces",
-		"description": "options page"
-	},
-	"current_window": {
-		"message": "current window",
-		"description": ""
-	},
-	"current_workspaces": {
-		"message": "current workspaces",
-		"description": ""
-	},
-	"changes_will_apply_for_new_windows": {
-		"message": "changes will apply for new windows",
-		"description": "options page -> default workspaces"
-	},
-	"apply_changes": {
-		"message": "apply changes",
-		"description": "apply changes on default workspaces button"
-	},
-	"applying_changes": {
-		"message": "applying changes",
-		"description": "options page"
-	},
-	"applied_changes": {
-		"message": "applied changes",
-		"description": "options page"
-	},
-	"clear": {
-		"message": "clear extension data",
-		"description": "clear extension data"
-	},
-	"new_workspace": {
-		"message": "new workspace",
-		"description": ""
-	},
-	"workspace": {
-		"message": "workspace",
-		"description": ""
-	},
-	"workspaces": {
-		"message": "workspaces",
-		"description": ""
-	},
-	"send_to_workspace": {
-		"message": "send to workspace",
-		"description": ""
-	},
-	"create_new_workspace": {
-		"message": "create new workspace",
-		"description": ""
-	},
-	"command._execute_browser_action": {
-		"message": "Toggle toolbar popup",
-		"description": ""
-	},
-	"command._execute_sidebar_action": {
-		"message": "Toggle sidebar",
-		"description": ""
-	},
-	"command.next-workspace": {
-		"message": "Switch to next workspace",
-		"description": ""
-	},
-	"command.previous-workspace": {
-		"message": "Switch to previous workspace",
-		"description": ""
-	},
-	"command.new-workspace": {
-		"message": "Create new workspace",
-		"description": ""
-	},
-	"command.new-container-tab": {
-		"message": "Create new tab in current container"
-	},
-	"command.new-container-tab.link": {
-		"message": "https://support.mozilla.org/en-US/kb/containers"
-	},
-	"shortcuts.help.link": {
-		"message": "https://support.mozilla.org/en-US/kb/manage-extension-shortcuts-firefox",
-		"description": ""
-	},
-	"you_can_edit_shortcuts_for_commands_in_the_addons_page": {
-		"message": "You can edit the command's shortcuts via Firefox' 'Manage Your Extensions' page.",
-		"description": ""
-	},
-	"There_are_no_current_workspaces_in_this_window": {
-		"message": "There are no current workspaces in this window"
-	},
-	"want_to_see_the_welcome_page_again": {
-		"message": "Want to see the Welcome Page again?"
-	},
-	"open_welcome_page": {
-		"message": "Open Welcome Page"
-	},
-	"home_workspace": {
-		"message": "Main Workspace"
-	},
-	"theme": {
-		"message": "theme"
-	},
-	"feedback_and_feature_requests_heading": {
-		"message": "Feedback and Feature Requests?"
-	},
-	"copy_link_and_open_new tab": {
-		"message": "copy link and open new tab"
-	},
-	"you_may_want_to_enable_the_open_previous_windows_and_tabs_option_in_preferences": {
-		"message": "You may want to enable the \"open previous windows and tabs\" option in preferences"
-	},
-	"welcome_default_workspaces_message": {
-		"message": "If you want to, you can set some default workspaces that will open with every window. \n You can change them at any time in the settings page which is accessible either via the 'cog' symbol next to the search bar inside the extension pages or via Firefox' add-on manager"
-	},
-	"welcome_welcome_message": {
-		"message": "Welcome to Simple Workspaces"
-	},
-	"force_apply": {
-		"message": "force apply"
-	},
-	"force_apply_on_current_window": {
-		"message": "force apply on current window"
-	},
-	"force_apply_on_all_open_windows": {
-		"message": "force apply on all open windows"
-	},
-	"read_more": {
-		"message": "read more"
-	},
-	"use_browser_theme": {
-		"message": "use current browser theme"
-	},
-	"force_default_dark_theme_in_dark_mode": {
-		"message": "force default dark theme in dark mode"
-	},
-	"search_no_matches": {
-		"message": "no matches"
-	},
-	"force_default_dark_theme_in_dark_mode_tooltip": {
-		"message": "If the current Firefox theme does not support dark mode, you can apply the extension's default dark theme"
-	},
-	"welcome_container_feature_proposal": {
-		"message": "If you like to, enable Firefox' container feature by enabling the following options in about:config"
-	},
-	"lets_get_you_started": {
-		"message": "Let's get started"
-	},
-	"optional": {
-		"message": "optional"
-	},
-	"configure_firefox": {
-		"message": "Configure Firefox"
-	},
-	"welcome_to": {
-		"message": "Welcome to"
-	},
-	"tab_pinning": {
-		"message": "Tab Pinning"
-	},
-	"keep_pinned_tabs": {
-		"message": "keep all pinned tabs visible"
-	},
-	"version": {
-		"message": "version"
-	},
-	"existing_windows_workspaces": {
-		"message": "Existing windows' workspaces"
-	},
-	"window": {
-		"message": "window"
-	},
-	"reload": {
-		"message": "reload"
-	},
-	"use_as_template": {
-		"message": "use as template"
-	},
-	"github_repository": {
-		"message": "GitHub Repository"
-	}
+  "options": {
+    "message": "options",
+    "description": "options page title"
+  },
+  "general": {
+    "message": "general",
+    "description": "options page"
+  },
+  "reset": {
+    "message": "reset",
+    "description": "options page"
+  },
+  "language": {
+    "message": "language",
+    "description": ""
+  },
+  "search": {
+    "message": "search tabs",
+    "description": "search field placeholder"
+  },
+  "reset_default_workspaces": {
+    "message": "reset default workspaces",
+    "description": "options page"
+  },
+  "add_default_workspace": {
+    "message": "add default workspace",
+    "description": "options page"
+  },
+  "default_workspace": {
+    "message": "default workspace",
+    "description": "options page"
+  },
+  "default_workspaces": {
+    "message": "default workspaces",
+    "description": "options page"
+  },
+  "current_window": {
+    "message": "current window",
+    "description": ""
+  },
+  "current_workspaces": {
+    "message": "current workspaces",
+    "description": ""
+  },
+  "changes_will_apply_for_new_windows": {
+    "message": "changes will apply for new windows",
+    "description": "options page -> default workspaces"
+  },
+  "apply_changes": {
+    "message": "apply changes",
+    "description": "apply changes on default workspaces button"
+  },
+  "applying_changes": {
+    "message": "applying changes",
+    "description": "options page"
+  },
+  "applied_changes": {
+    "message": "applied changes",
+    "description": "options page"
+  },
+  "clear": {
+    "message": "clear extension data",
+    "description": "clear extension data"
+  },
+  "new_workspace": {
+    "message": "new workspace",
+    "description": ""
+  },
+  "workspace": {
+    "message": "workspace",
+    "description": ""
+  },
+  "workspaces": {
+    "message": "workspaces",
+    "description": ""
+  },
+  "send_to_workspace": {
+    "message": "send to workspace",
+    "description": ""
+  },
+  "create_new_workspace": {
+    "message": "create new workspace",
+    "description": ""
+  },
+  "command._execute_browser_action": {
+    "message": "Toggle toolbar popup",
+    "description": ""
+  },
+  "command._execute_sidebar_action": {
+    "message": "Toggle sidebar",
+    "description": ""
+  },
+  "command.next-workspace": {
+    "message": "Switch to next workspace",
+    "description": ""
+  },
+  "command.previous-workspace": {
+    "message": "Switch to previous workspace",
+    "description": ""
+  },
+  "command.new-workspace": {
+    "message": "Create new workspace",
+    "description": ""
+  },
+  "command.new-container-tab": {
+    "message": "Create new tab in current container"
+  },
+  "command.new-container-tab.link": {
+    "message": "https://support.mozilla.org/en-US/kb/containers"
+  },
+  "shortcuts.help.link": {
+    "message": "https://support.mozilla.org/en-US/kb/manage-extension-shortcuts-firefox",
+    "description": ""
+  },
+  "you_can_edit_shortcuts_for_commands_in_the_addons_page": {
+    "message": "You can edit the command's shortcuts via Firefox' 'Manage Your Extensions' page.",
+    "description": ""
+  },
+  "There_are_no_current_workspaces_in_this_window": {
+    "message": "There are no current workspaces in this window"
+  },
+  "want_to_see_the_welcome_page_again": {
+    "message": "Want to see the Welcome Page again?"
+  },
+  "open_welcome_page": {
+    "message": "Open Welcome Page"
+  },
+  "home_workspace": {
+    "message": "Main Workspace"
+  },
+  "theme": {
+    "message": "theme"
+  },
+  "feedback_and_feature_requests_heading": {
+    "message": "Feedback and Feature Requests?"
+  },
+  "copy_link_and_open_new tab": {
+    "message": "copy link and open new tab"
+  },
+  "you_may_want_to_enable_the_open_previous_windows_and_tabs_option_in_preferences": {
+    "message": "You may want to enable the \"open previous windows and tabs\" option in preferences"
+  },
+  "welcome_default_workspaces_message": {
+    "message": "If you want to, you can set some default workspaces that will open with every window. \n You can change them at any time in the settings page which is accessible either via the 'cog' symbol next to the search bar inside the extension pages or via Firefox' add-on manager"
+  },
+  "welcome_welcome_message": {
+    "message": "Welcome to Simple Workspaces"
+  },
+  "force_apply": {
+    "message": "force apply"
+  },
+  "force_apply_on_current_window": {
+    "message": "force apply on current window"
+  },
+  "force_apply_on_all_open_windows": {
+    "message": "force apply on all open windows"
+  },
+  "read_more": {
+    "message": "read more"
+  },
+  "use_browser_theme": {
+    "message": "use current browser theme"
+  },
+  "force_default_dark_theme_in_dark_mode": {
+    "message": "force default dark theme in dark mode"
+  },
+  "search_no_matches": {
+    "message": "no matches"
+  },
+  "force_default_dark_theme_in_dark_mode_tooltip": {
+    "message": "If the current Firefox theme does not support dark mode, you can apply the extension's default dark theme"
+  },
+  "welcome_container_feature_proposal": {
+    "message": "If you like to, enable Firefox' container feature by enabling the following options in about:config"
+  },
+  "lets_get_you_started": {
+    "message": "Let's get started"
+  },
+  "optional": {
+    "message": "optional"
+  },
+  "configure_firefox": {
+    "message": "Configure Firefox"
+  },
+  "welcome_to": {
+    "message": "Welcome to"
+  },
+  "tab_pinning": {
+    "message": "Tab Pinning"
+  },
+  "keep_pinned_tabs": {
+    "message": "keep all pinned tabs visible"
+  },
+  "version": {
+    "message": "version"
+  },
+  "existing_windows_workspaces": {
+    "message": "Existing windows' workspaces"
+  },
+  "window": {
+    "message": "window"
+  },
+  "reload": {
+    "message": "reload"
+  },
+  "use_as_template": {
+    "message": "use as template"
+  },
+  "github_repository": {
+    "message": "GitHub Repository"
+  },
+  "get_login_data_from_": {
+    "message": ""
+  },
+  "get_login_data_from_container": {
+    "message": "Get Login data from container"
+  }
 }

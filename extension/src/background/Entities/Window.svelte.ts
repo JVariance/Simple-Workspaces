@@ -6,6 +6,7 @@ import { BrowserStorage } from "./Static/Storage";
 import { createTab } from "../browserAPIWrapper/tabCreation";
 import Processes from "./Singletons/Processes";
 import { pinTabs, unpinTabs } from "../helper/tabsPinning";
+import { getRandomEmoji } from "@root/emojiList";
 
 type EnhancedTab = Browser.Tabs.Tab & { workspaceUUID?: string };
 
@@ -352,7 +353,7 @@ export class Window {
 	#getNewWorkspace(): Ext.Workspace {
 		return {
 			UUID: crypto.randomUUID(),
-			icon: "🐠",
+			icon: getRandomEmoji(),
 			name: `Workspace`,
 			tabIds: [],
 			pinnedTabIds: [],

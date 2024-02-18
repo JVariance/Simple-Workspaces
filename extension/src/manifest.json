@@ -14,6 +14,7 @@
 	"{{firefox}}.permissions": [
 		"<all_urls>",
 		"activeTab",
+		"browsingData",
 		"cookies",
 		"contextualIdentities",
 		"menus",
