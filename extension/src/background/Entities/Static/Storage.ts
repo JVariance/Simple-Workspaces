@@ -54,4 +54,14 @@ export class BrowserStorage {
 	static setForceDefaultThemeIfDarkMode(bool: boolean) {
 		return Browser.storage.local.set({ forceDefaultThemeIfDarkMode: bool });
 	}
+
+	static getCookieDuplicatedDomains(): Promise<
+		Record<"cookieDuplicatedDomains", string[]>
+	> {
+		return Browser.storage.local.get("cookieDuplicatedDomains");
+	}
+
+	static setCookieDuplicatedDomains(cookieDuplicatedDomains: string[]) {
+		return Browser.storage.local.set({ cookieDuplicatedDomains });
+	}
 }

@@ -1,4 +1,4 @@
-import { createRoot } from "svelte";
+import { mount } from "svelte";
 import Options from "./Options.svelte";
 
-createRoot(Options, { target: document.body });
+mount(Options, { target: document.body });

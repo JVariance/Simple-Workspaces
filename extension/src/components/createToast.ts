@@ -1,4 +1,4 @@
-import { createRoot } from "svelte";
+import { mount } from "svelte";
 import Toast from "./Toast.svelte";
 
 export function createToast({
@@ -10,7 +10,7 @@ export function createToast({
 	successMessage: string;
 	errorMessage: string;
 }) {
-	return createRoot(Toast, {
+	return mount(Toast, {
 		target: document.getElementById("toaster") || document.body,
 		props: {
 			state: "loading",

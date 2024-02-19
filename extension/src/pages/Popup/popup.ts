@@ -1,4 +1,4 @@
-import { createRoot } from "svelte";
+import { mount } from "svelte";
 import Popup from "./Popup.svelte";
 
-createRoot(Popup, { target: document.body });
+mount(Popup, { target: document.body });

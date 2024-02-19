@@ -1,4 +1,4 @@
-import { createRoot } from "svelte";
+import { mount } from "svelte";
 import Sidebar from "./Sidebar.svelte";
 
-createRoot(Sidebar, { target: document.body });
+mount(Sidebar, { target: document.body });

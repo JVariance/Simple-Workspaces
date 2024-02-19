@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createRoot } from "svelte";
+	import { mount } from "svelte";
 	import EmojiPicker from "./EmojiPicker.svelte";
 
 	type Props = {
@@ -22,7 +22,7 @@
 		const { x, y } = target.getBoundingClientRect();
 
 		if (!picker) {
-			picker = createRoot(EmojiPicker, {
+			picker = mount(EmojiPicker, {
 				target: document.body,
 				props: {
 					x,

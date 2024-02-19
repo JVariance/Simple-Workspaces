@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createRoot, unstate } from "svelte";
+	import { mount, unstate } from "svelte";
 	import Browser, { i18n } from "webextension-polyfill";
 	import SimpleWorkspace from "@components/SimpleWorkspace.svelte";
 	import Icon from "@components/Icon.svelte";
@@ -12,7 +12,7 @@
 		event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement }
 	) {
 		event.stopImmediatePropagation();
-		const toast = createRoot(Toast, {
+		const toast = mount(Toast, {
 			target: document.getElementById("toaster") ?? document.body,
 			props: {
 				state: "loading",

@@ -1,6 +1,7 @@
 import { Processes, WorkspaceStorage } from "../../Entities";
 import { informViews } from "../../informViews";
 import { createTab } from "@root/background/browserAPIWrapper/tabCreation";
+import * as API from "@root/browserAPI";
 import { immediateDebounceFunc } from "@root/utils";
 import Browser from "webextension-polyfill";
 
@@ -31,13 +32,19 @@ async function createNewContainerTab() {
 	console.log(currentTab?.cookieStoreId);
 	Processes.manualTabAddition = true;
 	if (currentTab?.cookieStoreId?.split("-")[1] === "container") {
-		await createTab(
+		const newTab = (await createTab(
 			{
 				active: true,
 				cookieStoreId: currentTab.cookieStoreId,
 				index: currentTab.index + 1,
 			},
 			WorkspaceStorage.activeWindow.activeWorkspace
+		))!;
+
+		await API.setTabValue(
+			newTab.id!,
+			"workspaceUUID",
+			WorkspaceStorage.activeWindow.activeWorkspace.UUID
 		);
 	}
 	Processes.manualTabAddition = false;

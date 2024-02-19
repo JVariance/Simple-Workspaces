@@ -1,5 +1,5 @@
-import Browser from "webextension-polyfill";
-import { Processes, WorkspaceStorage } from "../../Entities";
+import Browser, { browserSettings } from "webextension-polyfill";
+import { BrowserStorage, Processes, WorkspaceStorage } from "../../Entities";
 import { informViews } from "../../informViews";
 import * as API from "@root/browserAPI";
 
@@ -29,7 +29,8 @@ async function syncCookie(
 			name: cookie.name,
 			partitionKey: cookie.partitionKey,
 			path: cookie.path,
-			sameSite: cookie.sameSite,
+			sameSite: "strict",
+			// sameSite: cookie.sameSite,
 			secure: cookie.secure,
 			value: cookie.value,
 			storeId: targetContainerStoreId,
@@ -226,6 +227,15 @@ export async function menusOnClicked(
 			// 	await Browser.tabs.reload(currentTab.id!);
 			// }, 3000);
 			// await Promise.all(cookies.map(cookie => syncCookie(false, cookie)));
+
+			console.info("adding to cookieDuplicatedDomains: ", domain);
+
+			const { cookieDuplicatedDomains } =
+				await BrowserStorage.getCookieDuplicatedDomains();
+
+			await BrowserStorage.setCookieDuplicatedDomains(
+				cookieDuplicatedDomains.concat(`${domain}_${sourceContainerStoreId}`)
+			);
 		} catch (err) {
 			console.error(err);
 		}

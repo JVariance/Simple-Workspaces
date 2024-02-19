@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from "@root/components/Icon.svelte";
-	import { createRoot, type Snippet} from "svelte";
+	import { mount } from "svelte";
 	import Browser, { i18n } from "webextension-polyfill";
 	import Accordion from "@components/Accordion/Accordion.svelte";
 	import Summary from "@components/Accordion/Summary.svelte";
@@ -22,7 +22,7 @@
 	let keepPinnedTabs = $derived(getKeepPinnedTabs());
 
 	async function applyCurrentWorkspacesChanges() {
-		const toast = createRoot(Toast, {
+		const toast = mount(Toast, {
 			target: document.getElementById('toaster') ?? document.body,
 			props: {
 				state: "loading",

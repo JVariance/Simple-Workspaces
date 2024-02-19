@@ -1,4 +1,4 @@
-import { createRoot } from "svelte";
+import { mount } from "svelte";
 import Welcome from "./Welcome.svelte";
 
-createRoot(Welcome, { target: document.body });
+mount(Welcome, { target: document.body });

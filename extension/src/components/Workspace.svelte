@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createRoot, tick } from "svelte";
+	import { mount, tick } from "svelte";
 	import Icon from "./Icon.svelte";
 	import EmojiPicker from "./EmojiPicker.svelte";
 	import { Key } from "ts-key-enum";
@@ -85,7 +85,7 @@
 		const { target } = e;
 
 		const { x, y } = target.getBoundingClientRect();
-		const picker = createRoot(EmojiPicker, {
+		const picker = mount(EmojiPicker, {
 			target: document.body,
 			props: {
 				x,
@@ -217,7 +217,8 @@
 				<span
 					class="{active
 						? 'font-bold'
-						: ''} text-lg w-full overflow-hidden text-ellipsis text-left">{name}</span
+						: ''} text-lg w-full overflow-hidden text-ellipsis text-left"
+					>{name}</span
 				>
 				<!-- <span>({tabIds.join(",")})</span> -->
 			</button>
