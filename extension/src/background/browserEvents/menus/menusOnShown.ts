@@ -1,5 +1,5 @@
 import type Browser from "webextension-polyfill";
-import { WorkspaceStorage, TabMenuMove, TabMenuCookies } from "../../Entities";
+import { WorkspaceStorage, TabMenuMove } from "../../Entities";
 
 export function menusOnShown(
 	info: Browser.Menus.OnShownInfoType,
@@ -13,5 +13,4 @@ export function menusOnShown(
 	TabMenuMove.update({
 		workspaces,
 	});
-	TabMenuCookies.update();
 }

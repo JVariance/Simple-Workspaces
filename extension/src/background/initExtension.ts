@@ -2,18 +2,13 @@ import {
 	BrowserStorage,
 	Processes,
 	TabMenuMove,
-	TabMenuCookies,
 	WorkspaceStorage,
 } from "./Entities";
 
 async function initTabMenu() {
-	console.info("initTabMenuMove");
 	await TabMenuMove.init(
 		WorkspaceStorage.windows.get(WorkspaceStorage.focusedWindowId)!.workspaces
 	);
-	console.info("initTabMenuCookies");
-	await TabMenuCookies.init();
-	console.info("initedTabMenus");
 }
 
 async function initWorkspaceStorage() {
