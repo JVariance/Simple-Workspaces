@@ -1,3 +1,5 @@
+<svelte:options accessors={true} />
+
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { fly } from "svelte/transition";

@@ -1,3 +1,5 @@
+<svelte:options accessors={true} />
+
 <script lang="ts">
 	import { clickOutside } from "@root/utils";
 	import "emoji-picker-element";

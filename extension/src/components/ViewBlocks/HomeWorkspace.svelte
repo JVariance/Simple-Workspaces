@@ -12,17 +12,19 @@
 		event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement }
 	) {
 		event.stopImmediatePropagation();
+		const props = $state({
+			state: "loading",
+			loadingMessage: i18n.getMessage("applying_changes"),
+			successMessage: i18n.getMessage("applied_changes"),
+			errorMessage: "something went wrong",
+		});
 		const toast = mount(Toast, {
 			target: document.getElementById("toaster") ?? document.body,
-			props: {
-				state: "loading",
-				loadingMessage: i18n.getMessage("applying_changes"),
-				successMessage: i18n.getMessage("applied_changes"),
-				errorMessage: "something went wrong",
-			},
+			props,
 		});
 		await persistHomeWorkspace();
-		toast.$set({ state: "success" });
+		// toast.$set({ state: "success" });
+		toast.state = "success";
 	}
 
 	function persistHomeWorkspace() {

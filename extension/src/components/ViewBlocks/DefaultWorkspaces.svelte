@@ -7,7 +7,7 @@
 	import Button from "@components/Button.svelte";
 	import SimpleWorkspace from "../SimpleWorkspace.svelte";
 	import { SOURCES, dndzone } from "svelte-dnd-action";
-	import { createToast } from "../createToast";
+	import { createToast } from "../createToast.svelte";
 	import { immediateDebounceFunc } from "@root/utils";
 	import { getDefaultWorkspacesState } from "@pages/states.svelte";
 	import { overflowSwipe } from "@root/actions/overflowSwipe";
@@ -68,7 +68,8 @@
 		});
 
 		await persistDefaultWorkspaces();
-		toast.$set({ state: "success" });
+		// toast.$set({ state: "success" });
+		toast.state = "success";
 		fetchedDefaultWorkspaces = [...unstate(defaultWorkspaces)];
 	}
 
@@ -101,7 +102,8 @@
 			errorMessage: "Something went wrong", 
 		});
 		await Browser.runtime.sendMessage({msg: "forceApplyDefaultWorkspacesOnCurrentWindow"});
-		toast.$set({ state: "success" });
+		// toast.$set({ state: "success" });
+		toast.state = "success";
 	}
 	
 	
@@ -113,7 +115,8 @@
 			errorMessage: "Something went wrong", 
 		});
 		await Browser.runtime.sendMessage({msg: "forceApplyDefaultWorkspacesOnAllWindows"});
-		toast.$set({ state: "success" });
+		// toast.$set({ state: "success" });
+		toast.state = "success";
 	}
 </script>
 

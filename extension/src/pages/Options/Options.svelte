@@ -22,18 +22,20 @@
 	let keepPinnedTabs = $derived(getKeepPinnedTabs());
 
 	async function applyCurrentWorkspacesChanges() {
-		const toast = mount(Toast, {
-			target: document.getElementById('toaster') ?? document.body,
-			props: {
+		const props = $state({
 				state: "loading",
 				loadingMessage: i18n.getMessage("applying_changes"),
 				successMessage: i18n.getMessage("applied_changes"),
 				errorMessage: "something went wrong",
-			}
+			});
+		const toast = mount(Toast, {
+			target: document.getElementById('toaster') ?? document.body,
+			props
 		});
 
 		await persistCurrentWorkspaces();
-		toast.$set({state: 'success'});
+		// toast.$set({state: 'success'});
+		toast.state = 'success';
 	}
 
 	function persistCurrentWorkspaces() {

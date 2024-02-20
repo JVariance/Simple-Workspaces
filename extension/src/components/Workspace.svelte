@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { mount, tick } from "svelte";
+	import { mount, tick, unmount } from "svelte";
 	import Icon from "./Icon.svelte";
 	import EmojiPicker from "./EmojiPicker.svelte";
 	import { Key } from "ts-key-enum";
@@ -85,22 +85,26 @@
 		const { target } = e;
 
 		const { x, y } = target.getBoundingClientRect();
-		const picker = mount(EmojiPicker, {
-			target: document.body,
-			props: {
-				x,
-				y,
-				visible: false,
-				remove: () => {
-					picker.$destroy();
-				},
-				picked: ({ unicode }) => {
-					iconValue = unicode;
-					picker.$destroy();
-				},
+		const props = $state({
+			x,
+			y,
+			visible: false,
+			remove: () => {
+				// picker.$destroy();
+				unmount(picker);
+			},
+			picked: ({ unicode }) => {
+				iconValue = unicode;
+				// picker.$destroy();
+				unmount(picker);
 			},
 		});
-		picker.$set({ visible: true });
+		const picker = mount(EmojiPicker, {
+			target: document.body,
+			props,
+		});
+		// picker.$set({ visible: true });
+		picker.visible = true;
 	}
 
 	// $effect(() => {
