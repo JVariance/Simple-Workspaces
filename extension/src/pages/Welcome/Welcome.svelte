@@ -1,11 +1,13 @@
 <script lang="ts">
 	import Icon from "@root/components/Icon.svelte";
 	import DefaultWorkspaces from "@root/components/ViewBlocks/DefaultWorkspaces.svelte";
-	import { onMount } from "svelte";
+	import { onMount, type Snippet } from "svelte";
 	import Browser, { i18n } from "webextension-polyfill";
+	import Layout from "../Special_Pages/Layout.svelte";
 	import Shortcuts from "@root/components/ViewBlocks/Shortcuts.svelte";
 	import Info from "@root/components/Info.svelte";
 	import Logo from "@root/components/Logo.svelte";
+	import { intersect } from "svelte-intersection-observer-action";
 	import OnMount from "@root/components/OnMount.svelte";
 
 	const viewCount = 4;
