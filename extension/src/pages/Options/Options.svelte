@@ -28,14 +28,13 @@
 				successMessage: i18n.getMessage("applied_changes"),
 				errorMessage: "something went wrong",
 			});
-		const toast = mount(Toast, {
+		mount(Toast, {
 			target: document.getElementById('toaster') ?? document.body,
 			props
 		});
 
 		await persistCurrentWorkspaces();
-		// toast.$set({state: 'success'});
-		toast.state = 'success';
+		props.state = 'success';
 	}
 
 	function persistCurrentWorkspaces() {

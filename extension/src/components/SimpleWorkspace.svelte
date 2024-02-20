@@ -9,13 +9,13 @@
 	};
 	let { workspace, updatedIcon, updatedName } = $props<Props>();
 
-	let picker;
+	let picker: EmojiPicker;
 	let pickerProps = $state<{
 		x: number;
 		y: number;
 		visible: boolean;
 		picked: ({ unicode }: { unicode: string }) => void;
-	}>();
+	}>()!;
 
 	function openEmojiPicker(
 		e: MouseEvent & {
@@ -41,28 +41,7 @@
 				props: pickerProps,
 			});
 		} else {
-			console.info("picker set");
-			console.info({ picker });
-			// picker.$set({
-			// 	visible: false,
-			// });
-			// pickerProps.visible = false;
-			// picker.visible = false;
 			pickerProps.visible = false;
-			// picker.$set({
-			// 	x,
-			// 	y,
-			// 	visible: true,
-			// 	picked: ({ unicode }: { unicode: string }) => {
-			// 		updatedIcon(unicode);
-			// 	},
-			// });
-			// picker.x = x;
-			// picker.y = y;
-			// picker.visible = true;
-			// picker.picked = ({ unicode }: { unicode: string }) => {
-			// 	updatedIcon(unicode);
-			// };
 			Object.assign(pickerProps, {
 				x,
 				y,

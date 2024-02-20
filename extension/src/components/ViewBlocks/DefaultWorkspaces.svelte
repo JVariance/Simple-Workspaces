@@ -68,7 +68,6 @@
 		});
 
 		await persistDefaultWorkspaces();
-		// toast.$set({ state: "success" });
 		toast.state = "success";
 		fetchedDefaultWorkspaces = [...unstate(defaultWorkspaces)];
 	}
@@ -102,7 +101,6 @@
 			errorMessage: "Something went wrong", 
 		});
 		await Browser.runtime.sendMessage({msg: "forceApplyDefaultWorkspacesOnCurrentWindow"});
-		// toast.$set({ state: "success" });
 		toast.state = "success";
 	}
 	
@@ -115,7 +113,6 @@
 			errorMessage: "Something went wrong", 
 		});
 		await Browser.runtime.sendMessage({msg: "forceApplyDefaultWorkspacesOnAllWindows"});
-		// toast.$set({ state: "success" });
 		toast.state = "success";
 	}
 </script>
