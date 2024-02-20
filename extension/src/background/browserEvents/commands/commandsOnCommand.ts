@@ -2,7 +2,7 @@ import { Processes, WorkspaceStorage } from "../../Entities";
 import { informViews } from "../../informViews";
 import { createTab } from "@root/background/browserAPIWrapper/tabCreation";
 import * as API from "@root/browserAPI";
-import { immediateDebounceFunc } from "@root/utils";
+import { DeferredPromise, immediateDebounceFunc } from "@root/utils";
 import Browser from "webextension-polyfill";
 
 const runNewWorkspaceCommand = immediateDebounceFunc(
@@ -10,14 +10,17 @@ const runNewWorkspaceCommand = immediateDebounceFunc(
 	150
 );
 
-function newWorkspaceCommandHandler() {
-	(async () => {
-		const newWorkspace =
-			await WorkspaceStorage.activeWindow.addWorkspaceAndSwitch();
-		informViews(WorkspaceStorage.activeWindow.windowId, "addedWorkspace", {
-			workspace: newWorkspace,
-		});
-	})();
+const WorkspaceCommandInProgress = new DeferredPromise<void>();
+
+async function newWorkspaceCommandHandler() {
+	if (WorkspaceCommandInProgress.state === "pending") return;
+	WorkspaceCommandInProgress.start();
+	const newWorkspace =
+		await WorkspaceStorage.activeWindow.addWorkspaceAndSwitch();
+	informViews(WorkspaceStorage.activeWindow.windowId, "addedWorkspace", {
+		workspace: newWorkspace,
+	});
+	WorkspaceCommandInProgress.finish();
 }
 
 async function createNewContainerTab() {

@@ -12,6 +12,7 @@ class Processes {
 	TabRemoval = new DeferredPromise<void>();
 	WindowCreation = new DeferredPromise<void>();
 	WindowRemoval = new DeferredPromise<void>();
+	WorkspaceCreation = new DeferredPromise<void>();
 	WorkspaceSwitch = new DeferredPromise<void>();
 	TabCreations = new DeferredPromise<void>();
 

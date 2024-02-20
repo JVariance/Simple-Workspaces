@@ -464,6 +464,7 @@ export class Window {
 	}
 
 	async addWorkspace(tabIds: number[] | undefined = undefined) {
+		Processes.WorkspaceCreation.start();
 		const newWorkspace = this.#getNewWorkspace();
 
 		if (tabIds) {
@@ -477,6 +478,7 @@ export class Window {
 
 		this.#workspaces = [...this.#workspaces, newWorkspace];
 
+		Processes.WorkspaceCreation.finish();
 		return newWorkspace;
 	}
 
