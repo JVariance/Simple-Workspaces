@@ -284,7 +284,7 @@
 			<p class="mb-8 basis-full">
 				{i18n.getMessage('welcome_default_workspaces_message')}.
 			</p>
-			<DefaultWorkspaces dndFinish={() => {swiping = false; swipeStarted = false; scrollViewIntoView();}} />
+			<DefaultWorkspaces dndFinish={() => {swiping = false; swipeStarted = false; scrollViewIntoView();}} isWelcomePage={true} />
 		</div>
 	{/snippet}
 	{@render ViewSection(3, content)}

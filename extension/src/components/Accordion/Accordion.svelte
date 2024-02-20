@@ -44,7 +44,7 @@
 	}
 
 	:global(details :where(summary)) {
-		--accordion-summary-hover-bg: #f5f5f5;
+		--accordion-summary-hover-bg: light-dark(#f5f5f5, #17171c);
 		--accordion-summary-hover-color: inherit;
 		@apply flex items-center gap-2 p-2 border-[--accordion-border-color] rounded-md list-none cursor-pointer;
 		@apply hover:bg-[--accordion-summary-hover-bg] hover:text-[--accordion-summary-hover-color];

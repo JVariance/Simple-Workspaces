@@ -212,5 +212,8 @@
   },
   "get_login_data_from_container": {
     "message": "Login-Daten beziehen von"
+  },
+  "shortcuts": {
+    "message": "Tastaturkürzel"
   }
 }

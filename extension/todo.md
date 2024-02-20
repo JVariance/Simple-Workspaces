@@ -1,9 +1,9 @@
 **Today**
 ### Features
+[] multiple workspace-edit mode
 [] compress images & video
 [] support bookmarks?
 [] support history?
-[] choose default workspace emoji and name
 ### Styles
 ### Content
 ### Translations
@@ -11,6 +11,7 @@
 [] better emoji picker focus handling
 [] highlight workspace which received new tabs (after send action)
 ### Bugs
+[] closing pinned tabs does not necessarily remove it from workspace
 ### Other
 - https://www.npmjs.com/package/p-maps
 ---

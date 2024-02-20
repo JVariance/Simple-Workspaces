@@ -158,7 +158,7 @@
 							</h2>
 						</Summary>
 					{/snippet}
-					<button class="btn" onclick={clearExtensionData}>{i18n.getMessage('clear')}</button>
+					<button class="btn mt-4" onclick={clearExtensionData}>{i18n.getMessage('clear')}</button>
 				</Accordion>
 			{/snippet}
 			{#snippet Section_WelcomePage()}
@@ -188,4 +188,7 @@
 </Layout>
 
 <style lang="postcss">
+	:global(html) {
+		color-scheme: light dark;
+	}
 </style>
