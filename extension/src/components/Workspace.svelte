@@ -149,14 +149,14 @@
 	<div
 		class:active
 		class="
-			workspace flex gap-2 @[360px]:gap-8 justify-center @[244px]:justify-start items-center p-4 rounded-md {classes} group
+			workspace flex gap-2 @[360px]:gap-8 justify-center @[168px]:justify-start items-center p-4 rounded-md {classes} group
 			bg-[--workspace-bg] text-[--workspace-color] focus-within:bg-[--workspace-bg-focus] hover:bg-[--workspace-bg-hover]
 			[&.active]:bg-[--workspace-active-bg] [&.active]:text-[--workspace-active-color] [&.active]:hover:bg-[--workspace-active-bg-hover] [&.active]:focus-within:bg-[--workspace-active-bg-focus]
 		"
 	>
 		{#if editMode}
 			<div
-				class="@[244px]:hidden ghost text-2xl rounded-full flex-grow-0 flex-shrink basis-0"
+				class="@[168px]:hidden ghost text-2xl rounded-full flex-grow-0 flex-shrink basis-0"
 				style:font-family="Noto Color Emoji"
 			>
 				{iconValue}
@@ -164,11 +164,11 @@
 			<button
 				title="pick emoji"
 				onclick={openEmojiPicker}
-				class="hidden @[244px]:[display:initial] ghost text-2xl rounded-full flex-grow-0 flex-shrink basis-0"
+				class="hidden @[168px]:[display:initial] ghost text-2xl rounded-full flex-grow-0 flex-shrink basis-0"
 				style:font-family="Noto Color Emoji"
 				>{iconValue}
 			</button>
-			<div class="hidden @[244px]:contents">
+			<div class="hidden @[168px]:contents">
 				<input
 					class="min-w-0 bg-transparent border-b disabled:border-transparent outline-none w-full flex-1"
 					id={UUID}
@@ -248,7 +248,7 @@
 			Workspace-hover: #484d64
 	*/
 	.workspace {
-		@media screen and (width < 260px) {
+		@media screen and (width < 184px) {
 			@apply aspect-square grid-cols-1 h-12 p-0 justify-items-center justify-self-center;
 
 			button:first-of-type span {

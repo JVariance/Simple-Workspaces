@@ -60,3 +60,21 @@ Actions:
  - move tabs to window
  - send tabs to workspace
  - switch workspace
+
+
+---
+
+<!-- Options -->
+<!--
+	<div class="flex flex-wrap gap-2 justify-stretch items-stretch">
+		<div class="bg-red-50 flex-grow p-2 rounded-md min-w-20">
+			<h1>Moin</h1>
+		</div>
+		<div class="bg-green-50 w-[-moz-available] max-w-[500px] p-2 rounded-md min-w-20">
+			<h1>Moin</h1>
+		</div>
+		<div class="bg-blue-50 flex-grow p-2 rounded-md min-w-20">
+			<h1>Moin</h1>
+		</div>
+	</div>
+-->

@@ -420,7 +420,7 @@
 	<section id="header" class="flex gap-2 items-center h-[--header-height] fixed top-0 bg-[--body-bg] w-[calc(100cqw_-_1.25rem)] z-50">
 		<search
 			class="
-				w-full flex items-center gap-2 border
+				hidden @[184px]:flex w-full items-center gap-2 border
 				bg-[--search-bg] hover:bg-[--search-bg-hover] focus-within:bg-[--search-bg-focus]
 				border-[--search-border-color] text-[--search-color]
 				focus-within:shadow-xl rounded-md px-4 py-2
@@ -440,11 +440,24 @@
 				onkeydown={searchKeydown}
 				placeholder="{i18n.getMessage('search')}..."
 			/>
-			<button class="ghost hover:bg-black/20 dark:hover:bg-white/10 rounded-full p-0" onclick={() => {searchValue = ""; searchUnmatchingWorkspaceUUIDS = [];}}>
+			<button 
+				class="ghost hover:bg-black/20 dark:hover:bg-white/10 rounded-full p-0" 
+				onclick={() => {searchValue = ""; searchUnmatchingWorkspaceUUIDS = [];}}
+			>
 				<Icon icon="cross" width={16} />
 			</button>
 		</search>
-		<button class="ghost" on:click={openOptionsPage}>
+		<button 
+			class="
+				flex @[184px]:hidden bg-[--search-bg] hover:bg-[--search-bg-hover] focus-within:bg-[--search-bg-focus]
+				border-[--search-border-color] text-[--search-color]
+				mx-auto w-12 h-12 items-center justify-center
+			"
+			onclick={() => Browser.browserAction.openPopup({windowId})}
+		>
+			<Icon icon="search" width={20} class="text-neutral-400" />
+		</button>
+		<button class="hidden @[184px]:block ghost" on:click={openOptionsPage}>
 			<Icon icon="settings" width={18} />
 		</button>
 	</section>
@@ -488,7 +501,7 @@
 								focus:bg-[--button-bg-focus] outline-none
 							"
 						>
-							<span>{workspace.icon}</span>
+							<span class="[font-family:_Noto_Color_Emoji]">{workspace.icon}</span>
 							<span>{workspace.name}</span>
 						</Summary>
 					{/snippet}
@@ -573,10 +586,11 @@
 		class="ghost
 				!p-4 items-center flex gap-4 rounded-md text-left mt-4 w-full outline-none border
 			"
+		title={i18n.getMessage('create_new_workspace')}
 		><span class="text-2xl text-center w-7 flex justify-center items-center"
 			><Icon icon="add" width={18} /></span
 		>
-		<span class="leading-none -mt-[0.5ch] text-lg">{i18n.getMessage('create_new_workspace')}</span></button
+		<span class="leading-none -mt-[0.5ch] text-lg whitespace-nowrap overflow-hidden text-ellipsis">{i18n.getMessage('create_new_workspace')}</span></button
 	>
 	<!-- {/if} -->
 </div>
@@ -597,7 +611,7 @@
 		@apply backdrop-blur-2xl p-2 border !border-white/40 !bg-white/40;
 	} */
 
-	@media screen and (width < 260px) {
+	@media screen and (width < 184px) {
 		ul {
 			@apply justify-center;
 		}
