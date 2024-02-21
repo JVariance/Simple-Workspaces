@@ -1,6 +1,7 @@
 import Browser from "webextension-polyfill";
 import { BrowserStorage } from "@root/background/Entities/Static/Storage";
 import { tick } from "svelte";
+import { debounceFunc } from "@root/utils";
 
 let workspaces = $state<Ext.Workspace[]>([]);
 let homeWorkspace = $state<Ext.SimpleWorkspace>();
@@ -79,7 +80,9 @@ async function setDefaultWorkspacesFromLocalStorage() {
 
 const findActiveWorkspace = (workspace: Ext.Workspace) => workspace.active;
 
-function updatedActiveWorkspace({
+const updatedActiveWorkspace = debounceFunc(_updatedActiveWorkspace, 100);
+
+function _updatedActiveWorkspace({
 	UUID: workspaceUUID,
 }: {
 	UUID: Ext.Workspace["UUID"];

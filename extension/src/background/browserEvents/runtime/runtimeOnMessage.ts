@@ -27,6 +27,7 @@ function switchWorkspaceCommand({ workspaceUUID }: { workspaceUUID: string }) {
 		);
 	})();
 	Processes.WorkspaceSwitch.finish();
+	console.info("switchWorkspaceCommand Ende");
 }
 
 function switchWorkspaceAndFocusTab({
