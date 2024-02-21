@@ -171,9 +171,6 @@
   "force_default_dark_theme_in_dark_mode_tooltip": {
     "message": "Wenn das aktuelle Firefox-Theme den dunklen Modus nicht unterstützt, können Sie das Standard-Dark-Theme der Erweiterung anwenden"
   },
-  "welcome_container_feature_proposal": {
-    "message": "Wenn Sie möchten, aktivieren Sie die Container-Funktion von Firefox, indem Sie die folgenden Optionen in about:config aktivieren"
-  },
   "lets_get_you_started": {
     "message": "Lass' uns loslegen"
   },

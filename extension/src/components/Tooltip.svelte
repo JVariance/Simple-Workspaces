@@ -90,6 +90,7 @@
 				invisible
 				popup absolute right-0 max-w-[100dvw]
 				bg-white/75 dark:bg-black/75 backdrop-blur-md rounded-md p-1 {popupClasses}
+				text-black dark:text-white
 				group-hover:top-full group-focus:top-full
 				group-hover:visible group-focus:visible
 				group-[&.open]:visible
