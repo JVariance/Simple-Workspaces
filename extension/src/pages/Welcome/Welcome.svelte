@@ -304,14 +304,6 @@
 <div id="noise" aria-hidden="true" />
 <div class="w-[100dvw] max-w-[48rem] h-max relative border-[1rem] border-transparent">
 	<div class="relative h-max rounded-2xl mx-auto overflow-hidden">
-		<img 
-			src="/images/abstract/marble.avif" 
-			alt="" 
-			class="
-				absolute inset-0 pointer-events-none [filter:hue-rotate(250deg)_opacity(40%)_saturate(240%)] w-full h-full object-cover object-bottom
-			"
-		/>
-		<!-- [filter:hue-rotate(58deg)_opacity(0.1)]  -->
 		<div
 			id="wrapper"
 			class:swiping
@@ -400,7 +392,7 @@
 		color: light-dark(#fff, #fff);
 
 		&::before{
-			background-image: url('/images/abstract/welcome-bg.avif');
+			background-image: url('/images/welcome-bg.avif');
 			background-repeat: no-repeat;
 			background-size: cover;
 			background-blend-mode: luminosity;
