@@ -23,7 +23,7 @@
 	{...attributes}
 >
 	{@render summary()}
-	<div class="content">
+	<div class="content @container">
 		<div>
 			{@render children()}
 		</div>
