@@ -212,6 +212,7 @@
 					? '!cursor-default'
 					: ''} min-w-0"
 				data-focusable
+				title={name}
 				bind:this={workspaceButton}
 			>
 				<span

@@ -305,7 +305,7 @@
 <div class="w-[100dvw] max-w-[48rem] h-max relative border-[1rem] border-transparent">
 	<div class="relative h-max rounded-2xl mx-auto overflow-hidden">
 		<img 
-			src="/images/abstract/marble.jpg" 
+			src="/images/abstract/marble.avif" 
 			alt="" 
 			class="
 				absolute inset-0 pointer-events-none [filter:hue-rotate(250deg)_opacity(40%)_saturate(240%)] w-full h-full object-cover object-bottom
@@ -395,12 +395,12 @@
 
 	:global(body) {
 		@apply bg-[--body-bg] h-[100dvh] w-[100dvw] grid items-center justify-center;
-		background-image: url("/images/mesh-6.png");
+		background-image: url("/images/mesh-6.avif");
 		background-size: cover;
 		color: light-dark(#fff, #fff);
 
 		&::before{
-			background-image: url('/images/abstract/welcome-bg.jpg');
+			background-image: url('/images/abstract/welcome-bg.avif');
 			background-repeat: no-repeat;
 			background-size: cover;
 			background-blend-mode: luminosity;
