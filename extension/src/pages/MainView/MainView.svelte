@@ -246,8 +246,9 @@
 		reordering = false;
 		workspaces = e.detail.items;
 
+		console.info({ oldActiveWorkspaceIndex: activeWorkspaceIndex });
 		const newActiveWorkspaceIndex = activeWorkspaceIndex === 0 ? 0 : workspaces.findIndex(({ active }) => active) + 1;
-		console.info(newActiveWorkspaceIndex);
+		console.info({ newActiveWorkspaceIndex });
 		activeWorkspaceIndex = newActiveWorkspaceIndex;
 
 		Browser.runtime.sendMessage({
@@ -255,7 +256,6 @@
 			sortedWorkspacesIds: workspaces.map(({ UUID }) => UUID),
 			windowId,
 		});
-
 	}
 
 	function openOptionsPage() {
