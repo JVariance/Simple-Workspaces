@@ -10,7 +10,17 @@ let windowId = $state<number>();
 let theme = $state<"browser" | "">("");
 let systemTheme = $state<"dark" | "light">("dark");
 let forceDefaultThemeIfDarkMode = $state<boolean>(false);
-let activeWorkspaceIndex = $state<number>();
+const activeWorkspaceIndex = (() => {
+	let value = $state(0);
+	return {
+		get value() {
+			return value;
+		},
+		set value(i: number) {
+			value = i;
+		},
+	};
+})();
 let keepPinnedTabs = $state<boolean>(false);
 
 export const getWorkspacesState = () => workspaces;
@@ -20,7 +30,9 @@ export const getThemeState = () => theme;
 export const getForceDefaultThemeIfDarkModeState = () =>
 	forceDefaultThemeIfDarkMode;
 export const getSystemThemeState = () => systemTheme;
-export const getActiveWorkspaceIndexState = () => activeWorkspaceIndex;
+export const getActiveWorkspaceIndexState = () => activeWorkspaceIndex.value;
+export const setActiveWorkspaceIndexState = (i: number) =>
+	(activeWorkspaceIndex.value = i);
 export const getKeepPinnedTabs = () => keepPinnedTabs;
 
 function addedWorkspace({ workspace }: { workspace: Ext.Workspace }) {
@@ -46,6 +58,10 @@ async function setWorkspaces() {
 			msg: "getWorkspaces",
 			windowId,
 		})) || [];
+	const _activeWorkspaceIndex = workspaces.findIndex(({ active }) => active);
+	_activeWorkspaceIndex > -1 &&
+		(activeWorkspaceIndex.value = _activeWorkspaceIndex);
+	console.info({ _activeWorkspaceIndex });
 }
 
 async function setHomeWorkspace() {
@@ -94,7 +110,7 @@ function _updatedActiveWorkspace({
 	);
 
 	if (_activeWorkspaceIndex < 0) return;
-	activeWorkspaceIndex = _activeWorkspaceIndex;
+	activeWorkspaceIndex.value = _activeWorkspaceIndex;
 	const activeWorkspace = workspaces.find(({ active }) => active);
 
 	console.info({ workspaceUUID, _activeWorkspaceIndex, activeWorkspace });

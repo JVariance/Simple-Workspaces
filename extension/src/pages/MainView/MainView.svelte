@@ -8,7 +8,7 @@
 	import { debounceFunc, isNullish } from "@root/utils";
 	import Skeleton from "@root/components/Skeleton.svelte";
 	import { untrack, onMount, tick, unstate } from "svelte";
-	import { getWorkspacesState, getThemeState, getSystemThemeState, getForceDefaultThemeIfDarkModeState, getActiveWorkspaceIndexState } from "@pages/states.svelte";
+	import { getWorkspacesState, getThemeState, getSystemThemeState, getForceDefaultThemeIfDarkModeState, getActiveWorkspaceIndexState, setActiveWorkspaceIndexState } from "@pages/states.svelte";
 	import { slide } from "svelte/transition";
 	import Fuse from "fuse.js";
 	import { overflowSwipe } from "@root/actions/overflowSwipe";
@@ -56,12 +56,13 @@
 		!isNullish(derivedActiveWorkspaceIndex) && (activeWorkspaceIndex = derivedActiveWorkspaceIndex);
 	});
 
-	async function switchWorkspace(workspace: Ext.Workspace, instant = false) {
+	const switchWorkspace = debounceFunc(_switchWorkspace, 350);
+
+	async function _switchWorkspace(workspace: Ext.Workspace) {
 		console.info("MainView - switchWorkspace ", { workspace });
 		await Browser.runtime.sendMessage({
 			msg: "switchWorkspace",
-			workspaceUUID: workspace.UUID,
-			instant
+			workspaceUUID: workspace.UUID
 		});
 
 		searchInput.value = "";
@@ -343,10 +344,12 @@
 		switch (command) {
 			case "next-workspace":
 				activeWorkspaceIndex = Math.min(viewWorkspaces.length, activeWorkspaceIndex + 1);
+				setActiveWorkspaceIndexState(activeWorkspaceIndex);
 				switchWorkspace(_workspaces[activeWorkspaceIndex]);
 				break;
 			case "previous-workspace":
 				activeWorkspaceIndex = Math.max(0, activeWorkspaceIndex - 1);
+				setActiveWorkspaceIndexState(activeWorkspaceIndex);
 				switchWorkspace(_workspaces[activeWorkspaceIndex]);
 				break;
 			default:
@@ -481,7 +484,7 @@
 						editWorkspace({ workspace, icon, name });
 					}}
 					switchWorkspace={() => {
-						switchWorkspace(workspace, true);
+						_switchWorkspace(workspace);
 						activeWorkspaceIndex = i;
 					}}
 					removeWorkspace={() => {

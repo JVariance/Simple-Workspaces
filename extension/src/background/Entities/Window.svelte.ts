@@ -524,6 +524,7 @@ export class Window {
 		const currentTabIds = previousActiveWorkspace.tabIds;
 		const nextTabIds = workspace.tabIds;
 
+		this.#activeWorkspace.active = false;
 		this.#activeWorkspace = workspace;
 		workspace.active = true;
 

@@ -3,9 +3,6 @@ import { WorkspaceStorage, Processes, BrowserStorage } from "../../Entities";
 import { informViews } from "../../informViews";
 import Browser from "webextension-polyfill";
 import * as API from "@root/browserAPI";
-import { debounceFunc } from "@root/utils";
-
-const runSwitchWorkspaceCommand = debounceFunc(switchWorkspaceCommand, 250);
 
 function switchWorkspaceCommand({ workspaceUUID }: { workspaceUUID: string }) {
 	console.info("switchWorkspaceCommand", workspaceUUID);
@@ -20,11 +17,11 @@ function switchWorkspaceCommand({ workspaceUUID }: { workspaceUUID: string }) {
 
 	(async () => {
 		await WorkspaceStorage.activeWindow.switchWorkspace(nextWorkspace);
-		informViews(
-			WorkspaceStorage.activeWindow.windowId,
-			"updatedActiveWorkspace",
-			{ UUID: nextWorkspace.UUID }
-		);
+		// informViews(
+		// 	WorkspaceStorage.activeWindow.windowId,
+		// 	"updatedActiveWorkspace",
+		// 	{ UUID: nextWorkspace.UUID }
+		// );
 	})();
 	Processes.WorkspaceSwitch.finish();
 	console.info("switchWorkspaceCommand Ende");
@@ -162,9 +159,7 @@ export async function runtimeOnMessage(
 				return resolve(tabIds);
 			});
 		case "switchWorkspace":
-			message?.instant
-				? switchWorkspaceCommand(message)
-				: runSwitchWorkspaceCommand(message);
+			switchWorkspaceCommand(message);
 			break;
 		case "switchWorkspaceAndFocusTab":
 			switchWorkspaceAndFocusTab(message);
