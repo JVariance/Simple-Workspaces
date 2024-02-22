@@ -16,13 +16,14 @@ export class Window {
 	#UUID: string;
 	#windowId!: number;
 	#workspaces: Ext.Workspace[] = $state([]);
-	#activeWorkspace: Ext.Workspace = $derived.by(() => {
-		console.info("changed activeworkspace in derived.by");
-		this.#persist();
-		return (
-			this.#workspaces.find(({ active }) => active) || this.#workspaces.at(0)!
-		);
-	});
+	#activeWorkspace: Ext.Workspace = $state()!;
+	// #activeWorkspace: Ext.Workspace = $derived.by(() => {
+	// 	// console.info("changed activeworkspace in derived.by");
+	// 	// this.#persist();
+	// 	return (
+	// 		this.#workspaces.find(({ active }) => active) || this.#workspaces.at(0)!
+	// 	);
+	// });
 
 	constructor(
 		UUID: string | undefined = undefined,
@@ -85,7 +86,11 @@ export class Window {
 
 			console.info({ localWorkspaces });
 
-			this.#workspaces = Array.from(localWorkspaces.values());
+			const localWorkspacesArray = Array.from(localWorkspaces.values());
+			this.#activeWorkspace =
+				localWorkspacesArray.find(({ active }) => active)! ||
+				localWorkspacesArray?.at(0)!;
+			this.#workspaces = localWorkspacesArray;
 		} else {
 			const tabIds = tabs.map((tab) => tab.id!);
 			const pinnedTabIds = tabs
@@ -142,6 +147,7 @@ export class Window {
 				Processes.manualTabRemoval = false;
 				// await removeTabs([blankTab.id!], homeWorkspace);
 			}
+			this.#activeWorkspace = homeWorkspace;
 			this.#workspaces.push(homeWorkspace);
 
 			await this.addDefaultWorkspaces();
@@ -165,10 +171,7 @@ export class Window {
 	}
 
 	get activeWorkspace(): Ext.Workspace {
-		// return this.#activeWorkspace;
-		return (
-			this.#workspaces.find(({ active }) => active) || this.#workspaces?.at(0)!
-		);
+		return this.#activeWorkspace;
 	}
 
 	setActiveTab(tabId: number) {
@@ -513,7 +516,6 @@ export class Window {
 
 	async switchWorkspace(workspace: Ext.Workspace) {
 		console.info("switchWorkspace() in window " + this.#windowId);
-		// Processes.WorkspaceSwitch.start();
 		const ongoingTabDetachment = Processes.TabDetachment.state === "pending";
 		this.switchingWorkspace = true;
 		const previousActiveWorkspace = this.activeWorkspace;
@@ -522,7 +524,7 @@ export class Window {
 		const currentTabIds = previousActiveWorkspace.tabIds;
 		const nextTabIds = workspace.tabIds;
 
-		this.activeWorkspace.active = false;
+		this.#activeWorkspace = workspace;
 		workspace.active = true;
 
 		await API.showTabs(nextTabIds);
@@ -559,10 +561,7 @@ export class Window {
 			await API.hideTabs(currentTabIds);
 		}
 
-		// this.activeWorkspace.active = false;
-		// workspace.active = true;
 		this.switchingWorkspace = false;
-		// Processes.WorkspaceSwitch.finish();
 	}
 
 	async switchToNextWorkspace() {
