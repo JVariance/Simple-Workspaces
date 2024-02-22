@@ -166,23 +166,23 @@
 						<button
 							title="remove"
 							onclick={showRemovalDialog}
-							class="ghost rounded-full outline-none focus:bg-white/25"
-							><Icon icon="bin" width={16} /></button
+							class="ghost rounded-full outline-none focus:bg-white/25 group-[&.active]:hover:text-black"
+							><Icon icon="bin" width={16} inheritColor={true} /></button
 						>
 					{/if}
 					<button
 						title="apply"
 						onclick={_editWorkspace}
-						class="ghost rounded-full outline-none focus:bg-white/25"
+						class="ghost rounded-full outline-none focus:bg-white/25 group-[&.active]:hover:text-black"
 					>
-						<Icon icon="check" width={18} />
+						<Icon icon="check" width={18} inheritColor={true} />
 					</button>
 					<button
 						title="cancel"
 						onclick={cancelEditing}
-						class="ghost rounded-full outline-none focus:bg-white/25"
+						class="ghost rounded-full outline-none focus:bg-white/25 group-[&.active]:hover:text-black"
 					>
-						<Icon icon="cross" width={18} />
+						<Icon icon="cross" width={18} inheritColor={true} />
 					</button>
 				</div>
 			</div>
@@ -212,11 +212,11 @@
 				<button class="invisible" />
 			{:else}
 				<button
-					class="ghost invisible group-hover:visible group-focus-within:visible"
+					class="ghost invisible group-hover:visible group-focus-within:visible group-[&.active]:hover:text-black"
 					title="edit"
 					onclick={toggleEditMode}
 				>
-					<Icon icon="edit" width={14} />
+					<Icon icon="edit" width={14} inheritColor={true} />
 				</button>
 			{/if}
 		{/if}

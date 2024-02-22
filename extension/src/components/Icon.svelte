@@ -6,6 +6,7 @@
 		width?: number;
 		height?: number;
 		class?: string;
+		inheritColor?: boolean;
 	};
 
 	let {
@@ -13,6 +14,7 @@
 		width = 24,
 		height = width,
 		class: classes = "",
+		inheritColor = false,
 	} = $props<Props>();
 
 	const icons = {
@@ -47,5 +49,5 @@
 	icon={icons[icon]}
 	{width}
 	{height}
-	class="{classes} text-foreground text-[--icon-fill]"
+	class="{classes} text-foreground {inheritColor ? '' : 'text-[--icon-fill]'}"
 />
