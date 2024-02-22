@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { mount } from "svelte";
+	import { mount, unmount } from "svelte";
 	import EmojiPicker from "./EmojiPicker.svelte";
 
 	type Props = {
@@ -9,13 +9,7 @@
 	};
 	let { workspace, updatedIcon, updatedName } = $props<Props>();
 
-	let picker: EmojiPicker;
-	let pickerProps = $state<{
-		x: number;
-		y: number;
-		visible: boolean;
-		picked: ({ unicode }: { unicode: string }) => void;
-	}>()!;
+	let picker: EmojiPicker | null;
 
 	function openEmojiPicker(
 		e: MouseEvent & {
@@ -27,36 +21,29 @@
 		const target = e.target as HTMLButtonElement;
 		const { x, y } = target.getBoundingClientRect();
 
-		if (!picker) {
-			pickerProps = {
-				x,
-				y,
-				visible: true,
-				picked: ({ unicode }: { unicode: string }) => {
-					updatedIcon(unicode);
-				},
-			};
-			picker = mount(EmojiPicker, {
-				target: document.body,
-				props: pickerProps,
-			});
-		} else {
-			pickerProps.visible = false;
-			Object.assign(pickerProps, {
-				x,
-				y,
-				visible: true,
-				picked: ({ unicode }: { unicode: string }) => {
-					updatedIcon(unicode);
-				},
-			});
-		}
+		const pickerProps = {
+			x,
+			y,
+			picked: ({ unicode }: { unicode: string }) => {
+				updatedIcon(unicode);
+			},
+			remove: () => {
+				console.info("remove", { picker });
+				unmount(picker);
+				picker = null;
+			},
+		};
+
+		picker = mount(EmojiPicker, {
+			target: document.body,
+			props: pickerProps,
+		});
 	}
 </script>
 
 <button
 	title="choose icon"
-	class="btn secondary-btn w-12 h-auto aspect-square justify-center"
+	class="btn secondary-btn w-12 h-auto aspect-square justify-center focus:outline focus:outline-2 focus:outline-[#0060df]"
 	style:font-family="Noto Color Emoji"
 	onclick={(e) => {
 		openEmojiPicker(e);

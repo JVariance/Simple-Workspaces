@@ -5,19 +5,18 @@
 	import "emoji-picker-element";
 	import type { Picker } from "emoji-picker-element";
 	import { onMount } from "svelte";
+	import Browser from "webextension-polyfill";
 
 	import de from "emoji-picker-element/i18n/de";
 	import en from "emoji-picker-element/i18n/en";
 
 	const locales = { de, en };
-
-	import Browser from "webextension-polyfill";
+	let activeOriginElement: HTMLElement | null;
 
 	type Props = {
 		x: number;
 		y: number;
 		picked: Function;
-		visible?: boolean;
 		remove?: Function;
 	};
 
@@ -25,13 +24,7 @@
 	let picker: HTMLDivElement;
 	let searchInput: HTMLInputElement;
 
-	let {
-		x = 0,
-		y = 0,
-		picked,
-		remove = () => {},
-		visible = true,
-	} = $props<Props>();
+	let { x = 0, y = 0, picked, remove = () => {} } = $props<Props>();
 
 	function outsideClick(e: CustomEvent) {
 		const { target: originalTarget } = e.detail;
@@ -39,30 +32,25 @@
 		const clickedInsidePicker = closestPicker || originalTarget === emojiPicker;
 
 		if (!clickedInsidePicker) {
-			visible = false;
 			console.info("remove picker");
 			remove();
 		}
 	}
 
 	$effect(() => {
-		if (visible) {
-			searchInput?.focus();
-			setTimeout(() => {
-				emojiPicker.addEventListener("outsideclick", outsideClick);
-			}, 50);
-		} else {
-			emojiPicker.removeEventListener("outsideclick", outsideClick);
-		}
+		searchInput?.focus();
+		setTimeout(() => {
+			emojiPicker.addEventListener("outsideclick", outsideClick);
+		}, 50);
 	});
 
 	function emojiClick({ detail: { unicode } }) {
 		picked({ unicode });
-		visible = false;
+		remove();
 	}
 
 	onMount(() => {
-		visible = true;
+		activeOriginElement = document.activeElement as HTMLElement;
 		let lang: keyof typeof locales = "en";
 		switch (Browser.i18n.getUILanguage()) {
 			case "de-DE":
@@ -80,15 +68,21 @@
 		picker = emojiPicker.shadowRoot.children[1];
 		searchInput = picker.querySelector("#search");
 
-		console.info("onMount", { searchInput });
+		console.info("onMount", { searchInput, remove });
 
 		searchInput.focus();
+	});
+
+	$effect(() => {
+		return () => {
+			console.info("onDestroy");
+			activeOriginElement?.focus();
+		};
 	});
 </script>
 
 <emoji-picker
 	class="absolute"
-	class:visible
 	emoji-version="15.1"
 	use:clickOutside
 	on:emoji-click={emojiClick}
@@ -103,7 +97,7 @@
 		@apply absolute hidden;
 	}
 
-	:global(emoji-picker.visible) {
+	:global(emoji-picker) {
 		@apply flex;
 	}
 </style>

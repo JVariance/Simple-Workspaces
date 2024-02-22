@@ -85,42 +85,23 @@
 		const { target } = e;
 
 		const { x, y } = target.getBoundingClientRect();
+		let picker: EmojiPicker;
 		const props = $state({
 			x,
 			y,
-			visible: false,
 			remove: () => {
-				// picker.$destroy();
 				unmount(picker);
 			},
 			picked: ({ unicode }) => {
 				iconValue = unicode;
-				// picker.$destroy();
 				unmount(picker);
 			},
 		});
-		const picker = mount(EmojiPicker, {
+		picker = mount(EmojiPicker, {
 			target: document.body,
 			props,
 		});
-		// picker.$set({ visible: true });
-		picker.visible = true;
 	}
-
-	// $effect(() => {
-	// 	// console.log("workspace update");
-	// 	const activeElement = document.activeElement;
-	// 	if (
-	// 		selected &&
-	// 		activeElement?.tagName !== "search" &&
-	// 		!activeElement?.closest("search")
-	// 	) {
-	// 		(async () => {
-	// 			await tick();
-	// 			workspaceButton?.focus();
-	// 		})();
-	// 	}
-	// });
 </script>
 
 <dialog
@@ -164,7 +145,7 @@
 			<button
 				title="pick emoji"
 				onclick={openEmojiPicker}
-				class="hidden @[168px]:[display:initial] ghost text-2xl rounded-full flex-grow-0 flex-shrink basis-0"
+				class="hidden @[168px]:[display:initial] ghost text-2xl rounded-full flex-grow-0 flex-shrink basis-0 focus:outline focus:outline-2 focus:outline-[#0060df]"
 				style:font-family="Noto Color Emoji"
 				>{iconValue}
 			</button>

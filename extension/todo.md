@@ -1,14 +1,12 @@
 **Today**
 ### Features
 [] multiple workspace-edit mode in MainView
-[x] compress images & video
 [] support bookmarks?
 [] support history?
 ### Styles
 ### Content
 ### Translations
 ### Logic
-[] better emoji picker focus handling
 [] highlight workspace which received new tabs (after send action)
 ### Bugs
 [] closing pinned tabs does not necessarily remove it from workspace
