@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { dndzone } from "svelte-dnd-action";
+	import { draggable, type DragOptions } from "@neodrag/svelte";
 	import { Key } from "ts-key-enum";
 	import "@root/styles/mainView.postcss";
 	import Workspace from "@components/Workspace.svelte";
@@ -7,7 +7,7 @@
 	import Icon from "@root/components/Icon.svelte";
 	import { debounceFunc, isNullish } from "@root/utils";
 	import Skeleton from "@root/components/Skeleton.svelte";
-	import { untrack, onMount, tick, unstate } from "svelte";
+	import { untrack, onMount, tick } from "svelte";
 	import { getWorkspacesState, getThemeState, getSystemThemeState, getForceDefaultThemeIfDarkModeState, getActiveWorkspaceIndexState, setActiveWorkspaceIndexState } from "@pages/states.svelte";
 	import { slide } from "svelte/transition";
 	import Fuse from "fuse.js";
@@ -237,26 +237,53 @@
 
 	const debouncedSearch = debounceFunc(search, 500);
 
-	function handleDndConsider(e: CustomEvent<DndEvent<Ext.Workspace>>) {
-		reordering = true;
-		workspaces = e.detail.items;
-	}
+	let currentDragIndex = $state(0);
+	let itemHeight = $state(60); // height of item(+gap) to calculate offset
+  let translateY = $state(0); // offset to apply to current dragged item
+  let lastOffsetY = $state(0); // last offset reported by neodrag
+	const dragOptions: DragOptions = {
+		axis: 'y',
+		bounds: 'parent',
+		// handle: '.handle',
+		onDragStart({rootNode, offsetY}){
+			reordering = true;
+			currentDragIndex = [...rootNode.parentNode.children].indexOf(rootNode); // get start index from dom
+      lastOffsetY = offsetY; // store neodrag offset to correctly calculate delta in onDrag
+      translateY = 0;
+		},
+		onDrag({offsetY}){
+			translateY+=(offsetY - lastOffsetY); // move dragged item by delta from last event
+      lastOffsetY = offsetY; // store neodrag offset for next delta calc 
+      if(translateY > 0.5 * itemHeight){
+        shiftCurrentItem(1) // dragged by more than half height down, shift down by one
+      } else if (translateY < -0.5*itemHeight) {
+        shiftCurrentItem(-1) // dragged by more than half height up, shift up by one
+      }
+		},
+		onDragEnd({rootNode}){
+			reordering = false;
+      rootNode.style.transform=`translate3d(0,0,0)` // on end of drag, remove translate so item returns to natural pos
+      translateY = 0;
 
-	function handleDndFinalize(e: CustomEvent<DndEvent<Ext.Workspace>>) {
-		reordering = false;
-		workspaces = e.detail.items;
+			// 	const newActiveWorkspaceIndex = activeWorkspaceIndex === 0 ? 0 : workspaces.findIndex(({ active }) => active) + 1;
+			// 	activeWorkspaceIndex = newActiveWorkspaceIndex;
 
-		console.info({ oldActiveWorkspaceIndex: activeWorkspaceIndex });
-		const newActiveWorkspaceIndex = activeWorkspaceIndex === 0 ? 0 : workspaces.findIndex(({ active }) => active) + 1;
-		console.info({ newActiveWorkspaceIndex });
-		activeWorkspaceIndex = newActiveWorkspaceIndex;
+			Browser.runtime.sendMessage({
+				msg: "reorderedWorkspaces",
+				sortedWorkspacesIds: workspaces.map(({ UUID }) => UUID),
+				windowId,
+			});
+    },
+    transform({offsetY}){
+      return `translate3d(0,${translateY}px,0)` // apply calculated offset
+    }
+	};
 
-		Browser.runtime.sendMessage({
-			msg: "reorderedWorkspaces",
-			sortedWorkspacesIds: workspaces.map(({ UUID }) => UUID),
-			windowId,
-		});
-	}
+	function shiftCurrentItem(shift: number) {
+    workspaces.splice(currentDragIndex+shift,0,workspaces.splice(currentDragIndex,1)[0]); // double splice to switch currentDragIndex item by shift
+    currentDragIndex+=shift; // update currentDragIndex so next shift works 
+    translateY -= shift * itemHeight; // item has moved to a new place, update translate so that it keeps its current dragged pos
+  }
 
 	function openOptionsPage() {
 		Browser.runtime.openOptionsPage();
@@ -560,21 +587,14 @@
 				{@render SWorkspace(homeWorkspace, 0)}
 			{/if}
 		</li>
+		<!-- viewWorkspaces.length !== workspaces.length || workspaces.length < 2, -->
 		<div
 			class="w-full grid gap-4 @container mt-4 empty:mt-0 {searchValue.length ? 'mt-0' : ''}"
-			use:dndzone={{
-				items: unstate(workspaces),
-				dropTargetStyle: {},
-				zoneTabIndex: -1,
-				dragDisabled:
-					viewWorkspaces.length !== workspaces.length || workspaces.length < 2,
-			}}
-			on:consider={handleDndConsider}
-			on:finalize={handleDndFinalize}
 		>
 			{#each viewWorkspaces as workspace, i (workspace.UUID)}
 				<li 
 					class="item relative max-w-[100cqw]"
+					use:draggable={dragOptions}
 					transition:slide={{ delay: 0, duration: 175 }}
 				>
 					{@render SWorkspace(workspace, i + 1)}
