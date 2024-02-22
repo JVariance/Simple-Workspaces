@@ -1,6 +1,5 @@
 import * as API from "@root/browserAPI";
 import Processes from "./Singletons/Processes";
-import type { Window } from "./Window.svelte";
 
 export class Workspace {
 	UUID: string;
@@ -11,9 +10,8 @@ export class Workspace {
 	tabIds: number[];
 	pinnedTabIds: number[];
 	activeTabId?: number;
-	windowRef!: Window;
 
-	constructor(workspace: Ext.Workspace, window: Window) {
+	constructor(workspace: Ext.Workspace) {
 		this.UUID = workspace.UUID;
 		this.icon = workspace.icon;
 		this.name = workspace.name;
@@ -22,7 +20,6 @@ export class Workspace {
 		this.tabIds = workspace.tabIds;
 		this.pinnedTabIds = workspace.pinnedTabIds;
 		this.activeTabId = workspace.activeTabId;
-		this.windowRef = window;
 	}
 
 	get asObject(): Ext.Workspace {
@@ -41,14 +38,6 @@ export class Workspace {
 	async addTab(tabId: number) {
 		console.info("addTab");
 		await this.addTabs([tabId]);
-	}
-
-	setActive(val: boolean) {
-		if (val) {
-			this.windowRef.activeWorkspace = this;
-		}
-
-		this.active = val;
 	}
 
 	async addTabs(tabIds: number[]) {

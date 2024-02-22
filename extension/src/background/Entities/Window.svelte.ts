@@ -42,7 +42,7 @@ export class Window {
 		if (localWindow) {
 			const localWorkspaces: Map<string, Workspace> =
 				localWindow.workspaces.reduce((acc, workspace) => {
-					acc.set(workspace.UUID, new Workspace(workspace, this));
+					acc.set(workspace.UUID, new Workspace(workspace));
 					return acc;
 				}, new Map());
 
@@ -73,7 +73,6 @@ export class Window {
 				workspace.pinnedTabIds = tabs
 					.filter(({ pinned }) => pinned)
 					.map(({ id }) => id!);
-				// workspace.setActive(!!activeTab);
 				workspace.active = activeTab ? true : false;
 				workspace.activeTabId = activeTabId;
 				workspace.windowId = this.#windowId;
@@ -98,19 +97,16 @@ export class Window {
 
 			console.info({ localHomeWorkspace });
 
-			const homeWorkspace: Workspace = new Workspace(
-				{
-					...this.#getNewWorkspace(),
-					UUID: "HOME",
-					icon: localHomeWorkspace?.icon || "🏠",
-					name: localHomeWorkspace?.name || "Home",
-					active: true,
-					activeTabId: tabs.find(({ active }) => active)?.id!,
-					tabIds: [...tabIds],
-					pinnedTabIds: [...pinnedTabIds],
-				},
-				this
-			);
+			const homeWorkspace: Workspace = new Workspace({
+				...this.#getNewWorkspace(),
+				UUID: "HOME",
+				icon: localHomeWorkspace?.icon || "🏠",
+				name: localHomeWorkspace?.name || "Home",
+				active: true,
+				activeTabId: tabs.find(({ active }) => active)?.id!,
+				tabIds: [...tabIds],
+				pinnedTabIds: [...pinnedTabIds],
+			});
 
 			const blankTab = (
 				await API.queryTabs({ windowId: this.#windowId, index: 0 })
@@ -384,14 +380,11 @@ export class Window {
 		for (let _defaultWorkspace of defaultWorkspaces || []) {
 			const { id, ...defaultWorkspace } = _defaultWorkspace;
 
-			const newWorkspace = new Workspace(
-				{
-					...this.#getNewWorkspace(),
-					...defaultWorkspace,
-					active: false,
-				},
-				this
-			);
+			const newWorkspace = new Workspace({
+				...this.#getNewWorkspace(),
+				...defaultWorkspace,
+				active: false,
+			});
 
 			console.info("before:", {
 				newWorkspace,
@@ -444,14 +437,11 @@ export class Window {
 				_workspaces[index + 1] = [presentWorkspace.UUID, presentWorkspace];
 				this.#workspaces = new Map(_workspaces);
 			} else {
-				const newWorkspace = new Workspace(
-					{
-						...this.#getNewWorkspace(),
-						...defaultWorkspace,
-						active: false,
-					},
-					this
-				);
+				const newWorkspace = new Workspace({
+					...this.#getNewWorkspace(),
+					...defaultWorkspace,
+					active: false,
+				});
 
 				this.#workspaces.set(newWorkspace.UUID, newWorkspace);
 
@@ -485,8 +475,7 @@ export class Window {
 	) {
 		Processes.WorkspaceCreation.start();
 		const newWorkspace = new Workspace(
-			Object.assign(this.#getNewWorkspace(), props),
-			this
+			Object.assign(this.#getNewWorkspace(), props)
 		);
 
 		if (tabIds) {
@@ -536,9 +525,9 @@ export class Window {
 
 		console.info(this.#activeWorkspace.UUID);
 		console.info(this.#activeWorkspace);
-		this.#activeWorkspace.setActive(false);
-		// this.#activeWorkspace = workspace;
-		workspace.setActive(true);
+		this.#activeWorkspace.active = false;
+		this.#activeWorkspace = workspace;
+		workspace.active = true;
 
 		await API.showTabs(nextTabIds);
 		if (!Processes.keepPinnedTabs) {
