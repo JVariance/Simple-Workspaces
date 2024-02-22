@@ -12,9 +12,7 @@ export async function tabsOnPinned(
 	const activeWorkspace = activeWindow.activeWorkspace;
 
 	const workspaceUUID = await API.getTabValue(tabId, "workspaceUUID");
-	const workspace = activeWindow.workspaces.find(
-		({ UUID }) => UUID === workspaceUUID
-	)!;
+	const workspace = activeWindow.workspaces.get(workspaceUUID)!;
 
 	console.info(
 		"tabsOnPinned",

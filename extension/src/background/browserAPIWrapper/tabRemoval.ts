@@ -1,10 +1,11 @@
 import * as API from "../../browserAPI";
 import Processes from "../Entities/Singletons/Processes";
 import WorkspaceStorage from "../Entities/Singletons/WorkspaceStorage";
+import type { Workspace } from "../Entities/Workspace";
 
 export async function removeTabs(
 	tabIds: number[],
-	workspace: Ext.Workspace | undefined = undefined
+	workspace: Workspace | undefined = undefined
 ) {
 	console.info("tabRemoval - removeTabs");
 	Processes.manualTabRemoval = true;

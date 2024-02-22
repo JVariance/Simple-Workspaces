@@ -46,13 +46,17 @@ export function storageOnChanged(
 						if (item.newValue) {
 							for (let [_, window] of WorkspaceStorage.windows) {
 								pinTabs(
-									window.workspaces.flatMap(({ pinnedTabIds }) => pinnedTabIds)
+									Array.from(window.workspaces.values()).flatMap(
+										({ pinnedTabIds }) => pinnedTabIds
+									)
 								);
 							}
 						} else {
 							for (let [_, window] of WorkspaceStorage.windows) {
 								const activeWorkspace = window.activeWorkspace;
-								const nonActiveWorkspacePinnedTabIds = window.workspaces
+								const nonActiveWorkspacePinnedTabIds = Array.from(
+									window.workspaces.values()
+								)
 									.filter(
 										(workspace) => workspace.UUID !== activeWorkspace.UUID
 									)

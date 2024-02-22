@@ -20,7 +20,6 @@ import { WorkspaceStorage } from "./Entities";
 import { informViews } from "./informViews";
 import { tabsOnActivated } from "./browserEvents/tabs/tabsActivated";
 import { tabsOnPinned } from "./browserEvents/tabs/tabsOnPinned";
-import { cookiesOnChanged } from "./cookies/cookiesOnChanged";
 /* Event Order:
 Creation:
 1. browser.tabs.onCreated
@@ -49,8 +48,6 @@ browser.tabs.onAttached.addListener(tabsOnAttached);
 browser.tabs.onDetached.addListener(tabsOnDetached);
 browser.tabs.onActivated.addListener(tabsOnActivated);
 browser.tabs.onUpdated.addListener(tabsOnPinned, { properties: ["pinned"] });
-
-browser.cookies.onChanged.addListener(cookiesOnChanged);
 
 browser.storage.local.onChanged.addListener(storageOnChanged);
 

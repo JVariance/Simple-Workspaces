@@ -11,6 +11,7 @@
 ### Bugs
 [] closing pinned tabs does not necessarily remove it from workspace
 ### Other
+[] cookies permission still required?
 - https://www.npmjs.com/package/p-maps
 ---
 [] getWorkspaces -> if extension isn't initialized, try again periodically a limited number of times before returning undefined(*1)
