@@ -32,8 +32,9 @@ export async function menusOnClicked(
 		if (menuItemId.toString().startsWith("workspace-menu")) {
 			targetWorkspaceUUID = menuItemId.split("_").at(1)!;
 		} else if (newWorkspaceDemanded) {
-			newWorkspace = await WorkspaceStorage.activeWindow.addWorkspace([]);
-			newWorkspace.active = false;
+			newWorkspace = await WorkspaceStorage.activeWindow.addWorkspace([], {
+				active: false,
+			});
 			targetWorkspaceUUID = newWorkspace.UUID;
 		}
 

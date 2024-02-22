@@ -16,14 +16,13 @@ export class Window {
 	#UUID: string;
 	#windowId!: number;
 	#workspaces: Ext.Workspace[] = $state([]);
-	#activeWorkspace: Ext.Workspace = $derived(
-		(() => {
-			this.#persist();
-			return (
-				this.#workspaces.find(({ active }) => active) || this.#workspaces.at(0)!
-			);
-		})()
-	);
+	#activeWorkspace: Ext.Workspace = $derived.by(() => {
+		console.info("changed activeworkspace in derived.by");
+		this.#persist();
+		return (
+			this.#workspaces.find(({ active }) => active) || this.#workspaces.at(0)!
+		);
+	});
 
 	constructor(
 		UUID: string | undefined = undefined,
@@ -166,7 +165,10 @@ export class Window {
 	}
 
 	get activeWorkspace(): Ext.Workspace {
-		return this.#activeWorkspace;
+		// return this.#activeWorkspace;
+		return (
+			this.#workspaces.find(({ active }) => active) || this.#workspaces?.at(0)!
+		);
 	}
 
 	setActiveTab(tabId: number) {
@@ -429,7 +431,7 @@ export class Window {
 				presentWorkspace = { ...presentWorkspace, ...defaultWorkspace };
 				console.info({ presentWorkspace });
 
-				this.workspaces[index + 1] = presentWorkspace;
+				this.#workspaces[index + 1] = presentWorkspace;
 			} else {
 				const newWorkspace = {
 					...this.#getNewWorkspace(),
@@ -437,7 +439,7 @@ export class Window {
 					active: false,
 				};
 
-				this.workspaces.push(newWorkspace);
+				this.#workspaces.push(newWorkspace);
 
 				const tab = await createTab(
 					{
@@ -463,9 +465,12 @@ export class Window {
 		return newWorkspace;
 	}
 
-	async addWorkspace(tabIds: number[] | undefined = undefined) {
+	async addWorkspace(
+		tabIds: number[] | undefined = undefined,
+		props: Partial<Ext.Workspace> = {}
+	) {
 		Processes.WorkspaceCreation.start();
-		const newWorkspace = this.#getNewWorkspace();
+		const newWorkspace = Object.assign(this.#getNewWorkspace(), props);
 
 		if (tabIds) {
 			newWorkspace.tabIds = tabIds;
@@ -476,7 +481,8 @@ export class Window {
 			Processes.manualTabAddition = false;
 		}
 
-		this.#workspaces = [...this.#workspaces, newWorkspace];
+		// this.#workspaces = [...this.#workspaces, newWorkspace];
+		this.#workspaces.push(newWorkspace);
 
 		Processes.WorkspaceCreation.finish();
 		return newWorkspace;
@@ -493,6 +499,7 @@ export class Window {
 
 		if (this.#workspaces.length <= 1) return previousWorkspace;
 
+		// TODO: switch to workspace with new active tab?
 		if (workspace.active)
 			previousWorkspace = await this.switchToPreviousWorkspace();
 		await API.removeTabs(workspace.tabIds);
@@ -545,6 +552,7 @@ export class Window {
 			currentTabIds.length &&
 			previousActiveWorkspaceUUID !== workspace.UUID
 		) {
+			console.info("moini moinsen");
 			if (!Processes.keepPinnedTabs) {
 				await unpinTabs(previousActiveWorkspace.pinnedTabIds);
 			}
@@ -559,7 +567,7 @@ export class Window {
 
 	async switchToNextWorkspace() {
 		const index =
-			this.workspaces.findIndex(
+			this.#workspaces.findIndex(
 				({ UUID }) => UUID === this.activeWorkspace.UUID
 			) + 1;
 
@@ -573,7 +581,7 @@ export class Window {
 
 	async switchToPreviousWorkspace() {
 		const index =
-			this.workspaces.findIndex(
+			this.#workspaces.findIndex(
 				({ UUID }) => UUID === this.activeWorkspace.UUID
 			) - 1;
 
@@ -605,7 +613,7 @@ export class Window {
 	}
 
 	async reorderWorkspaces(orderedIds: Ext.Workspace["UUID"][]) {
-		this.workspaces.sort(
+		this.#workspaces.sort(
 			(a, b) => orderedIds.indexOf(a.UUID) - orderedIds.indexOf(b.UUID)
 		);
 	}
