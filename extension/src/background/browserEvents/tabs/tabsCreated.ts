@@ -2,7 +2,6 @@ import Browser from "webextension-polyfill";
 import { WorkspaceStorage, Processes } from "../../Entities";
 import { informViews } from "../../informViews";
 import * as API from "@root/browserAPI";
-import { DeferredPromise } from "@root/utils";
 
 export async function tabsOnCreated(tab: Browser.Tabs.Tab) {
 	// console.info("tabsOnCreated bef", Processes.TabCreations);
@@ -59,6 +58,8 @@ export async function tabsOnCreated(tab: Browser.Tabs.Tab) {
 	console.info({ windowIsNew });
 	if (!windowIsNew) {
 		// console.info({ tabSessionWorkspaceUUID });
+
+		console.info({ windowIsNew, tabSessionWorkspaceUUID });
 
 		!tabSessionWorkspaceUUID &&
 			(await WorkspaceStorage.getWindow(tab.windowId!).addTab(tab.id!));

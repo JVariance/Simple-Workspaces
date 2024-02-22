@@ -3,7 +3,6 @@ import Browser from "webextension-polyfill";
 import * as API from "@root/browserAPI";
 import { Window } from "@background/Entities/Window.svelte";
 import { createTab } from "@root/background/browserAPIWrapper/tabCreation";
-import { unstate } from "svelte";
 
 enum StorageKeys {
 	windowUUIDs = "windowIds",
@@ -59,7 +58,8 @@ class WorkspaceStorage {
 
 		for (let window of this.#windows.values()) {
 			const workspaces = window.workspaces;
-			const activeWorkspace = workspaces.find(({ active }) => active)!;
+			// const activeWorkspace = workspaces.find(({ active }) => active)!;
+			const activeWorkspace = window.activeWorkspace;
 
 			console.info({ activeWorkspace });
 			API.updateTabs([
@@ -71,7 +71,9 @@ class WorkspaceStorage {
 				},
 			]);
 
-			const inactiveWorkspaces = workspaces.filter(({ active }) => !active);
+			const inactiveWorkspaces = Array.from(workspaces.values()).filter(
+				({ active }) => !active
+			);
 			console.info({ inactiveWorkspaces });
 			API.hideTabs(inactiveWorkspaces.flatMap(({ tabIds }) => tabIds));
 		}
@@ -180,9 +182,7 @@ class WorkspaceStorage {
 			"workspaceUUID"
 		);
 
-		const activeTabsWorkspace = window.workspaces.find(
-			({ UUID }) => UUID === activeTabsWorkspaceUUID
-		);
+		const activeTabsWorkspace = window.workspaces.get(activeTabsWorkspaceUUID);
 
 		const isActiveWorkspace =
 			activeTabsWorkspace?.UUID === activeWorkspace.UUID;
@@ -196,8 +196,8 @@ class WorkspaceStorage {
 
 		const emptyWorkspaces = [];
 		for (let tabId of tabIds) {
-			const workspace = window.workspaces.find((workspace) =>
-				workspace.tabIds.includes(tabId)
+			const workspace = Array.from(window.workspaces.values()).find(
+				(workspace) => workspace.tabIds.includes(tabId)
 			);
 
 			if (workspace) {

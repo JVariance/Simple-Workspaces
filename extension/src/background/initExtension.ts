@@ -7,7 +7,11 @@ import {
 
 async function initTabMenu() {
 	await TabMenuMove.init(
-		WorkspaceStorage.windows.get(WorkspaceStorage.focusedWindowId)!.workspaces
+		Array.from(
+			WorkspaceStorage.windows
+				.get(WorkspaceStorage.focusedWindowId)!
+				.workspaces.values()
+		)
 	);
 }
 

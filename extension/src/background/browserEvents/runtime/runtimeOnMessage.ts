@@ -1,4 +1,3 @@
-import { unstate } from "svelte";
 import { WorkspaceStorage, Processes, BrowserStorage } from "../../Entities";
 import { informViews } from "../../informViews";
 import Browser from "webextension-polyfill";
@@ -13,7 +12,7 @@ function switchWorkspaceCommand({ workspaceUUID }: { workspaceUUID: string }) {
 	Processes.WorkspaceSwitch.start();
 	const nextWorkspace = WorkspaceStorage.windows
 		.get(WorkspaceStorage.focusedWindowId)!
-		.workspaces.find(({ UUID }) => UUID === workspaceUUID)!;
+		.workspaces.get(workspaceUUID)!;
 
 	(async () => {
 		await WorkspaceStorage.activeWindow.switchWorkspace(nextWorkspace);
@@ -35,9 +34,7 @@ function switchWorkspaceAndFocusTab({
 	tabId: number;
 }) {
 	const window = WorkspaceStorage.activeWindow;
-	const workspace = window.workspaces.find(
-		({ UUID }) => UUID === workspaceUUID
-	);
+	const workspace = window.workspaces.get(workspaceUUID);
 
 	if (workspace) {
 		workspace.activeTabId = tabId;
@@ -89,7 +86,8 @@ export async function runtimeOnMessage(
 				const workspaces = WorkspaceStorage.getWindow(
 					message.windowId
 				).workspaces;
-				return resolve(unstate(workspaces));
+
+				return resolve(Array.from(workspaces.values()));
 			});
 		case "removeWorkspace":
 			(async () => {
@@ -123,7 +121,6 @@ export async function runtimeOnMessage(
 				);
 
 				informViews(windowId, "updatedWorkspaces");
-				// WorkspaceStorage.getWindow(windowId).updateWorkspaces(newWorkspaces);
 			})();
 			break;
 		case "reloadAllTabs":
@@ -191,8 +188,8 @@ export async function runtimeOnMessage(
 			return new Promise<void>(async (resolve) => {
 				console.info("setHomeWorkspace to " + message.homeWorkspace);
 				WorkspaceStorage.windows.forEach((window) => {
-					window.workspaces[0].name = message.homeWorkspace.name;
-					window.workspaces[0].icon = message.homeWorkspace.icon;
+					window.workspaces.get("HOME")!.name = message.homeWorkspace.name;
+					window.workspaces.get("HOME")!.icon = message.homeWorkspace.icon;
 				});
 				await BrowserStorage.setHomeWorkspace(message.homeWorkspace);
 				return resolve();
@@ -202,7 +199,7 @@ export async function runtimeOnMessage(
 				await BrowserStorage.setDefaultWorkspaces(message.defaultWorkspaces);
 				if (
 					WorkspaceStorage.windows.size < 2 &&
-					WorkspaceStorage.activeWindow.workspaces.length < 2
+					WorkspaceStorage.activeWindow.workspaces.size < 2
 				) {
 					await WorkspaceStorage.activeWindow.addDefaultWorkspaces();
 					console.info("added default workspaces and now informviews");
@@ -226,7 +223,9 @@ export async function runtimeOnMessage(
 					WorkspaceStorage.windows.values()
 				).map((window, i) => [
 					i,
-					window.workspaces.slice(1).map(({ name, icon }) => ({ name, icon })),
+					Array.from(window.workspaces.values())
+						.slice(1)
+						.map(({ name, icon }) => ({ name, icon })),
 				]);
 				return resolve(existingWindowsWorkspaces);
 			});

@@ -1,12 +1,12 @@
 import * as API from "@root/browserAPI";
-import { promisedDebounceFunc } from "@root/utils";
-import { unstate } from "svelte";
+import { isNullish, promisedDebounceFunc } from "@root/utils";
 import Browser from "webextension-polyfill";
 import { BrowserStorage } from "./Static/Storage";
 import { createTab } from "../browserAPIWrapper/tabCreation";
 import Processes from "./Singletons/Processes";
 import { pinTabs, unpinTabs } from "../helper/tabsPinning";
 import { getRandomEmoji } from "@root/emojiList";
+import { Workspace } from "./Workspace";
 
 type EnhancedTab = Browser.Tabs.Tab & { workspaceUUID?: string };
 
@@ -15,15 +15,9 @@ export class Window {
 	switchingWorkspace = false;
 	#UUID: string;
 	#windowId!: number;
-	#workspaces: Ext.Workspace[] = $state([]);
-	#activeWorkspace: Ext.Workspace = $state()!;
-	// #activeWorkspace: Ext.Workspace = $derived.by(() => {
-	// 	// console.info("changed activeworkspace in derived.by");
-	// 	// this.#persist();
-	// 	return (
-	// 		this.#workspaces.find(({ active }) => active) || this.#workspaces.at(0)!
-	// 	);
-	// });
+	// TODO: switch to Map when made reactive
+	#workspaces: Map<string, Workspace> = new Map();
+	#activeWorkspace = $state<Workspace>()!;
 
 	constructor(
 		UUID: string | undefined = undefined,
@@ -46,9 +40,9 @@ export class Window {
 		console.info({ localWindow, tabs });
 
 		if (localWindow) {
-			const localWorkspaces: Map<string, Ext.Workspace> =
+			const localWorkspaces: Map<string, Workspace> =
 				localWindow.workspaces.reduce((acc, workspace) => {
-					acc.set(workspace.UUID, workspace);
+					acc.set(workspace.UUID, new Workspace(workspace, this));
 					return acc;
 				}, new Map());
 
@@ -79,18 +73,20 @@ export class Window {
 				workspace.pinnedTabIds = tabs
 					.filter(({ pinned }) => pinned)
 					.map(({ id }) => id!);
+				// workspace.setActive(!!activeTab);
 				workspace.active = activeTab ? true : false;
 				workspace.activeTabId = activeTabId;
 				workspace.windowId = this.#windowId;
+				activeTab && (this.#activeWorkspace = workspace);
 			});
 
 			console.info({ localWorkspaces });
 
-			const localWorkspacesArray = Array.from(localWorkspaces.values());
-			this.#activeWorkspace =
-				localWorkspacesArray.find(({ active }) => active)! ||
-				localWorkspacesArray?.at(0)!;
-			this.#workspaces = localWorkspacesArray;
+			// const localWorkspacesArray = Array.from(localWorkspaces.values());
+			// this.#activeWorkspace =
+			// 	localWorkspacesArray.find(({ active }) => active)! ||
+			// 	localWorkspacesArray?.at(0)!;
+			this.#workspaces = localWorkspaces;
 		} else {
 			const tabIds = tabs.map((tab) => tab.id!);
 			const pinnedTabIds = tabs
@@ -102,16 +98,19 @@ export class Window {
 
 			console.info({ localHomeWorkspace });
 
-			const homeWorkspace: Ext.Workspace = {
-				...this.#getNewWorkspace(),
-				UUID: "HOME",
-				icon: localHomeWorkspace?.icon || "🏠",
-				name: localHomeWorkspace?.name || "Home",
-				active: true,
-				activeTabId: tabs.find(({ active }) => active)?.id!,
-				tabIds: [...tabIds],
-				pinnedTabIds: [...pinnedTabIds],
-			};
+			const homeWorkspace: Workspace = new Workspace(
+				{
+					...this.#getNewWorkspace(),
+					UUID: "HOME",
+					icon: localHomeWorkspace?.icon || "🏠",
+					name: localHomeWorkspace?.name || "Home",
+					active: true,
+					activeTabId: tabs.find(({ active }) => active)?.id!,
+					tabIds: [...tabIds],
+					pinnedTabIds: [...pinnedTabIds],
+				},
+				this
+			);
 
 			const blankTab = (
 				await API.queryTabs({ windowId: this.#windowId, index: 0 })
@@ -148,7 +147,8 @@ export class Window {
 				// await removeTabs([blankTab.id!], homeWorkspace);
 			}
 			this.#activeWorkspace = homeWorkspace;
-			this.#workspaces.push(homeWorkspace);
+			// this.#workspaces.push(homeWorkspace);
+			this.#workspaces.set("HOME", homeWorkspace);
 
 			await this.addDefaultWorkspaces();
 
@@ -170,22 +170,24 @@ export class Window {
 		return this.#windowId;
 	}
 
-	get activeWorkspace(): Ext.Workspace {
+	get activeWorkspace(): Workspace {
 		return this.#activeWorkspace;
 	}
 
-	setActiveTab(tabId: number) {
-		if (!this.activeWorkspace || this.switchingWorkspace) return;
+	set activeWorkspace(workspace: Workspace) {
+		this.#activeWorkspace = workspace;
+	}
 
-		this.activeWorkspace.activeTabId = tabId;
+	setActiveTab(tabId: number) {
+		if (!this.#activeWorkspace || this.switchingWorkspace) return;
+
+		this.#activeWorkspace.activeTabId = tabId;
 	}
 
 	async restoredTab(tabId: number, workspaceUUID: string) {
 		console.info("restoredTab", { tabId, workspaceUUID });
 
-		const workspace = this.#workspaces.find(
-			({ UUID }) => UUID === workspaceUUID
-		);
+		const workspace = this.#workspaces.get(workspaceUUID);
 
 		console.info({ tabId, workspace, workspaceUUID });
 
@@ -194,8 +196,8 @@ export class Window {
 			const tab = await API.getTab(tabId);
 			tab?.pinned && workspace.pinnedTabIds.push(tabId);
 
-			if (workspace !== this.activeWorkspace) {
-				await Browser.tabs.update(this.activeWorkspace.tabIds.at(-1), {
+			if (workspace !== this.#activeWorkspace) {
+				await Browser.tabs.update(this.#activeWorkspace.tabIds.at(-1), {
 					active: true,
 				});
 				await unpinTabs([tabId]);
@@ -204,20 +206,20 @@ export class Window {
 		}
 	}
 
-	async addTab(tabId: number, workspace?: Ext.Workspace) {
+	async addTab(tabId: number, workspace?: Workspace) {
 		console.info("addTab");
 		await this.addTabs([tabId], workspace);
 	}
 
-	async addTabs(tabIds: number[], workspace = this.activeWorkspace) {
+	async addTabs(tabIds: number[], workspace = this.#activeWorkspace) {
 		Processes.manualTabAddition = true;
 		console.info(
-			!this.activeWorkspace && !workspace,
+			!this.#activeWorkspace && !workspace,
 			this.switchingWorkspace,
 			tabIds.some((tabId) => workspace.tabIds.includes(tabId))
 		);
 		if (
-			(!this.activeWorkspace && !workspace) ||
+			(!this.#activeWorkspace && !workspace) ||
 			this.switchingWorkspace ||
 			tabIds.some((tabId) => workspace.tabIds.includes(tabId))
 		)
@@ -248,14 +250,14 @@ export class Window {
 		Processes.manualTabAddition = false;
 	}
 
-	async removeTab(tabId: number, workspace?: Ext.Workspace) {
+	async removeTab(tabId: number, workspace?: Workspace) {
 		this.removeTabs([tabId], workspace);
 	}
 
-	async removeTabs(tabIds: number[], workspace = this.activeWorkspace) {
+	async removeTabs(tabIds: number[], workspace = this.#activeWorkspace) {
 		console.info("removeTabs 1");
-		console.info(!this.activeWorkspace, !workspace);
-		if (!this.activeWorkspace && !workspace) return;
+		console.info(!this.#activeWorkspace, !workspace);
+		if (!this.#activeWorkspace && !workspace) return;
 
 		console.info("removeTabs 2");
 
@@ -287,9 +289,7 @@ export class Window {
 		tabIds: number[];
 	}) {
 		const activeWorkspace = this.activeWorkspace;
-		const targetWorkspace = this.#workspaces.find(
-			({ UUID }) => UUID === targetWorkspaceUUID
-		);
+		const targetWorkspace = this.#workspaces.get(targetWorkspaceUUID);
 		if (!targetWorkspace) return;
 
 		const emptyWorkspaces = [];
@@ -299,9 +299,7 @@ export class Window {
 				tabId,
 				"workspaceUUID"
 			)) as string;
-			const workspace = workspaceUUID
-				? this.#workspaces.find(({ UUID }) => UUID === workspaceUUID)
-				: undefined;
+			const workspace = this.#workspaces.get(workspaceUUID);
 
 			if (workspace) {
 				const isPinned = workspace.pinnedTabIds.includes(tabId);
@@ -368,7 +366,9 @@ export class Window {
 		};
 	}
 
-	get workspaces(): Ext.Workspace[] {
+	// get workspaces(): Workspace[] {
+	// return Array.from(this.#workspaces.values());
+	get workspaces(): Map<"HOME" | (string & {}), Workspace> {
 		return this.#workspaces;
 	}
 
@@ -384,11 +384,14 @@ export class Window {
 		for (let _defaultWorkspace of defaultWorkspaces || []) {
 			const { id, ...defaultWorkspace } = _defaultWorkspace;
 
-			const newWorkspace = {
-				...this.#getNewWorkspace(),
-				...defaultWorkspace,
-				active: false,
-			};
+			const newWorkspace = new Workspace(
+				{
+					...this.#getNewWorkspace(),
+					...defaultWorkspace,
+					active: false,
+				},
+				this
+			);
 
 			console.info("before:", {
 				newWorkspace,
@@ -410,7 +413,7 @@ export class Window {
 
 			console.info("after: ", { newWorkspace });
 
-			this.#workspaces.push(newWorkspace);
+			this.#workspaces.set(newWorkspace.UUID, newWorkspace);
 		}
 	}
 
@@ -425,24 +428,32 @@ export class Window {
 			[].entries()) {
 			const { id, ...defaultWorkspace } = _defaultWorkspace;
 
-			let presentWorkspace = this.#workspaces
+			let presentWorkspace = Array.from(this.#workspaces.values())
 				.filter(({ UUID }) => UUID !== "HOME")
 				?.at(index);
 
 			if (presentWorkspace) {
 				console.info({ presentWorkspace, defaultWorkspace });
-				presentWorkspace = { ...presentWorkspace, ...defaultWorkspace };
+				// presentWorkspace = { ...presentWorkspace, ...defaultWorkspace };
+				presentWorkspace.icon = defaultWorkspace.icon;
+				presentWorkspace.name = defaultWorkspace.name;
 				console.info({ presentWorkspace });
 
-				this.#workspaces[index + 1] = presentWorkspace;
+				// this.#workspaces[index + 1] = presentWorkspace;
+				const _workspaces = Array.from(this.#workspaces.entries());
+				_workspaces[index + 1] = [presentWorkspace.UUID, presentWorkspace];
+				this.#workspaces = new Map(_workspaces);
 			} else {
-				const newWorkspace = {
-					...this.#getNewWorkspace(),
-					...defaultWorkspace,
-					active: false,
-				};
+				const newWorkspace = new Workspace(
+					{
+						...this.#getNewWorkspace(),
+						...defaultWorkspace,
+						active: false,
+					},
+					this
+				);
 
-				this.#workspaces.push(newWorkspace);
+				this.#workspaces.set(newWorkspace.UUID, newWorkspace);
 
 				const tab = await createTab(
 					{
@@ -473,7 +484,10 @@ export class Window {
 		props: Partial<Ext.Workspace> = {}
 	) {
 		Processes.WorkspaceCreation.start();
-		const newWorkspace = Object.assign(this.#getNewWorkspace(), props);
+		const newWorkspace = new Workspace(
+			Object.assign(this.#getNewWorkspace(), props),
+			this
+		);
 
 		if (tabIds) {
 			newWorkspace.tabIds = tabIds;
@@ -485,7 +499,7 @@ export class Window {
 		}
 
 		// this.#workspaces = [...this.#workspaces, newWorkspace];
-		this.#workspaces.push(newWorkspace);
+		this.#workspaces.set(newWorkspace.UUID, newWorkspace);
 
 		Processes.WorkspaceCreation.finish();
 		return newWorkspace;
@@ -495,38 +509,36 @@ export class Window {
 		UUID: Ext.Workspace["UUID"]
 	): Promise<Ext.Workspace | undefined> {
 		Processes.manualTabRemoval = true;
-		const workspace = this.#workspaces.find(
-			(workspace) => workspace.UUID === UUID
-		)!;
+		const workspace = this.#workspaces.get(UUID)!;
 		let previousWorkspace = undefined;
 
-		if (this.#workspaces.length <= 1) return previousWorkspace;
+		if (this.#workspaces.size <= 1) return previousWorkspace;
 
 		// TODO: switch to workspace with new active tab?
 		if (workspace.active)
 			previousWorkspace = await this.switchToPreviousWorkspace();
 		await API.removeTabs(workspace.tabIds);
 
-		this.#workspaces = this.#workspaces.filter(
-			(workspace) => workspace.UUID !== UUID
-		);
+		this.#workspaces.delete(UUID);
 
 		return previousWorkspace;
 	}
 
-	async switchWorkspace(workspace: Ext.Workspace) {
+	async switchWorkspace(workspace: Workspace) {
 		console.info("switchWorkspace() in window " + this.#windowId);
 		const ongoingTabDetachment = Processes.TabDetachment.state === "pending";
 		this.switchingWorkspace = true;
-		const previousActiveWorkspace = this.activeWorkspace;
+		const previousActiveWorkspace = this.#activeWorkspace;
 		const previousActiveWorkspaceUUID = previousActiveWorkspace.UUID;
 
 		const currentTabIds = previousActiveWorkspace.tabIds;
 		const nextTabIds = workspace.tabIds;
 
-		this.#activeWorkspace.active = false;
-		this.#activeWorkspace = workspace;
-		workspace.active = true;
+		console.info(this.#activeWorkspace.UUID);
+		console.info(this.#activeWorkspace);
+		this.#activeWorkspace.setActive(false);
+		// this.#activeWorkspace = workspace;
+		workspace.setActive(true);
 
 		await API.showTabs(nextTabIds);
 		if (!Processes.keepPinnedTabs) {
@@ -566,28 +578,30 @@ export class Window {
 	}
 
 	async switchToNextWorkspace() {
+		const _workspaces = Array.from(this.#workspaces.values());
 		const index =
-			this.#workspaces.findIndex(
-				({ UUID }) => UUID === this.activeWorkspace.UUID
-			) + 1;
+			_workspaces.findIndex(({ UUID }) => UUID === this.activeWorkspace.UUID) +
+			1;
 
-		if (index > this.#workspaces.length - 1) return;
+		if (index > _workspaces.length - 1) return;
 
-		const nextWorkspace = this.#workspaces.at(index)!;
+		const nextWorkspace = this.#workspaces.get(_workspaces.at(index)!.UUID)!;
 
 		await this.switchWorkspace(nextWorkspace);
 		return nextWorkspace;
 	}
 
 	async switchToPreviousWorkspace() {
+		const _workspaces = Array.from(this.#workspaces.values());
 		const index =
-			this.#workspaces.findIndex(
-				({ UUID }) => UUID === this.activeWorkspace.UUID
-			) - 1;
+			_workspaces.findIndex(({ UUID }) => UUID === this.activeWorkspace.UUID) -
+			1;
 
 		if (index < 0) return;
 
-		const previousWorkspace = this.#workspaces.at(index)!;
+		const previousWorkspace = this.#workspaces.get(
+			_workspaces.at(index)!.UUID
+		)!;
 		await this.switchWorkspace(previousWorkspace);
 		return previousWorkspace;
 	}
@@ -601,20 +615,18 @@ export class Window {
 		name: string;
 		icon: string;
 	}) {
-		const workspace = this.#workspaces.find(
-			({ UUID }) => UUID === workspaceUUID
-		)!;
+		const workspace = this.#workspaces.get(workspaceUUID)!;
 		workspace.name = name;
 		workspace.icon = icon;
 	}
 
-	updateWorkspaces(newWorkspaces: Ext.Workspace[]) {
-		this.#workspaces = newWorkspaces;
-	}
-
 	async reorderWorkspaces(orderedIds: Ext.Workspace["UUID"][]) {
-		this.#workspaces.sort(
+		const _workspaces = Array.from(this.#workspaces.values());
+		_workspaces.sort(
 			(a, b) => orderedIds.indexOf(a.UUID) - orderedIds.indexOf(b.UUID)
+		);
+		this.#workspaces = new Map(
+			_workspaces.map((workspace) => [workspace.UUID, workspace])
 		);
 	}
 
@@ -626,7 +638,7 @@ export class Window {
 			return Browser.storage.local.set({
 				[this.#storageKey]: {
 					id: this.#UUID,
-					workspaces: unstate(this.#workspaces),
+					workspaces: Array.from(this.#workspaces.values()),
 				},
 			});
 		} catch (e) {

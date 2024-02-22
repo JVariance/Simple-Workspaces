@@ -24,8 +24,8 @@ export async function tabsOnRemoved(
 	console.info("tab removed");
 
 	const window = WorkspaceStorage.getWindow(info.windowId);
-	const removedTabsWorkspace = window.workspaces.find((workspace) =>
-		workspace.tabIds.includes(tabId)
+	const removedTabsWorkspace = Array.from(window.workspaces.values()).find(
+		(workspace) => workspace.tabIds.includes(tabId)
 	)!;
 
 	const tabWasPinned = removedTabsWorkspace.pinnedTabIds.includes(tabId);
@@ -46,9 +46,7 @@ export async function tabsOnRemoved(
 		newActiveTab?.id,
 		"workspaceUUID"
 	);
-	const newActiveWorkspace = window.workspaces.find(
-		({ UUID }) => UUID === newActiveWorkspaceUUID
-	)!;
+	const newActiveWorkspace = window.workspaces.get(newActiveWorkspaceUUID)!;
 	await window.removeTab(tabId, removedTabsWorkspace);
 	informViews(window.windowId, "removedTab", { tabId });
 	Processes.TabRemoval.finish();
