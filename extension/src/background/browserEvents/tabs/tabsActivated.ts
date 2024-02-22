@@ -47,9 +47,7 @@ export async function tabsOnActivated(
 		currentTab,
 	});
 
-	const activeWorkspace = activeWindow.workspaces.find(
-		({ UUID }) => UUID === activeTabWorkspaceUUID
-	);
+	const activeWorkspace = activeWindow.workspaces.get(activeTabWorkspaceUUID);
 
 	if (firefoxSearchWasUsed) {
 		Processes.searchWasUsed = true;

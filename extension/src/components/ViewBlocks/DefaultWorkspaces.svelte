@@ -6,11 +6,11 @@
 	import Summary from "@components/Accordion/Summary.svelte";
 	import Button from "@components/Button.svelte";
 	import SimpleWorkspace from "../SimpleWorkspace.svelte";
-	import { SOURCES, dndzone } from "svelte-dnd-action";
 	import { createToast } from "../createToast.svelte";
 	import { immediateDebounceFunc } from "@root/utils";
 	import { getDefaultWorkspacesState } from "@pages/states.svelte";
 	import { overflowSwipe } from "@root/actions/overflowSwipe";
+	import { draggable, type DragOptions } from "@neodrag/svelte";
 
 	type Props = {dndFinish?: Function, isWelcomePage?: boolean};
 
@@ -77,6 +77,47 @@
 	function getExistingWindowsWorkspaces(){
 		return Browser.runtime.sendMessage({ msg: "getExistingWindowsWorkspaces" });
 	}
+
+
+	let currentDragIndex = $state(0);
+	let itemHeight = $state(56); // height of item(+gap) to calculate offset
+  let translateY = $state(0); // offset to apply to current dragged item
+  let lastOffsetY = $state(0); // last offset reported by neodrag
+	const dragOptions: DragOptions = {
+		axis: 'y',
+		bounds: 'parent',
+		handle: '.drag-handle',
+		onDragStart({rootNode, offsetY}){
+			currentDragIndex = [...rootNode.parentNode.children].indexOf(rootNode); // get start index from dom
+      lastOffsetY = offsetY; // store neodrag offset to correctly calculate delta in onDrag
+      translateY = 0;
+		},
+		onDrag({offsetY}){
+			translateY+=(offsetY - lastOffsetY); // move dragged item by delta from last event
+      lastOffsetY = offsetY; // store neodrag offset for next delta calc 
+      if(translateY > 0.5 * itemHeight){
+        shiftCurrentItem(1) // dragged by more than half height down, shift down by one
+      } else if (translateY < -0.5 * itemHeight) {
+        shiftCurrentItem(-1) // dragged by more than half height up, shift up by one
+      }
+		},
+		onDragEnd({rootNode}){
+      rootNode.style.transform=`translate3d(0,0,0)` // on end of drag, remove translate so item returns to natural pos
+      translateY = 0;
+
+			// 	const newActiveWorkspaceIndex = activeWorkspaceIndex === 0 ? 0 : workspaces.findIndex(({ active }) => active) + 1;
+			// 	activeWorkspaceIndex = newActiveWorkspaceIndex;
+    },
+    transform({offsetY}){
+      return `translate3d(0,${translateY}px,0)` // apply calculated offset
+    }
+	};
+
+	function shiftCurrentItem(shift: number) {
+    defaultWorkspaces.splice(currentDragIndex+shift,0,defaultWorkspaces.splice(currentDragIndex,1)[0]); // double splice to switch currentDragIndex item by shift
+    currentDragIndex+=shift; // update currentDragIndex so next shift works 
+    translateY -= shift * itemHeight; // item has moved to a new place, update translate so that it keeps its current dragged pos
+  }
 
 	onMount(async () => {
 		const localDefaultWorkspaces = await Browser.runtime.sendMessage({ msg: "getDefaultWorkspaces" }) as Ext.SimpleWorkspace[];
@@ -164,28 +205,10 @@
 					</div>
 				</Accordion>
 			{/if}
-			<ul
-				class="default-workspaces grid gap-2 [&:not(:empty)]:!mb-2"
-				use:dndzone={{
-					items: defaultWorkspaces,
-					dropTargetStyle: {},
-					zoneTabIndex: -1,
-					dragDisabled: !dragEnabled || defaultWorkspaces.length < 2,
-				}}
-				on:consider={(e: CustomEvent<DndEvent<Ext.SimpleWorkspace>>) => {
-					defaultWorkspaces = e.detail.items;
-				}}
-				on:finalize={(e: CustomEvent<DndEvent<Ext.SimpleWorkspace>>) => {
-					const { info: { source } } = e.detail;
-					defaultWorkspaces = e.detail.items;
-					if(source === SOURCES.POINTER){
-						dragEnabled = false;
-					}
-					dndFinish();
-				}}
-			>
+			<!-- dragDisabled: !dragEnabled || defaultWorkspaces.length < 2 -->
+			<ul class="default-workspaces grid gap-2 [&:not(:empty)]:!mb-2">
 				{#each defaultWorkspaces as workspace, i (workspace.id)}
-					<li class="flex gap-2 items-stretch">
+					<li class="flex gap-2 items-stretch" use:draggable={dragOptions}>
 						<div class="drag-handle w-4 h-4 self-center" onpointerdown={(e) => {e.preventDefault(); dragEnabled = true}} onpointerup={() => {dragEnabled = false;}} aria-label="drag-handle">
 							<Icon icon="drag-handle" width={18} class="{defaultWorkspaces.length < 2 ? 'hidden' : ''}" />
 						</div>

@@ -256,7 +256,7 @@
       lastOffsetY = offsetY; // store neodrag offset for next delta calc 
       if(translateY > 0.5 * itemHeight){
         shiftCurrentItem(1) // dragged by more than half height down, shift down by one
-      } else if (translateY < -0.5*itemHeight) {
+      } else if (translateY < -0.5 * itemHeight) {
         shiftCurrentItem(-1) // dragged by more than half height up, shift up by one
       }
 		},
