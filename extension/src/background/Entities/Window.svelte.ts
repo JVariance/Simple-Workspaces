@@ -487,7 +487,6 @@ export class Window {
 			Processes.manualTabAddition = false;
 		}
 
-		// this.#workspaces = [...this.#workspaces, newWorkspace];
 		this.#workspaces.set(newWorkspace.UUID, newWorkspace);
 
 		Processes.WorkspaceCreation.finish();

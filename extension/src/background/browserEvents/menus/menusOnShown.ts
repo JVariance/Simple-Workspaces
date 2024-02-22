@@ -6,9 +6,9 @@ export function menusOnShown(
 	tab: Browser.Tabs.Tab
 ) {
 	console.info("browser.menus.onShown");
-	const workspaces = WorkspaceStorage.windows
-		.get(tab.windowId!)!
-		.workspaces.filter(({ active }) => !active);
+	const workspaces = Array.from(
+		WorkspaceStorage.windows.get(tab.windowId!)!.workspaces.values()
+	).filter(({ active }) => !active);
 
 	TabMenuMove.update({
 		workspaces,
