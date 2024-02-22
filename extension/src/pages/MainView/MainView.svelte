@@ -381,6 +381,7 @@
 
 	function switchWorkspaceAndFocusTab(workspaceUUID: string, tabId: number) {
 		Browser.runtime.sendMessage({msg: 'switchWorkspaceAndFocusTab', workspaceUUID, tabId });
+		window.close();
 	}
 
 	onMount(async () => {

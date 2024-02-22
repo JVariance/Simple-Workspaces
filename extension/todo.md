@@ -1,7 +1,7 @@
 **Today**
 ### Features
-[] multiple workspace-edit mode
-[] compress images & video
+[] multiple workspace-edit mode in MainView
+[x] compress images & video
 [] support bookmarks?
 [] support history?
 ### Styles
