@@ -20,18 +20,19 @@
 
 	console.info("?????");
 
+	let workspaceListElem = $state<HTMLUListElement>();
 	let reordering = $state(false);
-	let searchInput: HTMLInputElement = $state();
+	let searchInput = $state<HTMLInputElement>();
 	let searchValue = $state("");
 	let activeWorkspaceIndex = $state();
 	let derivedActiveWorkspaceIndex  = $derived(getActiveWorkspaceIndexState());
-	let homeWorkspace: Ext.Workspace = $state();
+	let homeWorkspace = $state<Ext.Workspace>();
 	let _workspaces: Ext.Workspace[] = $derived(getWorkspacesState());
 	let workspaces: Ext.Workspace[] = $state([]);
 	let theme = $derived(getThemeState());
 	let systemTheme = $derived(getSystemThemeState());
 	let forceDefaultThemeIfDarkMode = $derived(getForceDefaultThemeIfDarkModeState());
-	let activeWorkspace: Ext.Workspace = $derived(homeWorkspace?.active ? homeWorkspace : workspaces?.find(({active}) => active));
+	let activeWorkspace = $derived<Ext.Workspace>(homeWorkspace?.active ? homeWorkspace : workspaces?.find(({active}) => active));
 	let searchUnmatchingWorkspaceUUIDS: string[] = $state([]);
 	let viewWorkspaces: Ext.Workspace[] = $derived.by(() => {
 		const filteredWorkspaces = workspaces.filter(({ UUID }) => !searchUnmatchingWorkspaceUUIDS.includes(UUID));
@@ -102,6 +103,13 @@
 			msg: "addWorkspace",
 		});
 	}
+
+	Browser.runtime.onMessage.addListener(async (message) => {
+		if(message.msg === "addedWorkspace") {
+			await new Promise(resolve => setTimeout(resolve, 200));
+			workspaceListElem?.scrollTo({top: workspaceListElem.scrollHeight, behavior: "smooth"})
+		}
+	});
 
 	function addWorkspaceByPointer() {
 		addWorkspace();
@@ -531,7 +539,7 @@
 			{/if}
 			{#if searchValue.length && matchingTabs.length}
 				<Accordion 
-					class="w-[calc(100cqw_-_1.25rem)] overflow-hidden" 
+					class="w-full overflow-hidden" 
 					open
 				>
 					{#snippet summary()}
@@ -577,12 +585,18 @@
 		{/if}
 	{/snippet}
 
-	<ul 
+	<ul
+		bind:this={workspaceListElem}
 		class="
 			w-[calc(100cqw_-_1.25rem)] grid row-start-2
-			content-start overflow-auto h-full
+			@container
+			content-start overflow-auto 
+			h-full
 			max-h-[calc(100cqh_-_var(--header-height)_-_9.75rem)]
-			[scrollbar-width:_thin]
+			min-h-16
+			[scrollbar-width:_none] [scrollbar-color:transparent_transparent]
+			hover:[scrollbar-width:_thin] focus-within:[scrollbar-width:_thin]
+			hover:[scrollbar-color:initial] focus-within:[scrollbar-color:initial]
 		"
 	>
 		{#if !homeWorkspace && !workspaces.length}
@@ -605,7 +619,7 @@
 		</li>
 		<!-- viewWorkspaces.length !== workspaces.length || workspaces.length < 2, -->
 		<div
-			class="w-full grid gap-4 @container mt-4 empty:mt-0 {searchValue.length ? 'mt-0' : ''}"
+			class="w-full grid gap-4 mt-4 empty:mt-0 {searchValue.length ? 'mt-0' : ''}"
 		>
 			{#each viewWorkspaces as workspace, i (workspace.UUID)}
 				<li 

@@ -4,5 +4,8 @@
 
 <MainView />
 
-<style>
+<style lang="postcss">
+	:global(html) {
+		@apply overflow-hidden w-dvw h-dvh;
+	}
 </style>
