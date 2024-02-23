@@ -244,7 +244,6 @@
 	const dragOptions: DragOptions = {
 		axis: 'y',
 		bounds: 'parent',
-		// handle: '.handle',
 		onDragStart({rootNode, offsetY}){
 			reordering = true;
 			currentDragIndex = [...rootNode.parentNode.children].indexOf(rootNode); // get start index from dom
@@ -426,7 +425,13 @@
 </svelte:head>
 
 <!-- <div id="noise" aria-hidden="true" /> -->
-<div class="w-[100cqw] h-[100cqh] p-2 box-border overflow-auto [scrollbar-width:_thin]" style:--header-height="5rem">
+<div 
+	class="
+		w-[100cqw] h-[100cqh] p-2 box-border overflow-auto [scrollbar-width:_thin]
+		grid gap-y-4 content-stretch items-start grid-rows-[max-content_max-content_max-content_1fr]
+	" 
+	style:--header-height="5rem"
+>
 	<!-- <h1 class="mb-4">Workspaces</h1> -->
 	{#if true && import.meta.env.DEV}
 		<div class="flex flex-wrap gap-1 absolute top-0 right-0 z-[51]">
@@ -448,7 +453,14 @@
 			</details>
 		</div>
 	{/if}
-	<section id="header" class="flex gap-2 items-center h-[--header-height] fixed top-0 bg-[--body-bg] w-[calc(100cqw_-_1.25rem)] z-50">
+	<section 
+		id="header" 
+		class="
+			flex gap-2 items-center h-[--header-height] sticky top-0 bg-[--body-bg] w-[calc(100cqw_-_1.25rem)] z-50
+			mb-[calc(var(--header-height)_/_2_*_-1_+_1.5rem)]
+			row-start-1
+		"
+	>
 		<search
 			class="
 				hidden @[184px]:flex w-full items-center gap-2 border
@@ -488,9 +500,6 @@
 			title={i18n.getMessage('search')}
 		>
 			<Icon icon="search" width={20} class="text-neutral-400" />
-		</button>
-		<button class="hidden @[184px]:block ghost" on:click={openOptionsPage}>
-			<Icon icon="settings" width={18} />
 		</button>
 	</section>
 	<!-- <hr class="border-neutral-800" /> -->
@@ -568,7 +577,13 @@
 		{/if}
 	{/snippet}
 
-	<ul class="w-full @container grid mt-[calc(var(--header-height)_-_0.5rem)]">
+	<ul 
+		class="
+			w-[calc(100cqw_-_1.25rem)] grid row-start-2
+			content-start overflow-auto h-full
+			max-h-[calc(100cqh_-_var(--header-height)_-_8.25rem)]
+		"
+	>
 		{#if !homeWorkspace && !workspaces.length}
 			<div class="grid gap-4">
 				{#each [,,,] as _}
@@ -608,8 +623,9 @@
 		onclick={addWorkspaceByPointer}
 		onkeydown={addWorkspaceByKey}
 		data-focusable
-		class="ghost
-				!p-4 items-center flex gap-4 rounded-md text-left mt-4 w-full outline-none border
+		class="
+				ghost !p-4 items-center flex gap-4 rounded-md text-left outline-none border
+				w-[calc(100cqw_-_1.25rem)] row-start-3
 			"
 		title={i18n.getMessage('create_new_workspace')}
 		><span class="text-2xl text-center w-7 flex justify-center items-center"
@@ -617,6 +633,10 @@
 		>
 		<span class="leading-none -mt-[0.5ch] text-lg whitespace-nowrap overflow-hidden text-ellipsis">{i18n.getMessage('create_new_workspace')}</span></button
 	>
+
+	<button title={i18n.getMessage('options')} class="ghost self-end w-max row-start-4" on:click={openOptionsPage}>
+		<Icon icon="settings" width={18} />
+	</button>
 	<!-- {/if} -->
 </div>
 
