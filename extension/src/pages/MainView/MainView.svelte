@@ -430,7 +430,7 @@
 		w-[100cqw] h-[100cqh] p-2 box-border overflow-auto [scrollbar-width:_thin]
 		grid gap-y-4 content-stretch items-start grid-rows-[max-content_max-content_max-content_1fr]
 	" 
-	style:--header-height="5rem"
+	style:--header-height="3.625rem"
 >
 	<!-- <h1 class="mb-4">Workspaces</h1> -->
 	{#if true && import.meta.env.DEV}
@@ -456,8 +456,8 @@
 	<section 
 		id="header" 
 		class="
-			flex gap-2 items-center h-[--header-height] sticky top-0 bg-[--body-bg] w-[calc(100cqw_-_1.25rem)] z-50
-			mb-[calc(var(--header-height)_/_2_*_-1_+_1.5rem)]
+			flex gap-2 h-[--header-height] sticky top-0 bg-[--body-bg] w-[calc(100cqw_-_1.25rem)] z-50
+			-mb-2 items-start
 			row-start-1
 		"
 	>
@@ -531,7 +531,7 @@
 			{/if}
 			{#if searchValue.length && matchingTabs.length}
 				<Accordion 
-					class="w-[100cqw] overflow-hidden" 
+					class="w-[calc(100cqw_-_1.25rem)] overflow-hidden" 
 					open
 				>
 					{#snippet summary()}
@@ -581,7 +581,8 @@
 		class="
 			w-[calc(100cqw_-_1.25rem)] grid row-start-2
 			content-start overflow-auto h-full
-			max-h-[calc(100cqh_-_var(--header-height)_-_8.25rem)]
+			max-h-[calc(100cqh_-_var(--header-height)_-_9.75rem)]
+			[scrollbar-width:_thin]
 		"
 	>
 		{#if !homeWorkspace && !workspaces.length}
@@ -631,7 +632,7 @@
 		><span class="text-2xl text-center w-7 flex justify-center items-center"
 			><Icon icon="add" width={18} /></span
 		>
-		<span class="leading-none -mt-[0.5ch] text-lg whitespace-nowrap overflow-hidden text-ellipsis">{i18n.getMessage('create_new_workspace')}</span></button
+		<span class="leading-none -mt-[0.1rem] text-lg whitespace-nowrap overflow-hidden text-ellipsis">{i18n.getMessage('create_new_workspace')}</span></button
 	>
 
 	<button title={i18n.getMessage('options')} class="ghost self-end w-max row-start-4" on:click={openOptionsPage}>
