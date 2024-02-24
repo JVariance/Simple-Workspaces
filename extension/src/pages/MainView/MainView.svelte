@@ -15,9 +15,6 @@
 	import Accordion from "@components/Accordion/Accordion.svelte";
 	import Summary from "@components/Accordion/Summary.svelte";
 
-	import { overrideItemIdKeyNameBeforeInitialisingDndZones } from "svelte-dnd-action";
-	overrideItemIdKeyNameBeforeInitialisingDndZones("UUID");
-
 	console.info("?????");
 
 	let workspaceListElem = $state<HTMLUListElement>();
