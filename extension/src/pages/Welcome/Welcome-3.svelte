@@ -11,6 +11,7 @@
 	import OnMount from "@root/components/OnMount.svelte";
 
 	const viewCount = 4;
+	let js_enabled = $state(false);
 	let activeView = $state(1);
 	let swiping = $state(false);
 	let swipeStarted = $state(false);
@@ -131,6 +132,7 @@
 
 	onMount(() => {
 		document.body.classList.add("js-enabled");
+		js_enabled = true;
 	});
 </script>
 
@@ -138,7 +140,7 @@
 	<section
 		id="view-{id}" 
 		class="
-			swipe-item h-full shadow-lg shadow-[--section-shadow-color] w-[100cqw] p-8 @xl:aspect-square overflow-auto relative [scrollbar-width:none]
+			swipe-item h-full shadow-lg shadow-[--section-shadow-color] w-[100cqw] @xl:aspect-square overflow-auto relative [scrollbar-width:none]
 			text-[large]
 		"
 	>
@@ -150,61 +152,53 @@
 	{#snippet content()}
 		<div 
 			class="
-				w-full h-full grid gap-y-16 items-center grid-cols-[1rem_1fr_1rem] @[571px]:grid-cols-[1fr_30rem_1fr] grid-rows-[2fr_2fr_1fr]
-				justify-center md:justify-start
+				w-full h-full grid gap-16 items-center grid-cols-[1fr_1fr]
+				justify-center md:justify-start overflow-hidden
 			"
 		>
 			<div 
 				class="
-					flex gap-6 flex-wrap items-center row-start-1 col-start-2 self-end
-					justify-center @[571px]:justify-between
+					flex gap-6 flex-col row-start-1 col-start-1 justify-self-end
 				"
 			>
 				<OnMount>
-					<Logo
-						class="w-28 animate-fade-right animate-duration-1000"
-						draggable="false"
-					/>
+					<div id="logo-wrapper" class="relative mb-4 w-24 h-24">
+						<Logo
+							class="w-24 animate-fade-right animate-duration-1000"
+							draggable="false"
+						/>
+					</div>
 				</OnMount>
 				<OnMount>
-					<h1 class="text-4xl animate-fade-left animate-duration-1000 text-center @[571px]:text-left">
+					<h1 class="text-4xl animate-fade-left animate-duration-1000">
 						{i18n.getMessage('welcome_to')}
 						<br/>
 						<span class="font-bold">Simple Workspaces!</span>
 					</h1>
 				</OnMount>
+				<OnMount>
+					<button 
+						id="start-button"
+						class="
+						primary-btn
+						bg-[#c6c4f4] text-[#625eb7]
+						text-center row-start-2 col-start-1 flex gap-2 items-center 
+						p-2 rounded-md self-start
+						animate-fade animate-duration-500 animate-delay-[1000ms]
+						font-bold w-max
+						"
+						onclick={() => nextSection()}
+					>
+						<span class="-mt-[0.1rem]">{i18n.getMessage('lets_get_you_started')}!</span>
+						<Icon icon="arrow-right-long" class="stroke-[0.9]"/>
+					</button>
+				</OnMount>
 			</div>
-			<OnMount enableTimeOut={true} timeOutMs={0} timeOutCallback={() => {
-				document.querySelector('video').playbackRate = '0.9';
-			}}>
-				<video 
-					class="
-					col-start-2 [clip-path:rect(13px_0px_calc(100%_-_13px)_100%_round_6px)] row-start-2
-					animate-duration-1000 animate-fade-down
-					" 
-					src="/videos/video.mp4" 
-					autoplay
-					muted
-					onended={(e) => setTimeout(() => {(e.target as HTMLVideoElement).play()}, 5000)}
-				/>
-			</OnMount>
 			<OnMount>
-				<button 
-					id="start-button"
-					class="
-					primary-btn
-					text-center row-start-3 col-start-2 flex gap-2 items-center 
-					border p-2 rounded-md self-start
-					animate-fade animate-duration-500 animate-delay-[1000ms]
-					justify-self-center @[571px]:justify-self-end
-					italic !font-medium text-white/80 hover:text-white focus:text-white
-					"
-					onclick={() => nextSection()}
-				>
-				<span class="-mt-[0.1rem]">{i18n.getMessage('lets_get_you_started')}!</span>
-				<Icon icon="arrow-right-long" class="stroke-[0.9]"/>
-			</button>
-		</OnMount>
+				<div class="col-span-full row-start-1 self-end h-full overflow-hidden translate-y-16 -z-[1]">
+					<img src="/images/simple-workspaces-welcome-page-sidebar.webp" alt="" class="object-contain h-full w-max ml-auto max-h-[866px] -translate-x-32">
+				</div>
+			</OnMount>
 		</div>
 		<!-- <a href="about:preferences#browserRestoreSession" target="_blank"
 		>restore session</a
@@ -233,6 +227,41 @@
 				<Icon icon="copy" width={20}/>
 				{i18n.getMessage('copy_link_and_open_new tab')}
 			</button>
+		</div>
+		<div class="mt-8">
+			<p>
+				{@html i18n.getMessage('welcome_container_feature_proposal')}.
+			</p>
+			<ul class="flex flex-wrap gap-2 mt-2">
+				{#each ['privacy.userContext.enabled', 'privacy.userContext.ui.enabled'] as entry, i}
+					<li>
+						<button 
+							class="
+								px-2 py-1 primary-btn w-fit flex gap-2 cursor-pointer items-center
+								group overflow-clip
+							"
+							onclick={(e) => {
+								navigator.clipboard.writeText(entry);
+								e.currentTarget.querySelector('.copy-icon').dataset.animation = 'flyOut';
+								e.currentTarget.querySelector('.success-icon').dataset.animation = 'flyIn';
+								console.info(e.currentTarget);
+								setTimeout((currentTarget) => {
+									console.info(e.currentTarget);
+									currentTarget.querySelector('.copy-icon').dataset.animation = 'flyIn';
+									currentTarget.querySelector('.success-icon').dataset.animation = 'flyOut';
+								}, 1000, e.currentTarget);
+							}}
+						>
+							<div class="grid">
+								<!-- <span class="select-none w-6 aspect-square rounded-full font-bold bg-indigo-600 flex items-center justify-center">{i + 1}</span> -->
+								<span class="animated-icon copy-icon" data-animation=""><Icon icon="copy" width={20}/></span>
+								<span class="animated-icon success-icon translate-y-[calc(100%_+_10px)]" data-animation=""><Icon icon="check" width={20}/></span>
+							</div>
+							<span class="-mt-[0.1rem]">{entry}</span>
+						</button>
+					</li>
+				{/each}
+			</ul>
 		</div>
 	{/snippet}
 	{@render ViewSection(2, content)}
@@ -265,74 +294,40 @@
 	{@render ViewSection(4, content)}	
 {/snippet}
 
-<header class="p-2 flex flex-wrap justify-between">
-	<OnMount>
-		<h1 class="text-base animate-fade-left animate-duration-1000 text-center @[571px]:text-left">
-			<Logo
-				class="w-6 h-6 animate-fade-right animate-duration-1000"
-				draggable="false"
-			/>
-			<span class="font-bold text-xl">Simple Workspaces!</span>
-		</h1>
-	</OnMount>
-	<p class="p-2 rounded-full text-xl">v{Browser.runtime.getManifest().version}</p>
-</header>
-<main class="grid gap-8">
-	<section class="grid gap-[7.5rem]">
-		<div class="grid gap-2">
-			<h1 class="[font-family:Noto_Color_Emoji]">🏠</h1>
-			<h1 class="text-6xl font-bold">{i18n.getMessage('the_new_home_of_your_tabs')}.</h1>
-		</div>
-		<div>
-			<div class="blur-[454px] fill-[#e8e7ff] h-[500px]"/>
-			<video
-				class="
-				col-start-2 [clip-path:rect(13px_0px_calc(100%_-_13px)_100%_round_6px)] row-start-2
-				animate-duration-1000 animate-fade-down
-				" 
-				src="/videos/video.mp4" 
-				autoplay
-				muted
-				onended={(e) => setTimeout(() => {(e.target as HTMLVideoElement).play()}, 5000)}
-			/>
-		</div>
-	</section>
-	<section>
-		<h1 class="text-2xl">{i18n.getMessage('configure_firefox')} {i18n.getMessage('optional')}</h1>
-		<p>{i18n.getMessage('you_may_want_to_enable_the_open_previous_windows_and_tabs_option_in_preferences')}</p>
-		<button class="mt-16">{i18n.getMessage('copy_link_and_open_new tab')}</button>
-	</section>
-	<section>
-		<h1 class="text-2xl">{i18n.getMessage('home_workspace')}</h1>
-	</section>
-	<section>
-		<p>{i18n.getMessage('welcome_default_workspaces_message')}</p>
-	</section>
-	<section>
-		<h1 class="text-2xl">{i18n.getMessage('shortcuts.__i18n_ally_root__')}</h1>
-		<p>{i18n.getMessage('you_can_edit_shortcuts_for_commands_in_the_addons_page')}</p>
-	</section>
-</main>
-
+<div id="wrapper" class="w-[100cqw] h-[100cqh] grid">
+	<div class="w-full h-dvh flex justify-center items-center">
+		{@render ViewStart()}
+	</div>
+	<div class="flex flex-wrap gap-4 w-full h-dvh">
+		{@render ViewConfig()}
+		{@render ViewDefaultWorkspaces()}
+	</div>
+	<div class="w-full h-dvh">
+		{@render ViewShortcuts()}
+	</div>
+</div>
+	
 <style lang="postcss">
-	:root {
-		--section-bg: linear-gradient(to bottom, #F6F6FF, #F1F1FF);
-		--workspace-bg: #EBEAFE;
-		--workspace-color: #625EB7;
-		--workspace-handle-fill: #43407D;
-		--workspace-remove-fill: #43407D;
-		--button-primary-bg: #625EB7;
-		--button-primary-color: #FFFFFF;
-		--button-secondary-bg: #B5B3E8;
-		--button-secondary-color: #FFFFFF;
-		--kbd-bg: #DDDCFA;
-		--kbd-color: #43407D;
-		//v0.0.1
-		--purple-50: #F8F8FE;
-		//heading
-		--purple-400: #8C88E3;
-		//simple workspaces, section h1
-		--purple-500: #625EB7;
-		--section-color: #32304E;
+
+	:global(body){
+		@apply w-dvw h-dvh @container;
+	}
+
+	section {
+		@apply rounded-3xl w-[95%] aspect-video h-auto self-center justify-self-center;
+		box-shadow: inset 0 0 50px -21px rgba(0,0,0,0.1);
+	}
+
+	#logo-wrapper {
+		&::after {
+			@apply block absolute aspect-square rounded-full h-auto -z-[1];
+			content: "";
+			width: 62%;
+			background: rgba(98 94 183 / 0.4);
+			filter: blur(13px);
+			transform: rotate(-41deg) skewX(25deg);
+			top: 73px;
+			left: 19%;
+		}
 	}
 </style>
