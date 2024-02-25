@@ -84,7 +84,11 @@
 	function openEmojiPicker(e: Event & { target: HTMLButtonElement }) {
 		const { target } = e;
 
-		const { x, y } = target.getBoundingClientRect();
+		const { x: _x, y: _y } = target.getBoundingClientRect();
+
+		const x = _x + window.scrollX;
+		const y = _y + window.scrollY;
+
 		let picker: EmojiPicker;
 		const props = $state({
 			x,

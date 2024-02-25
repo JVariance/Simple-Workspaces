@@ -104,7 +104,7 @@
 		onDragEnd({rootNode}){
       rootNode.style.transform=`translate3d(0,0,0)` // on end of drag, remove translate so item returns to natural pos
       translateY = 0;
-
+			dndFinish();
 			// 	const newActiveWorkspaceIndex = activeWorkspaceIndex === 0 ? 0 : workspaces.findIndex(({ active }) => active) + 1;
 			// 	activeWorkspaceIndex = newActiveWorkspaceIndex;
     },

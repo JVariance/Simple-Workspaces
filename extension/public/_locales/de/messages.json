@@ -80,7 +80,7 @@
     "description": ""
   },
   "create_new_workspace": {
-    "message": "neuen Arbeitsbereich erstellen",
+    "message": "Neuer Arbeitsbereich",
     "description": ""
   },
   "command._execute_browser_action": {
@@ -141,9 +141,9 @@
   "you_may_want_to_enable_the_open_previous_windows_and_tabs_option_in_preferences": {
     "message": "Es empfiehlt sich, die Option \"Vorherige Fenster und Tabs öffnen\" in den Einstellungen zu aktivieren"
   },
-	"welcome_home_workspace_message": {
-		"message": "Der Hauptarbeitsbereich ist immer an erster Stelle und kann nicht entfernt werden. Änderungen, die du hier vornimmst, greifen für alle Hauptarbeitsbereiche jedes Fensters."
-	},
+  "welcome_home_workspace_message": {
+    "message": "Der Hauptarbeitsbereich ist immer an erster Stelle und kann nicht entfernt werden. Änderungen, die du hier vornimmst, greifen für alle Hauptarbeitsbereiche jedes Fensters."
+  },
   "welcome_default_workspaces_message": {
     "message": "Standard-Arbeitsbereiche werden in jedem neuen Fenster automatisch erstellt. Du kannst sie jederzeit auf der Einstellungsseite anpassen. Die Einstellungsseite kannst du entweder über das \"Zahnrad\"-Symbol innerhalb der Erweiterungsseiten oder über den Add-On-Manager von Firefox aufrufen."
   },
@@ -217,6 +217,6 @@
     "message": "Tastaturkürzel"
   },
   "the_new_home_of_your_tabs": {
-    "message": "Das neue Zuhause deiner Tabs"
+    "message": "Das neue <br/>Zuhause <br/>deiner Tabs"
   }
 }

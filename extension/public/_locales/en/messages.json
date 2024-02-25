@@ -80,7 +80,7 @@
     "description": ""
   },
   "create_new_workspace": {
-    "message": "create new workspace",
+    "message": "new workspace",
     "description": ""
   },
   "command._execute_browser_action": {
@@ -141,9 +141,9 @@
   "you_may_want_to_enable_the_open_previous_windows_and_tabs_option_in_preferences": {
     "message": "You may want to enable the \"open previous windows and tabs\" option in preferences"
   },
-	"welcome_home_workspace_message": {
-		"message": "The main workspace always comes first and cannot be removed. Changes you make here apply to all main workspaces of each window"
-	},
+  "welcome_home_workspace_message": {
+    "message": "The main workspace always comes first and cannot be removed. Changes you make here apply to all main workspaces of each window"
+  },
   "welcome_default_workspaces_message": {
     "message": "Default workspaces are created automatically in every new window. You can customize them at any time on the settings page. You can access the settings page either via the \"cogwheel\" icon within the extension pages or via the Firefox add-on manager"
   },
@@ -220,6 +220,6 @@
     "message": "shortcuts"
   },
   "the_new_home_of_your_tabs": {
-    "message": "The new home of your tabs"
+    "message": "The new<br/> home<br/> of your tabs"
   }
 }

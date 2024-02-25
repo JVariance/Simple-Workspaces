@@ -19,7 +19,10 @@
 		e.stopImmediatePropagation();
 
 		const target = e.target as HTMLButtonElement;
-		const { x, y } = target.getBoundingClientRect();
+		const { x: _x, y: _y } = target.getBoundingClientRect();
+
+		const x = _x + window.scrollX;
+		const y = _y + window.scrollY;
 
 		const pickerProps = {
 			x,

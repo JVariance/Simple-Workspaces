@@ -4,31 +4,35 @@
 	import ButtonLink from "../ButtonLink.svelte";
 </script>
 
-{#snippet dt(command)}
-	<dt class="grow flex gap-1 relative">
+{#snippet dd(command)}
+	<dd class="px-2 py-1 grow h-full flex items-center">
 		{i18n.getMessage(`command.${command.name}`)}
-	</dt>
+	</dd>
 {/snippet}
 
 <div class="mt-4 w-fit">
 	{#await Browser.commands.getAll()}
 		...
 	{:then commands}
-		<dl class="grid gap-6 w-full">
+		<dl class="grid w-full border rounded-[3px]">
 			{#each commands as command}
-				<div class="w-full flex flex-wrap gap-x-4 gap-y-2 items-center">
+				<div class="w-full flex flex-wrap items-center [&:not(:last-of-type)]:border-b h-10">
+					<dt class="flex gap-1 relative border-r p-2 h-full items-center">
+						<kbd>{command.shortcut}</kbd>
+					</dt>
 					{#if ["new-container-tab"].includes(command.name!)}
-						<Tooltip class="[&_svg]:w-4 [&_svg]:h-4" popupClasses="w-max" id="shortcuts-read_more">
-							{@render dt(command)}
-							{#snippet message()}
-								{@const link = i18n.getMessage(`command.${command.name}.link`)}
-								<ButtonLink href={link} target="_blank" class="ghost flex flex-nowrap items-center gap-1">{i18n.getMessage('read_more')}</ButtonLink>
-							{/snippet}
-						</Tooltip>
+						<dd class="grow px-2 py-1 h-full flex items-center">
+							<Tooltip class="[&_svg]:w-4 [&_svg]:h-4" popupClasses="w-max" id="shortcuts-read_more">
+								{i18n.getMessage(`command.${command.name}`)}
+								{#snippet message()}
+									{@const link = i18n.getMessage(`command.${command.name}.link`)}
+									<ButtonLink href={link} target="_blank" class="ghost flex flex-nowrap items-center gap-1">{i18n.getMessage('read_more')}</ButtonLink>
+								{/snippet}
+							</Tooltip>
+						</dd>
 						{:else}
-							{@render dt(command)}
+							{@render dd(command)}
 					{/if}
-					<dd class="text-right"><kbd>{command.shortcut}</kbd></dd>
 				</div>
 			{/each}
 		</dl>
