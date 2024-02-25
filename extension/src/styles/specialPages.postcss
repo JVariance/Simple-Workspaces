@@ -3,3 +3,136 @@
 kbd {
 	@apply bg-[#eee] rounded-[3px] border-[1px] border-solid border-[#b4b4b4] shadow-[0_1px_1px_rgba(0,0,0,0.2),0_2px_0_0_rgba(255,255,255,0.7)_inset] text-[#333] inline-block text-[0.85em] font-bold leading-none px-[4px] py-[2px] whitespace-nowrap;
 }
+
+:root {
+	--body-bg: light-dark(#ffffff, #181b3e);
+	--body-color: light-dark(#3f3777, #f6f6ff);
+	/*light-dark(#f6f6ff, #261f4a),*/
+	/*light-dark(#f1f1ff, #261f4a)*/
+	--section-bg: linear-gradient(
+		to bottom,
+		light-dark(#f9f9ff, #261f4a),
+		light-dark(#f9f9ff, #261f4a)
+	);
+	--section-color: light-dark(#32304e, #d1cfe8);
+	--workspace-bg: light-dark(#ebeafe, #342c59);
+	--workspace-color: light-dark(#625eb7, #c6c4f0);
+	--workspace-handle-fill: #43407d;
+	--workspace-remove-fill: #43407d;
+	--button-primary-bg: #625eb7;
+	--button-primary-hover-bg: hsl(243, 38%, 44%);
+	--button-primary-color: #ffffff;
+	--button-primary-hover-color: #ffffff;
+	--button-secondary-bg: #b5b3e8;
+	--button-secondary-color: #ffffff;
+	--kbd-bg: light-dark(#dddcfa, #43407d);
+	--kbd-color: light-dark(#43407d, #aba7f7);
+	--badge-bg: light-dark(#f8f8fe, #282853);
+	--heading-color: #8c88e3;
+	--heading-2-color: light-dark(#625eb7, #aca8f9);
+}
+
+body {
+	color-scheme: light dark;
+	@apply bg-[--body-bg] text-[--body-color];
+}
+
+.btn {
+	@apply bg-[--button-primary-bg] text-[--button-primary-color] rounded-full py-2 px-4 flex gap-2 items-center w-max border-none;
+	@apply hover:bg-[--button-primary-hover-bg] hover:text-[--button-primary-hover-color];
+	@apply focus:bg-[--button-primary-hover-bg] hover:text-[--button-primary-hover-color];
+	@apply focus-visible:bg-[--button-primary-hover-bg] hover:text-[--button-primary-hover-color];
+}
+
+.btn.secondary-btn {
+	@apply bg-[--workspace-bg] text-[--workspace-color] rounded-md;
+}
+
+input[type="text"] {
+	@apply !bg-[--workspace-bg] text-[--workspace-color] !border-none;
+}
+
+input[type="checkbox"] {
+	@apply bg-[--workspace-bg] border-[--workspace-color] border cursor-pointer;
+}
+
+.drag-handle {
+	@apply text-[--workspace-handle-fill];
+}
+
+kbd {
+	@apply shadow-none bg-[--kbd-bg] text-[--kbd-color] border-none p-1;
+}
+
+dl {
+	@apply text-[--section-color] gap-px;
+}
+
+dl,
+dl > div,
+dt {
+	@apply border-none;
+}
+
+dl > div {
+	@apply !gap-px;
+}
+
+dl,
+dl > div,
+dd {
+	@apply !border-[--kbd-bg];
+}
+
+dt {
+	@apply bg-[light-dark(#eaeafc,_#342c59)] py-1 px-2;
+}
+
+dd {
+	@apply bg-[light-dark(#eaeafc,_#342c59)];
+}
+
+dl > div:first-of-type dt {
+	@apply rounded-tl-[3px];
+}
+
+dl > div:first-of-type dd {
+	@apply rounded-tr-[3px];
+}
+
+dl > div:last-of-type dt {
+	@apply rounded-bl-[3px];
+}
+
+dl > div:last-of-type dd {
+	@apply rounded-br-[3px];
+}
+
+details {
+	@apply !border-transparent;
+}
+
+summary {
+	@apply hover:bg-[--workspace-bg] hover:text-[--workspace-color];
+	--icon-fill: var(--heading-2-color);
+}
+
+details[open] summary {
+	@apply bg-[--workspace-bg] text-[--workspace-color];
+
+	&::after {
+		@apply border-[--heading-color];
+	}
+}
+
+details {
+	& > .content {
+		.swipe-item {
+			@apply border-[--workspace-bg];
+		}
+
+		h2 {
+			@apply text-[--heading-2-color];
+		}
+	}
+}

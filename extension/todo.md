@@ -4,6 +4,7 @@
 [] support bookmarks?
 [] support history?
 ### Styles
+[] style emoji-picker on special pages
 ### Content
 ### Translations
 ### Logic

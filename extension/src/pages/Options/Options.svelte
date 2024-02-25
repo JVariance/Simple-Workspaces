@@ -63,7 +63,7 @@
 {/snippet}
 
 <Layout>
-	<header class="flex h-16 sticky top-0 z-10 items-center mb-24 justify-center">
+	<header class="flex h-16 sticky top-0 z-10 items-center mb-8 justify-center">
 		<div
 			class="
 			flex flex-wrap items-center h-max p-2 justify-between
@@ -176,8 +176,7 @@
 		{#snippet Section_FurtherLinks()}
 			<h1 class="text-xl font-semibold text-[--heading-2-color]">{i18n.getMessage("feedback_and_feature_requests_heading")}</h1>
 			<ButtonLink href="https://github.com/JVariance/Simple-Workspaces" target="_blank" class="btn w-max">
-				<img src="/images/github-mark/github-mark-white.svg" alt="GitHub Logo" class="w-6 aspect-square [@media_(prefers-color-scheme:_light)]:hidden">
-				<img src="/images/github-mark/github-mark.svg" alt="GitHub Logo" class="w-6 aspect-square dark:hidden">
+				<img src="/images/github-mark/github-mark-white.svg" alt="GitHub Logo" class="w-6 aspect-square">
 				{i18n.getMessage('github_repository')}
 			</ButtonLink>
 		{/snippet}
@@ -193,99 +192,3 @@
 		{@render Section(Section_FurtherLinks, "flex-1")}
 	</main>
 </Layout>
-
-<style lang="postcss">
-
-	:root {
-		--body-bg: light-dark(#ffffff, #181b3e);
-		--section-bg: linear-gradient(
-			to bottom,
-			light-dark(#f6f6ff, #261f4a),
-			light-dark(#f1f1ff, #261f4a)
-		);
-		--section-color: light-dark(#32304e, #d1cfe8);
-		--workspace-bg: light-dark(#ebeafe, #342c59);
-		--workspace-color: light-dark(#625eb7, #c6c4f0);
-		--workspace-handle-fill: #43407d;
-		--workspace-remove-fill: #43407d;
-		--button-primary-bg: #625eb7;
-		--button-primary-hover-bg: hsl(243, 38%, 44%);
-		--button-primary-color: #ffffff;
-		--button-primary-hover-color: #ffffff;
-		--button-secondary-bg: #b5b3e8;
-		--button-secondary-color: #ffffff;
-		--kbd-bg: light-dark(#dddcfa, #43407d);
-		--kbd-color: light-dark(#43407d, #aba7f7);
-		--badge-bg: light-dark(#f8f8fe, #282853);
-		--heading-color: #8c88e3;
-		--heading-2-color: light-dark(#625eb7, #aca8f9);
-	}
-
-	:global(body) {
-		@apply bg-[--body-bg];
-		color-scheme: light dark;
-	}
-
-	:global(.btn) {
-		@apply bg-[--button-primary-bg] text-[--button-primary-color] rounded-full py-2 px-4 flex gap-2 items-center w-max border-none;
-		@apply hover:bg-[--button-primary-hover-bg] hover:text-[--button-primary-hover-color];
-		@apply focus:bg-[--button-primary-hover-bg] hover:text-[--button-primary-hover-color];
-		@apply focus-visible:bg-[--button-primary-hover-bg] hover:text-[--button-primary-hover-color];
-	}
-
-	:global(.btn.secondary-btn) {
-		@apply bg-[--workspace-bg] text-[--workspace-color] rounded-md;
-	}
-
-	:global(input[type="text"]) {
-		@apply !bg-[--workspace-bg] text-[--workspace-color] !border-none;
-	}
-
-	:global(.drag-handle) {
-		@apply text-[--workspace-handle-fill];
-	}
-
-	:global(kbd) {
-		@apply shadow-none bg-[--kbd-bg] text-[--kbd-color] border-none p-1;
-	}
-
-	:global(dl) {
-		@apply text-[--section-color] gap-px;
-	}
-
-	:global(dl, dl > div, dd) {
-		@apply border-none;
-	}
-
-	:global(dl > div) {
-		@apply !gap-px;
-	}
-
-	:global(dl, dl > div, dd) {
-		@apply !border-[--kbd-bg];
-	}
-
-	:global(dt) {
-		@apply bg-[light-dark(#eaeafc,_#342c59)] py-1 px-2;
-	}
-
-	:global(dd) {
-		@apply bg-[light-dark(#eaeafc,_#342c59)];
-	}
-
-	:global(dl > div:first-of-type dt) {
-		@apply rounded-tl-[3px];
-	}
-
-	:global(dl > div:first-of-type dd) {
-		@apply rounded-tr-[3px];
-	}
-
-	:global(dl > div:last-of-type dt) {
-		@apply rounded-bl-[3px];
-	}
-
-	:global(dl > div:last-of-type dd) {
-		@apply rounded-br-[3px];
-	}
-</style>
