@@ -100,10 +100,14 @@ const updatedActiveWorkspace = debounceFunc(_updatedActiveWorkspace, 100);
 
 function _updatedActiveWorkspace({
 	UUID: workspaceUUID,
+	sourcePage,
 }: {
 	UUID: Ext.Workspace["UUID"];
+	sourcePage: "sidebar" | "popup";
 }) {
 	console.info("states: updatedActiveWorkspace");
+
+	if (document.body.id === `${sourcePage}-page`) return;
 
 	const _activeWorkspaceIndex = workspaces.findIndex(
 		({ UUID }) => UUID === workspaceUUID

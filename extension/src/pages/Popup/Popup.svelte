@@ -2,7 +2,7 @@
 	import MainView from "../MainView/MainView.svelte";
 </script>
 
-<MainView />
+<MainView pageType="popup" />
 
 <style lang="postcss">
 	:global(html) {

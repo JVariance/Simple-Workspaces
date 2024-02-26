@@ -3,7 +3,13 @@ import { informViews } from "../../informViews";
 import Browser from "webextension-polyfill";
 import * as API from "@root/browserAPI";
 
-function switchWorkspaceCommand({ workspaceUUID }: { workspaceUUID: string }) {
+function switchWorkspaceCommand({
+	workspaceUUID,
+	pageType,
+}: {
+	workspaceUUID: string;
+	pageType: string;
+}) {
 	console.info("switchWorkspaceCommand", workspaceUUID);
 
 	if (workspaceUUID === WorkspaceStorage.activeWindow.activeWorkspace.UUID)
@@ -16,11 +22,11 @@ function switchWorkspaceCommand({ workspaceUUID }: { workspaceUUID: string }) {
 
 	(async () => {
 		await WorkspaceStorage.activeWindow.switchWorkspace(nextWorkspace);
-		// informViews(
-		// 	WorkspaceStorage.activeWindow.windowId,
-		// 	"updatedActiveWorkspace",
-		// 	{ UUID: nextWorkspace.UUID }
-		// );
+		informViews(
+			WorkspaceStorage.activeWindow.windowId,
+			"updatedActiveWorkspace",
+			{ UUID: nextWorkspace.UUID, sourcePage: pageType }
+		);
 	})();
 	Processes.WorkspaceSwitch.finish();
 	console.info("switchWorkspaceCommand Ende");
@@ -281,10 +287,6 @@ export async function runtimeOnMessage(
 						: "light"
 				);
 			});
-		case "switchWorkspace":
-		// return new Promise<void>(async (resolve) => {
-		// 	runSwitchWorkspaceCommand();
-		// });
 		default:
 			break;
 	}

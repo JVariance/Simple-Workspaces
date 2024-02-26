@@ -3,7 +3,7 @@
 [] support bookmarks?
 [] support history?
 [] import/export
-[x] multiple workspace-edit mode in MainView
+[x] ~~multiple workspace-edit mode in MainView~~
 ### Styles
 [] style emoji-picker on special pages
 ### Content
@@ -11,6 +11,7 @@
 ### Logic
 [] highlight workspace which received new tabs (after send action)
 ### Bugs
+[x] ~~switching workspace in MainView does not update other MainView (Popup <-> Sidebar)~~
 [] closing pinned tabs does not necessarily remove it from workspace
 ### Other
 [] cookies permission still required?

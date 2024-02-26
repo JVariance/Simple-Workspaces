@@ -15,6 +15,7 @@
 	import Accordion from "@components/Accordion/Accordion.svelte";
 	import Summary from "@components/Accordion/Summary.svelte";
 
+	let { pageType } = $props<{pageType: 'sidebar' | 'popup'}>();
 	console.info("?????");
 
 	let multiEditMode = $state(false);
@@ -70,7 +71,8 @@
 		console.info("MainView - switchWorkspace ", { workspace });
 		await Browser.runtime.sendMessage({
 			msg: "switchWorkspace",
-			workspaceUUID: workspace.UUID
+			workspaceUUID: workspace.UUID,
+			pageType
 		});
 
 		searchInput.value = "";
@@ -701,7 +703,7 @@
 	{/if}
 
 	<div class="row-start-4 w-max self-end">
-		<button title={i18n.getMessage('edit_workspaces')} onclick={toggleEditMode}>
+		<button title={i18n.getMessage('edit_workspaces')} class="ghost" onclick={toggleEditMode}>
 			<Icon icon="edit" width={18} />
 		</button>
 		<button title={i18n.getMessage('options')} class="ghost" on:click={openOptionsPage}>
