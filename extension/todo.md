@@ -3,6 +3,7 @@
 [] multiple workspace-edit mode in MainView
 [] support bookmarks?
 [] support history?
+[] import/export
 ### Styles
 [] style emoji-picker on special pages
 ### Content

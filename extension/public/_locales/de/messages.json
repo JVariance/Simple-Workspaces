@@ -224,5 +224,11 @@
   },
   "all_options": {
     "message": "Alle Optionen"
+  },
+  "edit_workspaces": {
+    "message": "Arbeitsbereiche bearbeiten"
+  },
+  "cancel": {
+    "message": "abbrechen"
   }
 }

@@ -107,6 +107,26 @@ export async function runtimeOnMessage(
 					);
 				}
 			})();
+		case "editedWorkspaces":
+			(async () => {
+				const { workspaces, windowId } = message as {
+					workspaces: {
+						workspaceUUID: string;
+						name: string;
+						icon: string;
+					}[];
+					windowId: number;
+				};
+
+				await Promise.all(
+					workspaces.map((workspace) =>
+						WorkspaceStorage.getWindow(windowId).editWorkspace(workspace)
+					)
+				);
+
+				informViews(windowId, "updatedWorkspaces");
+			})();
+			break;
 		case "reorderedWorkspaces":
 			(async () => {
 				const { sortedWorkspacesIds, windowId } = message as {

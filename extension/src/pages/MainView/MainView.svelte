@@ -7,7 +7,7 @@
 	import Icon from "@root/components/Icon.svelte";
 	import { debounceFunc, isNullish } from "@root/utils";
 	import Skeleton from "@root/components/Skeleton.svelte";
-	import { untrack, onMount, tick } from "svelte";
+	import { untrack, onMount, tick, setContext } from "svelte";
 	import { getWorkspacesState, getThemeState, getSystemThemeState, getForceDefaultThemeIfDarkModeState, getActiveWorkspaceIndexState, setActiveWorkspaceIndexState } from "@pages/states.svelte";
 	import { slide } from "svelte/transition";
 	import Fuse from "fuse.js";
@@ -17,8 +17,15 @@
 
 	console.info("?????");
 
+	let multiEditMode = $state(false);
+	setContext("multiEditMode", (() => {
+		return {
+			get value(){return multiEditMode;}
+		}
+	})());
+
+	let workspaceInstances = $state<Workspace[]>([]);
 	let workspaceListElem = $state<HTMLUListElement>();
-	let reordering = $state(false);
 	let searchInput = $state<HTMLInputElement>();
 	let searchValue = $state("");
 	let activeWorkspaceIndex = $state();
@@ -242,6 +249,9 @@
 
 	const debouncedSearch = debounceFunc(search, 500);
 
+	let reordering = $state(false);
+	let reorderStarted = $state(false);
+	let minDistance = 20;
 	let currentDragIndex = $state(0);
 	let itemHeight = $state(60); // height of item(+gap) to calculate offset
   let translateY = $state(0); // offset to apply to current dragged item
@@ -249,14 +259,17 @@
 	const dragOptions: DragOptions = {
 		axis: 'y',
 		bounds: 'parent',
-		onDragStart({rootNode, offsetY}){
+		onDragStart({rootNode, offsetY}) {
 			reordering = true;
 			currentDragIndex = [...rootNode.parentNode.children].indexOf(rootNode); // get start index from dom
       lastOffsetY = offsetY; // store neodrag offset to correctly calculate delta in onDrag
       translateY = 0;
 		},
-		onDrag({offsetY}){
-			translateY+=(offsetY - lastOffsetY); // move dragged item by delta from last event
+		onDrag({ offsetY }) {
+			let deltaY = offsetY - lastOffsetY;
+			reordering && Math.abs(deltaY) > minDistance && (reorderStarted = true);
+			if(!reorderStarted) return;
+			translateY+=deltaY; // move dragged item by delta from last event
       lastOffsetY = offsetY; // store neodrag offset for next delta calc 
       if(translateY > 0.5 * itemHeight){
         shiftCurrentItem(1) // dragged by more than half height down, shift down by one
@@ -264,8 +277,13 @@
         shiftCurrentItem(-1) // dragged by more than half height up, shift up by one
       }
 		},
-		onDragEnd({rootNode}){
+		onDragEnd({ rootNode }) {
 			reordering = false;
+			if(!reorderStarted) {
+				reorderStarted = false;
+				return;
+			}
+			reorderStarted = false;
       rootNode.style.transform=`translate3d(0,0,0)` // on end of drag, remove translate so item returns to natural pos
       translateY = 0;
 
@@ -366,7 +384,6 @@
 
 	$inspect({ activeWorkspaceIndex });
 	$inspect({ _workspaces });
-	$inspect({ reordering });
 	$inspect({ searchUnmatchingWorkspaceUUIDS });
 
 	Browser.commands.onCommand.addListener(async (command) => {
@@ -413,6 +430,20 @@
 	function switchWorkspaceAndFocusTab(workspaceUUID: string, tabId: number) {
 		Browser.runtime.sendMessage({msg: 'switchWorkspaceAndFocusTab', workspaceUUID, tabId });
 		window.close();
+	}
+
+	function updateWorkspaces(event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement; }) {
+		const updatedWorkspaces = workspaceInstances.map((instance) => instance.getUpdatedWorkspace());
+		Browser.runtime.sendMessage({msg: 'editedWorkspaces', windowId, workspaces: updatedWorkspaces});
+		multiEditMode = false;
+	}
+
+	function toggleEditMode() {
+		if(_workspaces.length > 1){
+			multiEditMode = !multiEditMode;
+		} else {
+			multiEditMode = false;
+		}
 	}
 
 	onMount(async () => {
@@ -519,6 +550,7 @@
 		{#if workspace}
 			{#if !searchValue.length}
 				<Workspace
+					bind:this={workspaceInstances[i]}
 					{workspace}
 					active={reordering ? workspace.active : activeWorkspaceIndex === i}
 					index={i}
@@ -630,25 +662,49 @@
 		</div>
 	</ul>
 
-	<button
-		id="add-workspace"
-		onclick={addWorkspaceByPointer}
-		onkeydown={addWorkspaceByKey}
-		data-focusable
-		class="
-				ghost !p-4 items-center flex gap-4 rounded-md text-left outline-none border
-				w-[calc(100cqw_-_1.25rem)] row-start-3
-			"
-		title={i18n.getMessage('create_new_workspace')}
-		><span class="text-2xl text-center w-7 flex justify-center items-center"
-			><Icon icon="add" width={18} /></span
-		>
-		<span class="leading-none -mt-[0.1rem] text-lg whitespace-nowrap overflow-hidden text-ellipsis">{i18n.getMessage('create_new_workspace')}</span></button
-	>
+	{#if multiEditMode}
+		<div class="row-start-3 flex gap-2">
+			<button 
+				title={i18n.getMessage('apply_changes')} 
+				onclick={updateWorkspaces}
+				class="bg-green-400 hover:bg-green-500 text-green-900 flex justify-center text-center basis-3/4"
+			>
+				<Icon icon="check"/>
+			</button>
+			<button 
+				title={i18n.getMessage('cancel')} 
+				onclick={() => multiEditMode = false}
+				class="bg-neutral-400 text-neutral-800 flex justify-center text-center grow"
+			>
+				<Icon icon="cross"/>
+			</button>
+		</div>
+		{:else}
+			<button
+				id="add-workspace"
+				onclick={addWorkspaceByPointer}
+				onkeydown={addWorkspaceByKey}
+				data-focusable
+				class="
+						ghost !p-4 items-center flex gap-4 rounded-md text-left outline-none border
+						w-[calc(100cqw_-_1.25rem)] row-start-3
+					"
+				title={i18n.getMessage('create_new_workspace')}
+				><span class="text-2xl text-center w-7 flex justify-center items-center"
+					><Icon icon="add" width={18} /></span
+				>
+				<span class="leading-none -mt-[0.1rem] text-lg whitespace-nowrap overflow-hidden text-ellipsis">{i18n.getMessage('create_new_workspace')}</span></button
+			>
+	{/if}
 
-	<button title={i18n.getMessage('options')} class="ghost self-end w-max row-start-4" on:click={openOptionsPage}>
-		<Icon icon="settings" width={18} />
-	</button>
+	<div class="row-start-4 w-max self-end">
+		<button title={i18n.getMessage('edit_workspaces')} onclick={toggleEditMode}>
+			<Icon icon="edit" width={18} />
+		</button>
+		<button title={i18n.getMessage('options')} class="ghost" on:click={openOptionsPage}>
+			<Icon icon="settings" width={18} />
+		</button>
+	</div>
 	<!-- {/if} -->
 </div>
 

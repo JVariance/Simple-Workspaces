@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { mount, tick, unmount } from "svelte";
+	import { getContext, mount, tick, unmount } from "svelte";
 	import Icon from "./Icon.svelte";
 	import EmojiPicker from "./EmojiPicker.svelte";
 	import { Key } from "ts-key-enum";
@@ -24,8 +24,14 @@
 		removeWorkspace,
 	} = $props<Props>();
 
+	let multiEditMode = getContext<{ value: boolean }>("multiEditMode");
+
 	let nameValue = $state(workspace.name);
 	let iconValue = $state(workspace.icon);
+
+	export function getUpdatedWorkspace() {
+		return { workspaceUUID: workspace.UUID, name: nameValue, icon: iconValue };
+	}
 
 	let editMode = $state(false);
 	let workspaceButton: HTMLButtonElement;
@@ -47,12 +53,10 @@
 		}
 	}
 
-	function toggleEditMode() {
-		(async () => {
-			editMode = true;
-			await tick();
-			nameInput?.focus();
-		})();
+	async function toggleEditMode() {
+		editMode = true;
+		await tick();
+		nameInput?.focus();
 	}
 
 	function _editWorkspace() {
@@ -60,12 +64,10 @@
 		editWorkspace({ workspace, icon: iconValue, name: nameValue });
 	}
 
-	function showRemovalDialog() {
+	async function showRemovalDialog() {
 		removalDialogVisible = true;
-		(async () => {
-			await tick();
-			confirmRemovalButton.focus();
-		})();
+		await tick();
+		confirmRemovalButton.focus();
 	}
 
 	function _removeWorkspace() {
@@ -139,12 +141,12 @@
 			[&.active]:bg-[--workspace-active-bg] [&.active]:text-[--workspace-active-color] [&.active]:hover:bg-[--workspace-active-bg-hover] [&.active]:focus-within:bg-[--workspace-active-bg-focus]
 		"
 	>
-		{#if editMode}
+		{#if (editMode || multiEditMode.value) && UUID !== "HOME"}
 			<div
 				class="@[168px]:hidden ghost text-2xl rounded-full flex-grow-0 flex-shrink basis-0"
 				style:font-family="Noto Color Emoji"
 			>
-				{iconValue}
+				{icon}
 			</div>
 			<button
 				title="pick emoji"
@@ -158,7 +160,7 @@
 					class="min-w-0 bg-transparent border-b disabled:border-transparent outline-none w-full flex-1"
 					id={UUID}
 					type="text"
-					disabled={!editMode}
+					disabled={!editMode && !multiEditMode.value}
 					onkeydown={onKeyDown}
 					bind:this={nameInput}
 					bind:value={nameValue}
@@ -174,20 +176,22 @@
 							><Icon icon="bin" width={16} inheritColor={true} /></button
 						>
 					{/if}
-					<button
-						title="apply"
-						onclick={_editWorkspace}
-						class="ghost rounded-full outline-none focus:bg-white/25 group-[&.active]:hover:text-black"
-					>
-						<Icon icon="check" width={18} inheritColor={true} />
-					</button>
-					<button
-						title="cancel"
-						onclick={cancelEditing}
-						class="ghost rounded-full outline-none focus:bg-white/25 group-[&.active]:hover:text-black"
-					>
-						<Icon icon="cross" width={18} inheritColor={true} />
-					</button>
+					{#if !multiEditMode.value}
+						<button
+							title="apply"
+							onclick={_editWorkspace}
+							class="ghost rounded-full outline-none focus:bg-white/25 group-[&.active]:hover:text-black"
+						>
+							<Icon icon="check" width={18} inheritColor={true} />
+						</button>
+						<button
+							title="cancel"
+							onclick={cancelEditing}
+							class="ghost rounded-full outline-none focus:bg-white/25 group-[&.active]:hover:text-black"
+						>
+							<Icon icon="cross" width={18} inheritColor={true} />
+						</button>
+					{/if}
 				</div>
 			</div>
 		{:else}

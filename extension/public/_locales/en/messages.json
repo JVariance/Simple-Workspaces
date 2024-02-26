@@ -227,5 +227,11 @@
   },
   "all_options": {
     "message": "All options"
+  },
+  "edit_workspaces": {
+    "message": "edit workspaces"
+  },
+  "cancel": {
+    "message": "cancel"
   }
 }
