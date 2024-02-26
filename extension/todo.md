@@ -5,7 +5,7 @@
 [] import/export
 [x] ~~multiple workspace-edit mode in MainView~~
 ### Styles
-[] style emoji-picker on special pages
+[x] ~~style emoji-picker on special pages~~
 ### Content
 ### Translations
 ### Logic
