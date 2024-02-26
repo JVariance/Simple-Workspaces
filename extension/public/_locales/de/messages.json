@@ -218,5 +218,11 @@
   },
   "the_new_home_of_your_tabs": {
     "message": "Das neue <br/>Zuhause <br/>deiner Tabs"
+  },
+  "view_all_options": {
+    "message": "Alle Optionen anzeigen"
+  },
+  "all_options": {
+    "message": "Alle Optionen"
   }
 }

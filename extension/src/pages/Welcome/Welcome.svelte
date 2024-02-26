@@ -148,5 +148,17 @@
 			</Info> -->
 			<Shortcuts />
 		</section>
+		<section
+			class="[background:_var(--section-bg)] p-4 rounded-md grid gap-4 basis-full max-w-[100cqw] overflow-auto md:overflow-visible"
+		>
+			<h1 class="text-xl font-semibold text-[--heading-2-color]">
+				{i18n.getMessage("all_options")}
+			</h1>
+			<a
+				class="btn"
+				href={Browser.runtime.getURL("/src/pages/Options/options.html")}
+				>{i18n.getMessage("view_all_options")}
+			</a>
+		</section>
 	</main>
 </Layout>

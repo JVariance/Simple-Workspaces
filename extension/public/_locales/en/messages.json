@@ -221,5 +221,11 @@
   },
   "the_new_home_of_your_tabs": {
     "message": "The new<br/> home<br/> of your tabs"
+  },
+  "view_all_options": {
+    "message": "view all options"
+  },
+  "all_options": {
+    "message": "All options"
   }
 }
