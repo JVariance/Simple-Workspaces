@@ -59,6 +59,9 @@
 
 	$effect(() => {
 		!isNullish(derivedActiveWorkspaceIndex) && (activeWorkspaceIndex = derivedActiveWorkspaceIndex);
+		document
+			?.querySelector(".workspace.active")
+			?.scrollIntoView({ behavior: "smooth", block: "start" });
 	});
 
 	const switchWorkspace = debounceFunc(_switchWorkspace, 350);

@@ -1,9 +1,9 @@
 **Today**
 ### Features
-[] multiple workspace-edit mode in MainView
 [] support bookmarks?
 [] support history?
 [] import/export
+[x] multiple workspace-edit mode in MainView
 ### Styles
 [] style emoji-picker on special pages
 ### Content
