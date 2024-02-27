@@ -1,5 +1,5 @@
 import * as API from "@root/browserAPI";
-import { isNullish, promisedDebounceFunc } from "@root/utils";
+import { promisedDebounceFunc } from "@root/utils";
 import Browser from "webextension-polyfill";
 import { BrowserStorage } from "./Static/Storage";
 import { createTab } from "../browserAPIWrapper/tabCreation";
@@ -156,6 +156,7 @@ export class Window {
 		}
 
 		console.info("finished initializing window");
+		this.#persist();
 	}
 
 	get UUID() {
@@ -178,6 +179,7 @@ export class Window {
 		if (!this.#activeWorkspace || this.switchingWorkspace) return;
 
 		this.#activeWorkspace.activeTabId = tabId;
+		this.#persist();
 	}
 
 	async restoredTab(tabId: number, workspaceUUID: string) {
@@ -200,6 +202,8 @@ export class Window {
 				await API.hideTab(tabId);
 			}
 		}
+
+		this.#persist();
 	}
 
 	async addTab(tabId: number, workspace?: Workspace) {
@@ -244,6 +248,7 @@ export class Window {
 		]);
 
 		Processes.manualTabAddition = false;
+		this.#persist();
 	}
 
 	async removeTab(tabId: number, workspace?: Workspace) {
@@ -275,6 +280,8 @@ export class Window {
 				}
 			}
 		});
+
+		this.#persist();
 	}
 
 	async moveTabs({
@@ -343,6 +350,8 @@ export class Window {
 			await API.setTabValue(newTab.id!, "workspaceUUID", emptyWorkspace.UUID);
 			await API.hideTab(newTab.id);
 		}
+
+		this.#persist();
 	}
 
 	async remove() {
@@ -408,6 +417,8 @@ export class Window {
 
 			this.#workspaces.set(newWorkspace.UUID, newWorkspace);
 		}
+
+		this.#persist();
 	}
 
 	async forceApplyDefaultWorkspaces() {
@@ -461,6 +472,7 @@ export class Window {
 
 		// this.#persist();
 		console.info("forceApply end");
+		this.#persist();
 	}
 
 	async addWorkspaceAndSwitch() {
@@ -490,6 +502,7 @@ export class Window {
 		this.#workspaces.set(newWorkspace.UUID, newWorkspace);
 
 		Processes.WorkspaceCreation.finish();
+		this.#persist();
 		return newWorkspace;
 	}
 
@@ -509,6 +522,7 @@ export class Window {
 
 		this.#workspaces.delete(UUID);
 
+		this.#persist();
 		return previousWorkspace;
 	}
 
@@ -563,6 +577,7 @@ export class Window {
 		}
 
 		this.switchingWorkspace = false;
+		this.#persist();
 	}
 
 	async switchToNextWorkspace() {
@@ -606,6 +621,8 @@ export class Window {
 		const workspace = this.#workspaces.get(workspaceUUID)!;
 		workspace.name = name;
 		workspace.icon = icon;
+
+		this.#persist();
 	}
 
 	async reorderWorkspaces(orderedIds: Ext.Workspace["UUID"][]) {
@@ -616,6 +633,8 @@ export class Window {
 		this.#workspaces = new Map(
 			_workspaces.map((workspace) => [workspace.UUID, workspace])
 		);
+
+		this.#persist();
 	}
 
 	#persist = promisedDebounceFunc<void>(this.#_persist, 500);

@@ -1,7 +1,7 @@
 import Browser from "webextension-polyfill";
 import { BrowserStorage } from "@root/background/Entities/Static/Storage";
 import { tick } from "svelte";
-import { debounceFunc } from "@root/utils";
+import { debounceFunc, isNullish } from "@root/utils";
 
 let workspaces = $state<Ext.Workspace[]>([]);
 let homeWorkspace = $state<Ext.SimpleWorkspace>();
@@ -114,7 +114,7 @@ function _updatedActiveWorkspace({
 		return: document.body.id === `${sourcePage}-page`,
 	});
 
-	if (document.body.id === `${sourcePage}-page`) return;
+	if (sourcePage && document.body.id === `${sourcePage}-page`) return;
 
 	const _activeWorkspaceIndex = workspaces.findIndex(
 		({ UUID }) => UUID === workspaceUUID
