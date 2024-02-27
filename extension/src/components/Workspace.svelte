@@ -61,7 +61,11 @@
 
 	function _editWorkspace() {
 		editMode = false;
-		editWorkspace({ workspace, icon: iconValue, name: nameValue });
+		editWorkspace({
+			workspace,
+			icon: iconValue,
+			name: nameValue.trim().substring(0, 32),
+		});
 	}
 
 	async function showRemovalDialog() {
@@ -162,6 +166,31 @@
 					type="text"
 					disabled={!editMode && !multiEditMode.value}
 					onkeydown={onKeyDown}
+					min="1"
+					max="32"
+					onpaste={(e) => {
+						e.preventDefault();
+						const paste = (e.clipboardData || window.clipboardData)
+							?.getData("text")
+							?.trim()
+							.substring(0, 32);
+
+						const { selectionStart, selectionEnd } = e.currentTarget;
+
+						const val = e.currentTarget.value;
+
+						try {
+							const newValue = `${val.substring(
+								0,
+								selectionStart
+							)}${paste}${val.substring(selectionEnd)}`
+								.trim()
+								.substring(0, 32);
+
+							e.currentTarget.value = newValue;
+							e.currentTarget.setSelectionRange(selectionStart, selectionStart);
+						} catch (e) {}
+					}}
 					bind:this={nameInput}
 					bind:value={nameValue}
 				/>
@@ -211,7 +240,7 @@
 				<span
 					class="{active
 						? 'font-bold'
-						: ''} text-lg w-full overflow-hidden text-ellipsis text-left"
+						: ''} text-lg w-full whitespace-nowrap overflow-hidden text-ellipsis text-left"
 					>{name}</span
 				>
 				<!-- <span>({tabIds.join(",")})</span> -->
