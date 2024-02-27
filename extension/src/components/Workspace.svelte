@@ -238,6 +238,10 @@
 			Workspace-hover: #484d64
 	*/
 	.workspace {
+		@media screen and (width < 56px) {
+			@apply !h-10;
+		}
+
 		@media screen and (width < 184px) {
 			@apply aspect-square grid-cols-1 h-12 p-0 justify-items-center justify-self-center;
 

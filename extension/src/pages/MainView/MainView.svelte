@@ -468,10 +468,10 @@
 <!-- <div id="noise" aria-hidden="true" /> -->
 <div 
 	class="
-		w-[100cqw] h-[100cqh] p-2 box-border overflow-auto [scrollbar-width:_thin]
+		w-[100cqw] h-[100cqh] box-border overflow-auto [scrollbar-width:_thin]
 		grid gap-y-4 content-stretch items-start grid-rows-[max-content_max-content_max-content_1fr]
+		py-2 px-0 @[184px]:p-2 [--header-height:_3rem] @[56px]:[--header-height:_3.5rem]  @[184px]:[--header-height:_3.625rem]
 	" 
-	style:--header-height="3.625rem"
 >
 	<!-- <h1 class="mb-4">Workspaces</h1> -->
 	{#if true && import.meta.env.DEV}
@@ -497,7 +497,7 @@
 	<section 
 		id="header" 
 		class="
-			flex gap-2 h-[--header-height] sticky top-0 bg-[--body-bg] w-[calc(100cqw_-_1.25rem)] z-50
+			flex gap-2 h-[--header-height] sticky top-0 bg-[--body-bg] w-[100cqw] @[184px]:w-[calc(100cqw_-_1.25rem)] z-50
 			-mb-2 items-start
 			row-start-1
 		"
@@ -535,7 +535,7 @@
 			class="
 				flex @[184px]:hidden bg-[--search-bg] hover:bg-[--search-bg-hover] focus-within:bg-[--search-bg-focus]
 				border-[--search-border-color] text-[--search-color]
-				mx-auto w-12 h-12 items-center justify-center
+				mx-auto w-10 h-10 @[56px]:w-12 @[56px]:h-12 items-center justify-center
 			"
 			onclick={() => Browser.browserAction.openPopup({windowId})}
 			title={i18n.getMessage('search')}
@@ -622,7 +622,7 @@
 	<ul
 		bind:this={workspaceListElem}
 		class="
-			w-[calc(100cqw_-_1.25rem)] grid row-start-2
+			w-[100cqw] @[184px]:w-[calc(100cqw_-_1.25rem)] grid row-start-2
 			@container
 			content-start overflow-auto 
 			h-full
@@ -702,8 +702,8 @@
 			>
 	{/if}
 
-	<div class="row-start-4 w-max self-end">
-		<button title={i18n.getMessage('edit_workspaces')} class="ghost" onclick={toggleEditMode}>
+	<div class="row-start-4 w-max self-end flex [margin-inline:_auto] @[184px]:[margin-inline:unset]">
+		<button title={i18n.getMessage('edit_workspaces')} class="ghost hidden @[184px]:block" onclick={toggleEditMode}>
 			<Icon icon="edit" width={18} />
 		</button>
 		<button title={i18n.getMessage('options')} class="ghost" on:click={openOptionsPage}>
@@ -714,9 +714,20 @@
 </div>
 
 <style lang="postcss">
+
+	@media screen and (width < 56px) {
+		ul {
+			@apply !min-h-[2.5rem];
+		}
+
+		button#add-workspace {
+			@apply !w-10 !h-10;
+		}
+	}
+
 	@media screen and (width < 184px) {
 		ul {
-			@apply justify-center;
+			@apply justify-center min-h-[3rem];
 		}
 
 		button#add-workspace {
