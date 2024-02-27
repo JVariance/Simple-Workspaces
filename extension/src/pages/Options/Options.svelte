@@ -184,7 +184,7 @@
 		{@render Section(Section_Theme, "basis-full flex-1")}
 		{@render Section(Section_HomeWorkspace, "flex-1")}
 		{@render Section(Section_CurrentWorkspaces, "flex-1")}
-		{@render Section(Section_DefaultWorkspaces, "flex-1 overflow-auto scrollbar-gutter:_stable] sm:scrollbar-gutter:_unset]")}
+		{@render Section(Section_DefaultWorkspaces, "flex-1 overflow-auto scrollbar-gutter:_stable] sm:scrollbar-gutter:_unset] @container")}
 		{@render Section(Section_TabPinning, "basis-full")}
 		{@render Section(Section_Shortcuts, "basis-full")}
 		{@render Section(Section_ClearExtensionData, "basis-full")}

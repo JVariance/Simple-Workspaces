@@ -164,46 +164,46 @@
 	>
 		<div class="w-full list-wrapper [&:has(ul:empty)>button]:ml-0">
 			{#if !isWelcomePage}
-				<Accordion class="mb-2 max-w-[100cqw] group" bind:this={existingWindowWorkspacesAccordionElem}>
-					{#snippet summary()}
-						<Summary>
-							<span>{i18n.getMessage('existing_windows_workspaces')}</span>
-						</Summary>
-					{/snippet}
-					<Button class="ghost mt-4" onclick={async () => existingWindowsWorkspaces = await getExistingWindowsWorkspaces()}>
+				<div class="flex gap-2 items-center">
+					<h2 class="text-[--heading-2-color] text-lg font-semibold">{i18n.getMessage('existing_windows_workspaces')}</h2>
+					<Button title={i18n.getMessage('reload')} class="ghost !p-1" onclick={async () => existingWindowsWorkspaces = await getExistingWindowsWorkspaces()}>
 						<Icon icon="reload" width={16} />
-						<span class="-mt-[0.1rem] text-base">{i18n.getMessage('reload')}</span>
+						<!-- <span class="-mt-[0.1rem] text-base">{i18n.getMessage('reload')}</span> -->
 					</Button>
-					<div 
-						class="
-							grid grid-flow-col auto-cols-[minmax(150px_auto)] gap-2 mt-2 overflow-auto [scrollbar-width:thin] [scrollbar-color:transparent_transparent] hover:[scrollbar-color:initial] pb-1
-							overscroll-contain select-none
-						"
-						use:overflowSwipe
-						onwheel={(e) => e.currentTarget.scrollBy({left: -e.wheelDelta})}
-					>
-						{#each existingWindowsWorkspaces as [i, workspaces]}
-							<div class="swipe-item p-1 rounded-md border w-full border-neutral-300 dark:border-neutral-600">
-								<h2 class="first-letter:uppercase text-[color-mix(in_srgb,_currentColor_60%,_transparent)]">{i18n.getMessage('window')} {i + 1}</h2>
-								<div class="flex gap-4 mt-2 flex-wrap">
-									{#each workspaces as workspace}
-										<div class="flex gap-2 w-full">
-											<span class="[font-family:_Noto_Color_Emoji]">{workspace.icon}</span>
-											<p class="overflow-hidden text-ellipsis">{workspace.name}</p>
-										</div>
-										{:else}
-										<span>-</span>
-									{/each}
-								</div>
-								{#if workspaces.length}
-									<Button class="primary-btn mt-4" onclick={() => {existingWindowWorkspacesAccordionElem.close(); defaultWorkspaces = workspaces.map(({name, icon}, i) => ({id: i, name, icon}));}}>
-										{i18n.getMessage('use_as_template')}
-									</Button>
-								{/if}
+				</div>
+				<div 
+					class="
+						max-w-[100cqw] group
+						grid grid-flow-col auto-cols-[minmax(150px_auto)] gap-2 justify-start my-4 [scrollbar-width:thin] [scrollbar-color:transparent_transparent] hover:[scrollbar-color:initial] pb-1
+						overscroll-contain select-none
+						opacity-50 rounded-md overflow-hidden h-12
+						hover:overflow-auto focus-within:overflow-auto hover:opacity-100 focus-within:opacity-100
+						hover:h-auto focus-within:h-auto
+						[transition:height_200ms]
+					"
+					use:overflowSwipe
+				>
+					{#each existingWindowsWorkspaces as [i, workspaces]}
+						<div class="swipe-item p-1 rounded-md border border-[--workspace-bg] w-min bg-[--body-bg] grid grid-rows-[auto_1fr_auto]">
+							<h2 class="first-letter:uppercase text-[--heading-2-color] w-max">{i18n.getMessage('window')} {i + 1}</h2>
+							<div class="flex gap-4 mt-2 flex-wrap max-h-32 overflow-auto [scrollbar-width:thin] content-start">
+								{#each workspaces as workspace}
+									<div class="flex gap-2 w-full">
+										<span class="[font-family:_Noto_Color_Emoji]">{workspace.icon}</span>
+										<p class="overflow-hidden text-ellipsis">{workspace.name}</p>
+									</div>
+									{:else}
+									<span>-</span>
+								{/each}
 							</div>
-						{/each}
-					</div>
-				</Accordion>
+							{#if workspaces.length}
+								<Button class="primary-btn mt-4" onclick={() => {defaultWorkspaces = workspaces.map(({name, icon}, i) => ({id: i, name, icon}));}}>
+									{i18n.getMessage('use_as_template')}
+								</Button>
+							{/if}
+						</div>
+					{/each}
+				</div>
 			{/if}
 			<!-- dragDisabled: !dragEnabled || defaultWorkspaces.length < 2 -->
 			<ul class="default-workspaces grid gap-2 [&:not(:empty)]:!mb-2">
@@ -226,11 +226,11 @@
 				{/each}
 			</ul>
 			<button
-				title="add default workspace"
+				title={i18n.getMessage('add_default_workspace')}
 				class="btn primary-btn ml-6 max-w-[100cqw]"
 				style:width="-moz-available"
-				onclick={addDefaultWorkspace}><Icon icon="add" width={16}/>
-				<span class="-mt-[0.1rem]">{i18n.getMessage('add_default_workspace')}</span>
+				onclick={addDefaultWorkspace}><Icon icon="add" width={16} class="min-w-4 min-h-4"/>
+				<span class="-mt-[0.1rem] whitespace-nowrap overflow-hidden text-ellipsis">{i18n.getMessage('add_default_workspace')}</span>
 			</button>
 			<button 
 				class="btn primary-btn justify-center mt-4 [&:not(.changes-available)]:hidden max-w-[100cqw]" 
