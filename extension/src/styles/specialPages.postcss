@@ -32,8 +32,13 @@ kbd {
 	--heading-2-color: light-dark(#625eb7, #aca8f9);
 }
 
-body {
+html {
 	color-scheme: light dark;
+	scrollbar-width: thin;
+	scrollbar-color: var(--heading-color) var(--body-bg);
+}
+
+body {
 	@apply bg-[--body-bg] text-[--body-color];
 }
 
