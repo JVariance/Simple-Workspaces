@@ -107,6 +107,13 @@ function _updatedActiveWorkspace({
 }) {
 	console.info("states: updatedActiveWorkspace");
 
+	console.info({
+		sourcePage,
+		body: document.body,
+		id: document.body.id,
+		return: document.body.id === `${sourcePage}-page`,
+	});
+
 	if (document.body.id === `${sourcePage}-page`) return;
 
 	const _activeWorkspaceIndex = workspaces.findIndex(

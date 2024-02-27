@@ -5,18 +5,29 @@ kbd {
 }
 
 :root {
-	--body-bg: light-dark(#ffffff, #181b3e);
-	--body-color: light-dark(#3f3777, #f6f6ff);
-	/*light-dark(#f6f6ff, #261f4a),*/
-	/*light-dark(#f1f1ff, #261f4a)*/
+	--body-bg: light-dark(#fbfbfe, #181b3e);
+	--header-bg: light-dark(#ffffff, #181b3e);
+	/* --body-bg: light-dark(#fbfbfecc, #181b3e); */
+	/* --body-color: light-dark(#3f3777, #f6f6ff); */
+
+	/*
+		section-bg:light
+		#f6f6ff -> #f1f1ff,
+		#f6f5ff -> #f6f5ff,
+		#f9f9ff -> #f9f9ff,
+		#f2f2fd -> #f2f2fd,
+	*/
 	--section-bg: linear-gradient(
 		to bottom,
-		light-dark(#f9f9ff, #261f4a),
-		light-dark(#f9f9ff, #261f4a)
+		light-dark(#f2f2fd, #261f4a),
+		light-dark(#f2f2fd, #261f4a)
 	);
-	--section-color: light-dark(#32304e, #d1cfe8);
-	--workspace-bg: light-dark(#ebeafe, #342c59);
-	--workspace-color: light-dark(#625eb7, #c6c4f0);
+	--section-color: light-dark(#000026, #fff);
+	/* workspace-bg:light
+		#ebeafe
+	*/
+	--workspace-bg: light-dark(#e5e3ff, #342c59);
+	--workspace-color: light-dark(#464382, #c6c4f0);
 	--workspace-handle-fill: #43407d;
 	--workspace-remove-fill: #43407d;
 	--button-primary-bg: #625eb7;
@@ -25,8 +36,8 @@ kbd {
 	--button-primary-hover-color: #ffffff;
 	--button-secondary-bg: #b5b3e8;
 	--button-secondary-color: #ffffff;
-	--kbd-bg: light-dark(#dddcfa, #43407d);
-	--kbd-color: light-dark(#43407d, #aba7f7);
+	--kbd-bg: light-dark(#cac8ff, #a29dff);
+	--kbd-color: light-dark(#02002d, #01002d);
 	--badge-bg: light-dark(#f8f8fe, #282853);
 	--heading-color: #8c88e3;
 	--heading-2-color: light-dark(#625eb7, #aca8f9);
@@ -90,11 +101,11 @@ dd {
 }
 
 dt {
-	@apply bg-[light-dark(#eaeafc,_#342c59)] py-1 px-2;
+	@apply bg-[light-dark(#e5e5ff,_#342c59)] py-1 px-2;
 }
 
 dd {
-	@apply bg-[light-dark(#eaeafc,_#342c59)];
+	@apply bg-[light-dark(#e5e5ff,_#342c59)] text-[light-dark(#000,_#fff)];
 }
 
 dl > div:first-of-type dt {

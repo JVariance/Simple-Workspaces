@@ -67,7 +67,7 @@
 		<div
 			class="
 			flex flex-wrap items-center h-max p-2 justify-between
-		bg-[--body-bg] rounded-full
+		bg-[--header-bg] rounded-full
 			w-full sm:w-[500px] md:w-[700px] lg:w-[900px] xl:w-[1100px] 2xl:w-[1300px]
 		"
 		>
