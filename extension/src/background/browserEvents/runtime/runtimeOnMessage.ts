@@ -51,11 +51,7 @@ function switchWorkspaceAndFocusTab({
 	}
 }
 
-export async function runtimeOnMessage(
-	message: any,
-	sender: Browser.Runtime.MessageSender,
-	sendResponse: () => void
-) {
+export function runtimeOnMessage(message: any) {
 	const { msg } = message;
 
 	switch (msg) {
@@ -101,7 +97,7 @@ export async function runtimeOnMessage(
 				const workspacesArray = Array.from(workspaces.values());
 
 				console.info("background workspaces for window " + message.windowId, {
-					workspaces,
+					workspacesArray,
 				});
 
 				return resolve(workspacesArray);

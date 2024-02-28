@@ -110,38 +110,11 @@
 		);
 	}
 
-	Browser.runtime.onMessage.addListener((message) => {
-		// console.info("browser runtime onmessage");
-
-		console.info("MainView browser.runtime.onMessage");
-
-		const { windowId: targetWindowId, msg } = message;
-		if(targetWindowId !== windowId) return;
-
-		switch (msg) {
-			case "createdTab":
-				// createdTab(message);
-				break;
-			case "removedTab":
-				// removedTab(message);
-				break;
-			default:
-				break;
-		}
-	});
-
 	function addWorkspace() {
 		Browser.runtime.sendMessage({
 			msg: "addWorkspace",
 		});
 	}
-
-	Browser.runtime.onMessage.addListener(async (message) => {
-		if(message.msg === "addedWorkspace") {
-			await new Promise(resolve => setTimeout(resolve, 200));
-			workspaceListElem?.scrollTo({top: workspaceListElem.scrollHeight, behavior: "smooth"})
-		}
-	});
 
 	function addWorkspaceByPointer() {
 		addWorkspace();

@@ -55,7 +55,7 @@ const setWorkspaces = debounceFunc(_setWorkspaces, 100);
 
 async function _setWorkspaces() {
 	console.info("states: setWorkspaces 1 in window: " + windowId);
-	const _workspaces =
+	let _workspaces =
 		(await Browser.runtime.sendMessage({
 			msg: "getWorkspaces",
 			windowId,
@@ -236,6 +236,10 @@ Browser.runtime.onMessage.addListener((message) => {
 			break;
 		case "updatedHomeWorkspace":
 			updatedHomeWorkspace(message);
+			break;
+		case "createdTab":
+			break;
+		case "removedTab":
 			break;
 		case "updatedWorkspaces":
 			setWorkspaces();
