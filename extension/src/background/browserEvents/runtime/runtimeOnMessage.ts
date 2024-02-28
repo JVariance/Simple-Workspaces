@@ -65,6 +65,11 @@ export async function runtimeOnMessage(
 		case "logWindows":
 			console.info(WorkspaceStorage.windows);
 			break;
+		case "awaitBackgroundInit":
+			return new Promise<void>(async (resolve) => {
+				await Processes.ExtensionInitialization;
+				resolve();
+			});
 		case "addWorkspace":
 			(async () => {
 				informViews(WorkspaceStorage.activeWindow.windowId, "addedWorkspace", {
@@ -93,13 +98,23 @@ export async function runtimeOnMessage(
 					message.windowId
 				).workspaces;
 
-				return resolve(Array.from(workspaces.values()));
+				const workspacesArray = Array.from(workspaces.values());
+
+				console.info("background workspaces for window " + message.windowId, {
+					workspaces,
+				});
+
+				return resolve(workspacesArray);
 			});
 		case "removeWorkspace":
 			(async () => {
 				const previousWorkspace = await WorkspaceStorage.getWindow(
 					message.windowId
 				).removeWorkspace(message.workspaceUUID);
+
+				console.info("bg - removeWorkspace, previousWorkspace", {
+					previousWorkspace,
+				});
 
 				if (previousWorkspace) {
 					await informViews(
@@ -113,6 +128,7 @@ export async function runtimeOnMessage(
 					);
 				}
 			})();
+			break;
 		case "editedWorkspaces":
 			(async () => {
 				const { workspaces, windowId } = message as {
@@ -125,9 +141,9 @@ export async function runtimeOnMessage(
 				};
 
 				await Promise.all(
-					workspaces.map((workspace) =>
+					workspaces?.map((workspace) =>
 						WorkspaceStorage.getWindow(windowId).editWorkspace(workspace)
-					)
+					) ?? []
 				);
 
 				informViews(windowId, "updatedWorkspaces");
@@ -194,12 +210,13 @@ export async function runtimeOnMessage(
 				};
 
 				await Promise.all(
-					currentWorkspaces.map((workspace) =>
-						WorkspaceStorage.activeWindow.editWorkspace({
-							workspaceUUID: workspace.UUID,
-							icon: workspace.icon,
-							name: workspace.name,
-						})
+					currentWorkspaces?.map(
+						(workspace) =>
+							WorkspaceStorage.activeWindow.editWorkspace({
+								workspaceUUID: workspace.UUID,
+								icon: workspace.icon,
+								name: workspace.name,
+							}) ?? []
 					)
 				);
 

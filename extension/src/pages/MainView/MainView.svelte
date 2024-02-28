@@ -8,7 +8,7 @@
 	import { debounceFunc, isNullish } from "@root/utils";
 	import Skeleton from "@root/components/Skeleton.svelte";
 	import { untrack, onMount, tick, setContext } from "svelte";
-	import { getWorkspacesState, getThemeState, getSystemThemeState, getForceDefaultThemeIfDarkModeState, getActiveWorkspaceIndexState, setActiveWorkspaceIndexState } from "@pages/states.svelte";
+	import { getWorkspacesState, getThemeState, getSystemThemeState, getForceDefaultThemeIfDarkModeState, getActiveWorkspaceIndexState, setActiveWorkspaceIndexState, initView } from "@pages/states.svelte";
 	import { slide } from "svelte/transition";
 	import Fuse from "fuse.js";
 	import { overflowSwipe } from "@root/actions/overflowSwipe";
@@ -45,20 +45,35 @@
 	});
 
 	let windowId: number;
+	let mounted: boolean = $state(false);
 
 	$effect(() => {
+		untrack(() => windowId);
+		untrack(() => mounted);
+		if(!mounted) return;
+		console.info("effect.1 in window: " + windowId);
 		if(isNullish(activeWorkspaceIndex) && _workspaces.length) {
 			activeWorkspaceIndex = _workspaces.findIndex(({ active }) => active);
 		}
 	});
 
 	$effect(() => {
+		untrack(() => windowId);
+		untrack(() => mounted);
 		untrack(() => workspaces);
+
+		console.info("effecti", {mounted});
+		if(!mounted) return;
+		console.info("effect.2 in window: " + windowId);
 		homeWorkspace = _workspaces[0];
 		workspaces = _workspaces.slice(1);
 	});
 
 	$effect(() => {
+		untrack(() => windowId);
+		untrack(() => mounted);
+		if(!mounted) return;
+		console.info("effect.3 in window: " + windowId);
 		!isNullish(derivedActiveWorkspaceIndex) && (activeWorkspaceIndex = derivedActiveWorkspaceIndex);
 		document
 			?.querySelector(".workspace.active")
@@ -92,6 +107,9 @@
 
 	Browser.runtime.onMessage.addListener((message) => {
 		// console.info("browser runtime onmessage");
+
+		console.info("MainView browser.runtime.onMessage");
+
 		const { windowId: targetWindowId, msg } = message;
 		if(targetWindowId !== windowId) return;
 
@@ -377,13 +395,21 @@
 	}
 
 	$effect(() => {
+		untrack(() => windowId);
+		untrack(() => mounted);
+		if(!mounted) return;
+		console.info("effect.4 in window: " + windowId);
 		console.info({theme});
 		(theme === "browser" && (systemTheme === "light" || (systemTheme === "dark" && !forceDefaultThemeIfDarkMode))) 
-			? setBrowserTheme() 
-			: unsetBrowserTheme();
+		? setBrowserTheme() 
+		: unsetBrowserTheme();
 	});
-
+	
 	$effect(() => {
+		untrack(() => windowId);
+		untrack(() => mounted);
+		if(!mounted) return;
+		console.info("effect.5 in window: " + windowId);
 		document.documentElement.style.colorScheme = systemTheme;
 	});	
 
@@ -438,7 +464,7 @@
 	}
 
 	function updateWorkspaces(event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement; }) {
-		const updatedWorkspaces = workspaceInstances.map((instance) => instance.getUpdatedWorkspace());
+		const updatedWorkspaces = workspaceInstances.slice(1).map((instance) => instance.getUpdatedWorkspace());
 		Browser.runtime.sendMessage({msg: 'editedWorkspaces', windowId, workspaces: updatedWorkspaces});
 		multiEditMode = false;
 	}
@@ -453,10 +479,13 @@
 
 	onMount(async () => {
 		windowId = (await Browser.windows.getCurrent()).id!;
+		mounted = true;
 		await tick();
 		if(document.documentElement.dataset.page === 'popup') {
 			searchInput.focus();
 		};
+
+		initView();
 	});
 </script>
 
@@ -474,7 +503,7 @@
 	" 
 >
 	<!-- <h1 class="mb-4">Workspaces</h1> -->
-	{#if true && import.meta.env.DEV}
+	{#if true || import.meta.env.DEV}
 		<div class="flex flex-wrap gap-1 absolute top-0 right-0 z-[51]">
 			<details class="bg-neutral-200 dark:bg-neutral-950 p-1 rounded-md">
 				<summary></summary>

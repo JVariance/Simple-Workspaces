@@ -511,19 +511,37 @@ export class Window {
 	): Promise<Ext.Workspace | undefined> {
 		Processes.manualTabRemoval = true;
 		const workspace = this.#workspaces.get(UUID)!;
-		let previousWorkspace = undefined;
+		// let previousWorkspace = undefined;
 
-		if (this.#workspaces.size <= 1) return previousWorkspace;
+		// if (this.#workspaces.size <= 1) return previousWorkspace;
 
-		// TODO: switch to workspace with new active tab?
-		if (workspace.active)
-			previousWorkspace = await this.switchToPreviousWorkspace();
 		await API.removeTabs(workspace.tabIds);
+
+		const newActiveTab = (
+			await API.queryTabs({
+				windowId: this.#windowId,
+				active: true,
+			})
+		)?.tabs?.at(0);
+
+		const newActiveTabsWorkspaceUUID = await API.getTabValue(
+			newActiveTab?.id!,
+			"workspaceUUID"
+		);
+		const newActiveTabsWorkspace = this.#workspaces.get(
+			newActiveTabsWorkspaceUUID
+		);
+
+		console.info({ newActiveTabsWorkspace, workspace });
+
+		// if (newActiveTabsWorkspace?.UUID !== workspace.UUID) {
+		await this.switchWorkspace(newActiveTabsWorkspace!);
+		// }
 
 		this.#workspaces.delete(UUID);
 
 		this.#persist();
-		return previousWorkspace;
+		return newActiveTabsWorkspace;
 	}
 
 	async switchWorkspace(workspace: Workspace) {
@@ -578,35 +596,6 @@ export class Window {
 
 		this.switchingWorkspace = false;
 		this.#persist();
-	}
-
-	async switchToNextWorkspace() {
-		const _workspaces = Array.from(this.#workspaces.values());
-		const index =
-			_workspaces.findIndex(({ UUID }) => UUID === this.activeWorkspace.UUID) +
-			1;
-
-		if (index > _workspaces.length - 1) return;
-
-		const nextWorkspace = this.#workspaces.get(_workspaces.at(index)!.UUID)!;
-
-		await this.switchWorkspace(nextWorkspace);
-		return nextWorkspace;
-	}
-
-	async switchToPreviousWorkspace() {
-		const _workspaces = Array.from(this.#workspaces.values());
-		const index =
-			_workspaces.findIndex(({ UUID }) => UUID === this.activeWorkspace.UUID) -
-			1;
-
-		if (index < 0) return;
-
-		const previousWorkspace = this.#workspaces.get(
-			_workspaces.at(index)!.UUID
-		)!;
-		await this.switchWorkspace(previousWorkspace);
-		return previousWorkspace;
 	}
 
 	async editWorkspace({

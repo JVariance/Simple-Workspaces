@@ -1,7 +1,7 @@
 import Browser from "webextension-polyfill";
 import { BrowserStorage } from "@root/background/Entities/Static/Storage";
 import { tick } from "svelte";
-import { debounceFunc, isNullish } from "@root/utils";
+import { debounceFunc } from "@root/utils";
 
 let workspaces = $state<Ext.Workspace[]>([]);
 let homeWorkspace = $state<Ext.SimpleWorkspace>();
@@ -46,26 +46,36 @@ function updatedHomeWorkspace({
 }: {
 	homeWorkspace: Ext.SimpleWorkspace;
 }) {
-	console.info("states: updatedHomeWorkspace");
+	console.info("states: updatedHomeWorkspace in window: " + windowId);
 	homeWorkspace = _homeWorkspace;
 	workspaces[0] = { ...workspaces[0], ...homeWorkspace };
 }
 
-async function setWorkspaces() {
-	console.info("states: setWorkspaces");
-	workspaces =
+const setWorkspaces = debounceFunc(_setWorkspaces, 100);
+
+async function _setWorkspaces() {
+	console.info("states: setWorkspaces 1 in window: " + windowId);
+	const _workspaces =
 		(await Browser.runtime.sendMessage({
 			msg: "getWorkspaces",
 			windowId,
 		})) || [];
+	console.info(
+		"states: setWorkspaces in window: " + windowId,
+		workspaces,
+		_workspaces
+	);
+
+	workspaces = _workspaces;
+
 	const _activeWorkspaceIndex = workspaces.findIndex(({ active }) => active);
 	_activeWorkspaceIndex > -1 &&
 		(activeWorkspaceIndex.value = _activeWorkspaceIndex);
-	console.info({ _activeWorkspaceIndex });
+	console.info({ windowId, _activeWorkspaceIndex });
 }
 
 async function setHomeWorkspace() {
-	console.info("states: setWorkspaces");
+	console.info("states: setHomeWorkspace");
 	homeWorkspace = (await BrowserStorage.getHomeWorkspace())?.homeWorkspace || {
 		id: -1,
 		icon: "🏠",
@@ -105,7 +115,7 @@ function _updatedActiveWorkspace({
 	UUID: Ext.Workspace["UUID"];
 	sourcePage: "sidebar" | "popup";
 }) {
-	console.info("states: updatedActiveWorkspace");
+	console.info("states: updatedActiveWorkspace in window + " + windowId);
 
 	console.info({
 		sourcePage,
@@ -212,15 +222,13 @@ async function setKeepPinnedTabs() {
 }
 
 Browser.runtime.onMessage.addListener((message) => {
-	console.info("browser runtime onmessage");
+	console.info("browser runtime onmessage hehe");
+
+	console.info({ message });
 	const { windowId: targetWindowId, msg } = message;
 	if (targetWindowId !== windowId) return;
 
 	switch (msg) {
-		case "initialized":
-			console.info("background initialized");
-			// initView();
-			break;
 		case "addedWorkspace":
 			addedWorkspace(message);
 			break;
@@ -259,28 +267,29 @@ Browser.runtime.onMessage.addListener((message) => {
 	}
 });
 
-// onMount(async () => {
-// 	windowId = (await Browser.windows.getCurrent()).id!;
+export async function initView() {
+	console.info("states: initView");
+	windowId = (await Browser.windows.getCurrent()).id!;
+	console.info("states: windowId -> " + windowId);
 
-// 	console.info("states.svelte.ts -> " + windowId);
+	await Browser.runtime.sendMessage({ msg: "awaitBackgroundInit" });
+
+	await Promise.all([
+		setWorkspaces(),
+		setDefaultWorkspacesFromLocalStorage(),
+		setHomeWorkspace(),
+		setSystemTheme(),
+		setTheme(),
+		setKeepPinnedTabs(),
+		setForceDefaultThemeIfDarkMode(),
+	]);
+}
+
+// $effect.root(() => {
+// 	console.info("effect.root");
+
+// 	$effect(() => {
+// 		(async () => {
+// 			console.info("cooler effekt");
+// 	});
 // });
-
-$effect.root(() => {
-	console.info("effect.root");
-	$effect(() => {
-		(async () => {
-			console.info("cooler effekt");
-			windowId = (await Browser.windows.getCurrent()).id!;
-			console.info("states: windowId -> " + windowId);
-			await Promise.all([
-				setWorkspaces(),
-				setDefaultWorkspacesFromLocalStorage(),
-				setHomeWorkspace(),
-				setSystemTheme(),
-				setTheme(),
-				setKeepPinnedTabs(),
-				setForceDefaultThemeIfDarkMode(),
-			]);
-		})();
-	});
-});
