@@ -17,6 +17,7 @@
 		"browsingData",
 		"cookies",
 		"contextualIdentities",
+		"management",
 		"menus",
 		"scripting",
 		"sessions",

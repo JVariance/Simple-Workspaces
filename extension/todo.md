@@ -1,8 +1,9 @@
 **Today**
 ### Features
+[] import/export
+[] improve enable extension logic
 [] support bookmarks?
 [] support history?
-[] import/export
 ### Styles
 ### Content
 ### Translations

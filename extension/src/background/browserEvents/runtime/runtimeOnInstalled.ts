@@ -8,7 +8,7 @@ export async function runtimeOnInstalled(
 ) {
 	console.info("onInstalled");
 	Processes.ExtensionInitialization.start();
-	await Browser.storage.local.clear();
+	// await Browser.storage.local.clear();
 	if (Processes.extensionInitialized) {
 		Processes.ExtensionInitialization.finish();
 	} else {
