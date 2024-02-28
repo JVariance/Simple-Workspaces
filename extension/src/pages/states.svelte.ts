@@ -130,6 +130,8 @@ function _updatedActiveWorkspace({
 		({ UUID }) => UUID === workspaceUUID
 	);
 
+	console.info({ _activeWorkspaceIndex });
+
 	if (_activeWorkspaceIndex < 0) return;
 	activeWorkspaceIndex.value = _activeWorkspaceIndex;
 	const activeWorkspace = workspaces.find(({ active }) => active);

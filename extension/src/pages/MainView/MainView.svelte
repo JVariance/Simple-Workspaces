@@ -29,8 +29,11 @@
 	let workspaceListElem = $state<HTMLUListElement>();
 	let searchInput = $state<HTMLInputElement>();
 	let searchValue = $state("");
-	let activeWorkspaceIndex = $state();
-	let derivedActiveWorkspaceIndex  = $derived(getActiveWorkspaceIndexState());
+	let derivedActiveWorkspaceIndex  = $derived.by(() => {
+		const activeIndex = getActiveWorkspaceIndexState();
+		console.info("deriving activeworkspaceindex", {activeIndex});
+		return activeIndex;
+	});
 	let homeWorkspace = $state<Ext.Workspace>();
 	let _workspaces: Ext.Workspace[] = $derived(getWorkspacesState());
 	let workspaces: Ext.Workspace[] = $state([]);
@@ -47,15 +50,16 @@
 	let windowId: number;
 	let mounted: boolean = $state(false);
 
-	$effect(() => {
-		untrack(() => windowId);
-		untrack(() => mounted);
-		if(!mounted) return;
-		console.info("effect.1 in window: " + windowId);
-		if(isNullish(activeWorkspaceIndex) && _workspaces.length) {
-			activeWorkspaceIndex = _workspaces.findIndex(({ active }) => active);
-		}
-	});
+	// $effect(() => {
+	// 	untrack(() => windowId);
+	// 	untrack(() => mounted);
+	// 	untrack(() => activeWorkspaceIndex);
+	// 	if(!mounted) return;
+	// 	console.info("effect.1 in window: " + windowId);
+	// 	if(isNullish(activeWorkspaceIndex) && _workspaces.length) {
+	// 		activeWorkspaceIndex = _workspaces.findIndex(({ active }) => active);
+	// 	}
+	// });
 
 	$effect(() => {
 		untrack(() => windowId);
@@ -72,10 +76,9 @@
 	$effect(() => {
 		untrack(() => windowId);
 		untrack(() => mounted);
-		untrack(() => activeWorkspaceIndex);
 		if(!mounted) return;
 		console.info("effect.3 in window: " + windowId);
-		!isNullish(derivedActiveWorkspaceIndex) && (activeWorkspaceIndex = derivedActiveWorkspaceIndex);
+		!isNullish(derivedActiveWorkspaceIndex);
 		document
 			?.querySelector(".workspace.active")
 			?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -311,8 +314,8 @@
       rootNode.style.transform=`translate3d(0,0,0)` // on end of drag, remove translate so item returns to natural pos
       translateY = 0;
 
-			// 	const newActiveWorkspaceIndex = activeWorkspaceIndex === 0 ? 0 : workspaces.findIndex(({ active }) => active) + 1;
-			// 	activeWorkspaceIndex = newActiveWorkspaceIndex;
+			const newActiveWorkspaceIndex = derivedActiveWorkspaceIndex === 0 ? 0 : workspaces.findIndex(({ active }) => active) + 1;
+			setActiveWorkspaceIndexState(newActiveWorkspaceIndex);
 
 			Browser.runtime.sendMessage({
 				msg: "reorderedWorkspaces",
@@ -414,21 +417,21 @@
 		document.documentElement.style.colorScheme = systemTheme;
 	});	
 
-	$inspect({ activeWorkspaceIndex });
 	$inspect({ _workspaces });
 	$inspect({ searchUnmatchingWorkspaceUUIDS });
 
 	Browser.commands.onCommand.addListener(async (command) => {
 		const activeWindowId = (await Browser.windows.getLastFocused()).id!;
 		if(activeWindowId !== windowId) return;
+		let activeWorkspaceIndex;
 		switch (command) {
 			case "next-workspace":
-				activeWorkspaceIndex = Math.min(viewWorkspaces.length, activeWorkspaceIndex + 1);
+				activeWorkspaceIndex = Math.min(viewWorkspaces.length, derivedActiveWorkspaceIndex + 1);
 				setActiveWorkspaceIndexState(activeWorkspaceIndex);
 				switchWorkspace(_workspaces[activeWorkspaceIndex]);
 				break;
 			case "previous-workspace":
-				activeWorkspaceIndex = Math.max(0, activeWorkspaceIndex - 1);
+				activeWorkspaceIndex = Math.max(0, derivedActiveWorkspaceIndex - 1);
 				setActiveWorkspaceIndexState(activeWorkspaceIndex);
 				switchWorkspace(_workspaces[activeWorkspaceIndex]);
 				break;
@@ -446,8 +449,8 @@
 		const elementIndex = [].indexOf.call(elements, currentActiveElement);
 		const newIndex = Math.min(elements.length - 1, elementIndex + 1);
 		console.info({ elements, elementIndex, newIndex, el: elements[newIndex] });
+		// setActiveWorkspaceIndexState(currentActiveElement.dataset?.workspaceIndex || derivedActiveWorkspaceIndex);
 		elements[newIndex].focus();
-		activeWorkspaceIndex = currentActiveElement.dataset?.workspaceIndex || activeWorkspaceIndex;
 	}
 	
 	function focusPreviousElement() {
@@ -455,8 +458,8 @@
 		const elementIndex = [].indexOf.call(elements, currentActiveElement);
 		const newIndex = Math.max(0, elementIndex - 1);
 		console.info({ elements, elementIndex, newIndex, el: elements[newIndex] });
+		// setActiveWorkspaceIndexState(currentActiveElement.dataset?.workspaceIndex || derivedActiveWorkspaceIndex);
 		elements[newIndex].focus();
-		activeWorkspaceIndex = currentActiveElement.dataset?.workspaceIndex || activeWorkspaceIndex;
 	}
 
 	function switchWorkspaceAndFocusTab(workspaceUUID: string, tabId: number) {
@@ -587,14 +590,14 @@
 				<Workspace
 					bind:this={workspaceInstances[i]}
 					{workspace}
-					active={reordering ? workspace.active : activeWorkspaceIndex === i}
+					active={reorderStarted ? workspace.active : derivedActiveWorkspaceIndex === i}
 					index={i}
 					editWorkspace={({ icon, name }: {icon: string; name: string;}) => {
 						editWorkspace({ workspace, icon, name });
 					}}
 					switchWorkspace={() => {
+						setActiveWorkspaceIndexState(i);
 						_switchWorkspace(workspace);
-						activeWorkspaceIndex = i;
 					}}
 					removeWorkspace={() => {
 						removeWorkspace(workspace);
