@@ -72,6 +72,7 @@
 	$effect(() => {
 		untrack(() => windowId);
 		untrack(() => mounted);
+		untrack(() => activeWorkspaceIndex);
 		if(!mounted) return;
 		console.info("effect.3 in window: " + windowId);
 		!isNullish(derivedActiveWorkspaceIndex) && (activeWorkspaceIndex = derivedActiveWorkspaceIndex);
