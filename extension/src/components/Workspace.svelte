@@ -34,6 +34,7 @@
 	}
 
 	let editMode = $state(false);
+	let workspaceElem: HTMLDivElement;
 	let workspaceButton: HTMLButtonElement;
 	let nameInput: HTMLInputElement;
 
@@ -79,7 +80,8 @@
 	}
 
 	function _switchWorkspace() {
-		if (active) return;
+		console.info(workspaceElem.classList);
+		if (active || workspaceElem.classList.contains("reordering")) return;
 		switchWorkspace();
 	}
 
@@ -138,11 +140,13 @@
 			darker purple: #8786a7
 	-->
 	<div
+		bind:this={workspaceElem}
 		class:active
 		class="
-			workspace flex gap-2 @[360px]:gap-8 justify-center @[168px]:justify-start items-center p-4 rounded-md {classes} group
+			workspace flex gap-2 @[360px]:gap-8 justify-center @[168px]:justify-start items-center p-4 rounded-md group
 			bg-[--workspace-bg] text-[--workspace-color] focus-within:bg-[--workspace-bg-focus] hover:bg-[--workspace-bg-hover]
 			[&.active]:bg-[--workspace-active-bg] [&.active]:text-[--workspace-active-color] [&.active]:hover:bg-[--workspace-active-bg-hover] [&.active]:focus-within:bg-[--workspace-active-bg-focus]
+			{classes}
 		"
 	>
 		{#if (editMode || multiEditMode.value) && UUID !== "HOME"}

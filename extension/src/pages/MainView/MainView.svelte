@@ -29,11 +29,7 @@
 	let workspaceListElem = $state<HTMLUListElement>();
 	let searchInput = $state<HTMLInputElement>();
 	let searchValue = $state("");
-	let derivedActiveWorkspaceIndex  = $derived.by(() => {
-		const activeIndex = getActiveWorkspaceIndexState();
-		console.info("deriving activeworkspaceindex", {activeIndex});
-		return activeIndex;
-	});
+	let derivedActiveWorkspaceIndex  = $derived(getActiveWorkspaceIndexState());
 	let homeWorkspace = $state<Ext.Workspace>();
 	let _workspaces: Ext.Workspace[] = $derived(getWorkspacesState());
 	let workspaces: Ext.Workspace[] = $state([]);
@@ -41,6 +37,7 @@
 	let systemTheme = $derived(getSystemThemeState());
 	let forceDefaultThemeIfDarkMode = $derived(getForceDefaultThemeIfDarkModeState());
 	let activeWorkspace = $derived<Ext.Workspace>(homeWorkspace?.active ? homeWorkspace : workspaces?.find(({active}) => active));
+	// let activeWorkspace = $state<Ext.Workspace>();
 	let searchUnmatchingWorkspaceUUIDS: string[] = $state([]);
 	let viewWorkspaces: Ext.Workspace[] = $derived.by(() => {
 		const filteredWorkspaces = workspaces.filter(({ UUID }) => !searchUnmatchingWorkspaceUUIDS.includes(UUID));
@@ -88,6 +85,10 @@
 
 	async function _switchWorkspace(workspace: Ext.Workspace) {
 		console.info("MainView - switchWorkspace ", { workspace });
+
+		activeWorkspace.active = false;
+		workspace.active = true;
+
 		await Browser.runtime.sendMessage({
 			msg: "switchWorkspace",
 			workspaceUUID: workspace.UUID,
@@ -310,7 +311,9 @@
 				reorderStarted = false;
 				return;
 			}
-			reorderStarted = false;
+			setTimeout(() => {
+				reorderStarted = false;
+			}, 50);
       rootNode.style.transform=`translate3d(0,0,0)` // on end of drag, remove translate so item returns to natural pos
       translateY = 0;
 
@@ -489,7 +492,7 @@
 			searchInput.focus();
 		};
 
-		initView();
+		await initView();
 	});
 </script>
 
@@ -590,6 +593,7 @@
 				<Workspace
 					bind:this={workspaceInstances[i]}
 					{workspace}
+					class="{reorderStarted ? 'cursor-grabbing reordering' : ''}"
 					active={reorderStarted ? workspace.active : derivedActiveWorkspaceIndex === i}
 					index={i}
 					editWorkspace={({ icon, name }: {icon: string; name: string;}) => {
