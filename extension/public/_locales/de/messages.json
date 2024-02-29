@@ -230,5 +230,8 @@
   },
   "cancel": {
     "message": "abbrechen"
+  },
+  "changelog": {
+    "message": "Änderungsprotokoll"
   }
 }

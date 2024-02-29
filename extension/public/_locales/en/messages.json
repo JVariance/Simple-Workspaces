@@ -233,5 +233,8 @@
   },
   "cancel": {
     "message": "cancel"
+  },
+  "changelog": {
+    "message": "changelog"
   }
 }
