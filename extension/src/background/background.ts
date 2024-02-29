@@ -34,6 +34,21 @@ Removal:
 2. browser.windows.onRemoved
 */
 
+// const sidebarPorts = new Map<string, browser.Runtime.Port>();
+// const popupPorts = new Map<string, browser.Runtime.Port>();
+
+// browser.runtime.onConnect.addListener((port) => {
+// 	console.info({ port });
+// 	const [pageType, windowId] = port.name.split("_");
+// 	switch (pageType) {
+// 		case "sidebar":
+// 			sidebarPorts.set(windowId, port);
+// 			break;
+// 		case "popup":
+// 			popupPorts.set(windowId, port);
+// 	}
+// });
+
 browser.runtime.onInstalled.addListener(runtimeOnInstalled);
 browser.runtime.onStartup.addListener(runtimeOnStartup);
 

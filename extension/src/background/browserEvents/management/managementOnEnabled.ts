@@ -6,7 +6,7 @@ export async function managementOnEnabled(
 ) {
 	console.info("management.onEnabled", info);
 	if (info.id === "{eb7c9a05-56f8-47bf-9c14-2c7da7529a02}") {
-		await Browser.storage.local.clear();
-		await initExtension();
+		// await Browser.storage.local.clear();
+		await initExtension({ extensionUpdated: true });
 	}
 }

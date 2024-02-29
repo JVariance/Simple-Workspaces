@@ -29,8 +29,13 @@ export class Window {
 		this.#storageKey = `window_${this.#UUID}`;
 	}
 
-	async init({ lookInStorage = true } = {}) {
+	async init(
+		options: { lookInStorage?: boolean; extensionUpdated?: boolean } = {}
+	) {
 		console.info("start initializing window");
+
+		const { lookInStorage = true, extensionUpdated = false } = options;
+
 		const { [this.#storageKey]: localWindow }: Record<string, Ext.Window> =
 			await Browser.storage.local.get(this.#storageKey);
 
@@ -65,10 +70,61 @@ export class Window {
 					: sortedTabsInWorkspaces.set(workspaceSessionUUID || "HOME", [tab]);
 			}
 
-			Array.from(localWorkspaces.entries()).forEach(([key, workspace]) => {
-				const tabs = Array.from(sortedTabsInWorkspaces.get(key)!.values());
+			console.info({
+				entries: [...localWorkspaces.entries()],
+				sortedTabsInWorkspaces,
+			});
+
+			if (extensionUpdated) {
+				await API.updateTab(localWorkspaces.get("HOME")!.tabIds!.at(-1)!, {
+					active: true,
+				});
+			}
+
+			for (let [UUID, workspace] of localWorkspaces.entries()) {
+				console.info("moini moinsen");
+				let tabs: EnhancedTab[] = Array.from(
+					sortedTabsInWorkspaces.get(UUID)?.values() || []
+				);
+
+				console.info({ extensionUpdated, UUID, workspace, tabs });
+
+				if (extensionUpdated) {
+					const actualTabs = [];
+
+					for (let tab of tabs) {
+						const _tab = await API.getTab(tab.id);
+
+						console.info({ _tab });
+
+						_tab && actualTabs.push(tab);
+					}
+
+					if (!actualTabs.length) {
+						const newTab = (await API.createTab({
+							windowId: this.#windowId,
+							active: false,
+						}))!;
+
+						// workspace.tabIds.push(newTab.id!);
+						// workspace.activeTabId = newTab.id!;
+						await API.setTabValue(newTab.id!, "workspaceUUID", UUID);
+						await API.hideTab(newTab.id!);
+
+						console.info({ newTab });
+						actualTabs.push({ ...newTab, workspaceUUID: UUID });
+					}
+
+					console.info({ actualTabs });
+
+					tabs = actualTabs;
+				}
+
 				const activeTab = tabs.find(({ active }) => active);
 				const activeTabId = activeTab?.id!;
+
+				console.info({ activeTab, activeTabId });
+
 				workspace.tabIds = tabs.flatMap(({ id }) => id!) || [];
 				workspace.pinnedTabIds = tabs
 					.filter(({ pinned }) => pinned)
@@ -77,7 +133,9 @@ export class Window {
 				workspace.activeTabId = activeTabId;
 				workspace.windowId = this.#windowId;
 				activeTab && (this.#activeWorkspace = workspace);
-			});
+
+				console.info("tach auch", { workspace });
+			}
 
 			console.info({ localWorkspaces });
 

@@ -11,20 +11,23 @@ export async function runtimeOnInstalled(
 	// await Browser.storage.local.clear();
 	if (Processes.extensionInitialized) {
 		Processes.ExtensionInitialization.finish();
-	} else {
-		await initExtension();
 	}
-
-	console.info("?????? HALLOPOLO");
 
 	switch (details.reason) {
 		case "install":
+			await initExtension();
 			API.createTab({
 				url: Browser.runtime.getURL("src/pages/Welcome/welcome.html"),
 				active: true,
 			});
 			break;
 		case "update":
+			console.info("updated extension");
+			await initExtension({ extensionUpdated: true });
+			API.createTab({
+				url: Browser.runtime.getURL("src/pages/Changelog/changelog.html"),
+				active: true,
+			});
 			break;
 		default:
 			break;

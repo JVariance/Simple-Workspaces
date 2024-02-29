@@ -466,6 +466,7 @@
 		};
 
 		await initView();
+		// Browser.runtime.connect("{eb7c9a05-56f8-47bf-9c14-2c7da7529a02}", {name: `${pageType}_${windowId}`});
 	});
 </script>
 

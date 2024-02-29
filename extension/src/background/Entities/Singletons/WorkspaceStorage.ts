@@ -24,10 +24,12 @@ class WorkspaceStorage {
 		return this._instance || (this._instance = new this());
 	}
 
-	async init() {
+	async init(options: { extensionUpdated?: boolean } = {}) {
 		const currentWindows = await Browser.windows.getAll();
 		const currentWindowsObjs: { windowId: number; uuid: string | undefined }[] =
 			[];
+
+		const { extensionUpdated = false } = options;
 
 		for (let currentWindow of currentWindows) {
 			currentWindowsObjs.push({
@@ -41,7 +43,7 @@ class WorkspaceStorage {
 				currentWindow.uuid,
 				currentWindow.windowId
 			);
-			await newWindowInstance.init();
+			await newWindowInstance.init({ extensionUpdated });
 			this.windows.set(currentWindow.windowId, newWindowInstance);
 			if (!currentWindow.uuid)
 				await API.setWindowValue(

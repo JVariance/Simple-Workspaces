@@ -41,6 +41,8 @@ export default defineConfig({
 			additionalInputs: [
 				"src/pages/Welcome/welcome.html",
 				"src/pages/Welcome/welcome.ts",
+				"src/pages/Changelog/changelog.html",
+				"src/pages/Changelog/changelog.ts",
 			],
 			webExtConfig: {
 				startUrl: "https://excalidraw.com",

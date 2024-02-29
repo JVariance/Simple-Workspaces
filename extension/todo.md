@@ -1,5 +1,6 @@
 **Today**
 ### Features
+[] extension update logic
 [] import/export
 [] improve enable extension logic
 [] support bookmarks?

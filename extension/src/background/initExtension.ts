@@ -15,14 +15,22 @@ async function initTabMenu() {
 	);
 }
 
-async function initWorkspaceStorage() {
+async function initWorkspaceStorage(options: { extensionUpdated?: boolean }) {
 	// WorkspaceStorage = new WorkspaceStorage();
-	await WorkspaceStorage.init();
+
+	const { extensionUpdated = false } = options;
+
+	await WorkspaceStorage.init({ extensionUpdated });
 }
 
-export async function initExtension() {
+export async function initExtension(
+	options: { extensionUpdated?: boolean } = {}
+) {
 	console.info("initExtension 0");
 	// await Processes.ExtensionInitialization;
+
+	const { extensionUpdated = false } = options;
+
 	if (
 		Processes.extensionInitialized &&
 		Processes.ExtensionInitialization.state === "pending"
@@ -39,7 +47,7 @@ export async function initExtension() {
 	// if (!WorkspaceStorage.initialized && !TabMenu.initialized) {
 	if (!WorkspaceStorage.initialized) {
 		console.info("initExtension 3");
-		await initWorkspaceStorage();
+		await initWorkspaceStorage({ extensionUpdated });
 		console.info("initExtension 4");
 	}
 	await initTabMenu();
