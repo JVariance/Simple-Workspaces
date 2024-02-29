@@ -124,8 +124,14 @@ class WorkspaceStorage {
 		return this.#windows.get(windowId)!;
 	}
 
-	async getOrCreateWindow(windowId: number): Promise<Window> {
-		return this.getWindow(windowId) || (await this.addWindow(windowId));
+	async getOrCreateWindow(
+		windowId: number,
+		options: { restored?: boolean } = {}
+	): Promise<Window> {
+		const { restored = false } = options;
+		return (
+			this.getWindow(windowId) || (await this.addWindow(windowId, restored))
+		);
 	}
 
 	async moveAttachedTabs({
@@ -242,10 +248,10 @@ class WorkspaceStorage {
 		this.#persistWindows();
 	}
 
-	async addWindow(windowId: number): Promise<Window> {
+	async addWindow(windowId: number, restored = false): Promise<Window> {
 		this.#focusedWindowId = windowId;
 		const newWindow = new Window(undefined, windowId);
-		await newWindow.init({ lookInStorage: false });
+		await newWindow.init({ lookInStorage: false, restored });
 		this.#windows.set(windowId, newWindow);
 
 		this.#persistWindows();

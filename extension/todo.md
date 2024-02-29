@@ -8,6 +8,8 @@
 ### Translations
 ### Logic
 [] highlight workspace which received new tabs (after send action)
+[] write all data to sessions object on window?
+[] write name and icon to tab session object for restoring logic?
 ### Bugs
 [] closing pinned tabs does not necessarily remove it from workspace
 ### Other

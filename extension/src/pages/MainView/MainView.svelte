@@ -612,12 +612,14 @@
 					>
 						{#each matchingTabs.filter(({ id }) => workspace.tabIds.includes(id)) as tab}
 							<button 
-								class="btn ghost h-max flex gap-2 items-center outline-none mt-2 [&:nth-child(1)]:mt-0 [&:nth-child(6)]:mt-0"
+								class="btn ghost h-max flex gap-2 items-center outline-none mt-2 [&:nth-child(1)]:mt-0 [&:nth-child(5n+6)]:mt-0"
 								data-focusable
 								onclick={() => {switchWorkspaceAndFocusTab(workspace.UUID, tab.id)}}
 							>
-								{#if tab.favIconUrl}
-									<img class="w-5 h-5" src={tab.favIconUrl} alt="{tab.title} favicon"/>
+								{#if tab.favIconUrl && !tab.favIconUrl.startsWith('chrome')}
+									<img class="w-5 h-5 overflow-hidden" src={tab.favIconUrl} alt="{tab.title} favicon"/>
+									{:else}
+										<div class="w-5 h-5"/>
 								{/if}
 								<span class="max-w-[30ch] overflow-hidden text-ellipsis whitespace-nowrap -mt-[0.2rem]">
 									{tab.title}

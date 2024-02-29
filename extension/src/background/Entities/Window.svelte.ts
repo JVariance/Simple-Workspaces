@@ -30,11 +30,19 @@ export class Window {
 	}
 
 	async init(
-		options: { lookInStorage?: boolean; extensionUpdated?: boolean } = {}
+		options: {
+			lookInStorage?: boolean;
+			extensionUpdated?: boolean;
+			restored?: boolean;
+		} = {}
 	) {
 		console.info("start initializing window");
 
-		const { lookInStorage = true, extensionUpdated = false } = options;
+		const {
+			lookInStorage = true,
+			extensionUpdated = false,
+			restored = false,
+		} = options;
 
 		const { [this.#storageKey]: localWindow }: Record<string, Ext.Window> =
 			await Browser.storage.local.get(this.#storageKey);
@@ -145,71 +153,134 @@ export class Window {
 			// 	localWorkspacesArray?.at(0)!;
 			this.#workspaces = localWorkspaces;
 		} else {
-			const tabIds = tabs.map((tab) => tab.id!);
-			const pinnedTabIds = tabs
-				.filter(({ pinned }) => pinned)
-				.map(({ id }) => id!);
+			if (restored) {
+				const tabsPerWorkspace: Map<string, EnhancedTab[]> = new Map();
+				let activeWorkspaceUUID = "HOME";
+				for (let tab of tabs) {
+					const workspaceUUID =
+						(await API.getTabValue(tab.id!, "workspaceUUID")) || "HOME";
 
-			const { homeWorkspace: localHomeWorkspace } =
-				await Browser.storage.local.get("homeWorkspace");
+					if (tabsPerWorkspace.has(workspaceUUID)) {
+						tabsPerWorkspace
+							.get(workspaceUUID)!
+							.push(Object.assign(tab, { workspaceUUID }));
+					} else {
+						tabsPerWorkspace.set(workspaceUUID!, [
+							Object.assign(tab, { workspaceUUID }),
+						]);
+					}
 
-			console.info({ localHomeWorkspace });
+					if (tab.active) {
+						activeWorkspaceUUID = workspaceUUID;
+					}
+				}
 
-			const homeWorkspace: Workspace = new Workspace({
-				...this.#getNewWorkspace(),
-				UUID: "HOME",
-				icon: localHomeWorkspace?.icon || "🏠",
-				name: localHomeWorkspace?.name || "Home",
-				active: true,
-				activeTabId: tabs.find(({ active }) => active)?.id!,
-				tabIds: [...tabIds],
-				pinnedTabIds: [...pinnedTabIds],
-			});
+				const { homeWorkspace: localHomeWorkspace } =
+					await Browser.storage.local.get("homeWorkspace");
 
-			const blankTab = (
-				await API.queryTabs({ windowId: this.#windowId, index: 0 })
-			).tabs?.at(0)!;
+				for (let [UUID, tabs] of tabsPerWorkspace.entries()) {
+					const isActiveWorkspace = UUID === activeWorkspaceUUID;
 
-			if (blankTab.url === "about:blank") {
-				console.info("is blank tab");
-				Processes.manualTabAddition = true;
-				const newTab = (await API.createTab({
+					const tabIds = tabs.map((tab) => tab.id!);
+					const pinnedTabIds = tabs
+						.filter(({ pinned }) => pinned!)
+						.map(({ id }) => id!);
+
+					const workspace = new Workspace({
+						...this.#getNewWorkspace(),
+						...(UUID === "HOME" && {
+							icon: localHomeWorkspace?.icon || "🏠",
+							name: localHomeWorkspace?.name || "Home",
+						}),
+						UUID,
+						tabIds,
+						pinnedTabIds,
+						active: isActiveWorkspace,
+						activeTabId:
+							tabs.find(({ active }) => active)?.id || tabs?.at(-1)?.id,
+					});
+
+					if (isActiveWorkspace) {
+						this.#activeWorkspace = workspace;
+					} else {
+						await API.updateTabs(
+							pinnedTabIds.map((id) => ({
+								id,
+								props: { pinned: false },
+							}))
+						);
+						await API.hideTabs(tabIds);
+					}
+
+					this.#workspaces.set(UUID, workspace);
+				}
+			} else {
+				const tabIds = tabs.map((tab) => tab.id!);
+				const pinnedTabIds = tabs
+					.filter(({ pinned }) => pinned)
+					.map(({ id }) => id!);
+
+				const { homeWorkspace: localHomeWorkspace } =
+					await Browser.storage.local.get("homeWorkspace");
+
+				console.info({ localHomeWorkspace });
+
+				const homeWorkspace: Workspace = new Workspace({
+					...this.#getNewWorkspace(),
+					UUID: "HOME",
+					icon: localHomeWorkspace?.icon || "🏠",
+					name: localHomeWorkspace?.name || "Home",
 					active: true,
-					windowId: this.#windowId,
-				}))!;
-				Processes.manualTabAddition = false;
+					activeTabId: tabs.find(({ active }) => active)?.id!,
+					tabIds: [...tabIds],
+					pinnedTabIds: [...pinnedTabIds],
+				});
 
-				// if (newTab) {
-				// 	homeWorkspace.tabIds.push(newTab.id!);
-				// 	homeWorkspace.activeTabId = newTab.id!;
-				// 	await API.setTabValue(
-				// 		newTab.id!,
-				// 		"workspaceUUID",
-				// 		homeWorkspace.UUID
-				// 	);
-				// }
-				await this.addTabs([newTab.id!], homeWorkspace);
+				const blankTab = (
+					await API.queryTabs({ windowId: this.#windowId, index: 0 })
+				).tabs?.at(0)!;
 
-				console.info("now remove tabs");
-				homeWorkspace.tabIds = homeWorkspace.tabIds.filter(
-					(id) => id !== blankTab.id
-				);
+				if (blankTab.url === "about:blank") {
+					console.info("is blank tab");
+					Processes.manualTabAddition = true;
+					const newTab = (await API.createTab({
+						active: true,
+						windowId: this.#windowId,
+					}))!;
+					Processes.manualTabAddition = false;
 
-				Processes.manualTabRemoval = true;
-				await API.removeTab(blankTab.id!);
-				Processes.manualTabRemoval = false;
-				// await removeTabs([blankTab.id!], homeWorkspace);
-			}
-			this.#activeWorkspace = homeWorkspace;
-			// this.#workspaces.push(homeWorkspace);
-			this.#workspaces.set("HOME", homeWorkspace);
+					// if (newTab) {
+					// 	homeWorkspace.tabIds.push(newTab.id!);
+					// 	homeWorkspace.activeTabId = newTab.id!;
+					// 	await API.setTabValue(
+					// 		newTab.id!,
+					// 		"workspaceUUID",
+					// 		homeWorkspace.UUID
+					// 	);
+					// }
+					await this.addTabs([newTab.id!], homeWorkspace);
 
-			await this.addDefaultWorkspaces();
+					console.info("now remove tabs");
+					homeWorkspace.tabIds = homeWorkspace.tabIds.filter(
+						(id) => id !== blankTab.id
+					);
 
-			console.info("nach defaultworkspaces loop");
+					Processes.manualTabRemoval = true;
+					await API.removeTab(blankTab.id!);
+					Processes.manualTabRemoval = false;
+					// await removeTabs([blankTab.id!], homeWorkspace);
+				}
+				this.#activeWorkspace = homeWorkspace;
+				// this.#workspaces.push(homeWorkspace);
+				this.#workspaces.set("HOME", homeWorkspace);
 
-			for (let tabId of tabIds) {
-				await API.setTabValue(tabId!, "workspaceUUID", homeWorkspace.UUID);
+				await this.addDefaultWorkspaces();
+
+				console.info("nach defaultworkspaces loop");
+
+				for (let tabId of tabIds) {
+					await API.setTabValue(tabId!, "workspaceUUID", homeWorkspace.UUID);
+				}
 			}
 		}
 
