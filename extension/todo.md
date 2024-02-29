@@ -1,8 +1,6 @@
 **Today**
 ### Features
-[] extension update logic
 [] import/export
-[] improve enable extension logic
 [] support bookmarks?
 [] support history?
 ### Styles
@@ -11,7 +9,6 @@
 ### Logic
 [] highlight workspace which received new tabs (after send action)
 ### Bugs
-[] workspaces in all windows (excluding main window) aren't shown on startup
 [] closing pinned tabs does not necessarily remove it from workspace
 ### Other
 [] cookies permission still required?
