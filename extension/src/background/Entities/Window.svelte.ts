@@ -178,10 +178,15 @@ export class Window {
 				const { homeWorkspace: localHomeWorkspace } =
 					await Browser.storage.local.get("homeWorkspace");
 
-				const { workspaceHistory: localWorkspaceHistory } =
-					await BrowserStorage.getWorkspaceHistory();
+				const { workspaceHistory } = await BrowserStorage.getWorkspaceHistory();
 
-				console.info({ localWorkspaceHistory });
+				console.info({ workspaceHistory });
+
+				const windowWorkspaceHistory = new Map(workspaceHistory).get(
+					this.#UUID
+				);
+
+				console.info({ windowWorkspaceHistory });
 
 				for (let [UUID, tabs] of tabsPerWorkspace.entries()) {
 					const isActiveWorkspace = UUID === activeWorkspaceUUID;
@@ -192,12 +197,12 @@ export class Window {
 						.map(({ id }) => id!);
 
 					const localHistoryWorkspace = structuredClone(
-						localWorkspaceHistory[UUID]
+						windowWorkspaceHistory[UUID]
 					);
 
 					console.info({ localHistoryWorkspace });
 
-					delete localWorkspaceHistory[UUID];
+					delete windowWorkspaceHistory[UUID];
 					console.info({ localHistoryWorkspace });
 
 					const workspace = new Workspace({
@@ -234,7 +239,7 @@ export class Window {
 					this.#workspaces.set(UUID, workspace);
 				}
 
-				await BrowserStorage.setWorkspaceHistory(localWorkspaceHistory);
+				await BrowserStorage.setWorkspaceHistory(workspaceHistory);
 			} else {
 				const tabIds = tabs.map((tab) => tab.id!);
 				const pinnedTabIds = tabs
@@ -505,16 +510,29 @@ export class Window {
 	}
 
 	async remove() {
-		const { workspaceHistory } = await BrowserStorage.getWorkspaceHistory();
+		const { workspaceHistory: _workspaceHistory } =
+			await BrowserStorage.getWorkspaceHistory();
+		const workspaceHistory = new Map(_workspaceHistory);
 		for (let workspace of this.#workspaces.values()) {
 			if (workspace.UUID !== "HOME") {
-				workspaceHistory[workspace.UUID] = {
+				if (!workspaceHistory.has(this.#UUID)) {
+					workspaceHistory.set(this.#UUID, {});
+				}
+				workspaceHistory.get(this.#UUID)![workspace.UUID] = {
 					icon: workspace.icon,
 					name: workspace.name,
 				};
 			}
 		}
-		await BrowserStorage.setWorkspaceHistory(workspaceHistory);
+
+		const newWorkspaceHistory = Array.from(workspaceHistory);
+		if (newWorkspaceHistory.length > 10) {
+			newWorkspaceHistory.shift();
+		}
+
+		console.info({ newWorkspaceHistory });
+
+		await BrowserStorage.setWorkspaceHistory(newWorkspaceHistory);
 		await this.#removeFromStorage();
 	}
 

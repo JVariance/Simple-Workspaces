@@ -13,14 +13,20 @@ export async function windowsOnCreated(window: Browser.Windows.Window) {
 	if (windowUUID) {
 		// window has been restored
 
-		await WorkspaceStorage.getOrCreateWindow(window.id!, { restored: true });
+		await WorkspaceStorage.getOrCreateWindow({
+			windowId: window.id!,
+			restored: true,
+			windowUUID,
+		});
 
 		// const tabs = (await API.queryTabs({ windowId: window.id! }))?.tabs || [];
 		// for (let tab of tabs) {
 		// const workspaceUUID = await API.getTabValue(tab.id!, "workspaceUUID");
 		// }
 	} else {
-		const newWindow = await WorkspaceStorage.getOrCreateWindow(window.id!);
+		const newWindow = await WorkspaceStorage.getOrCreateWindow({
+			windowId: window.id!,
+		});
 		const windowId = newWindow.windowId;
 		await API.setWindowValue(windowId, "windowUUID", newWindow.UUID);
 	}

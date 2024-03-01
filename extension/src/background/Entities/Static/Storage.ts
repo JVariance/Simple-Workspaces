@@ -1,5 +1,10 @@
 import Browser from "webextension-polyfill";
 
+type WorkspaceHistoryType = [
+	string,
+	Record<Ext.Window["UUID"], Pick<Ext.Workspace, "icon" | "name">>
+][];
+
 export class BrowserStorage {
 	private constructor() {}
 
@@ -30,13 +35,13 @@ export class BrowserStorage {
 	}
 
 	static getWorkspaceHistory(): Promise<
-		Record<string, Pick<Ext.Workspace, "icon" | "name">>
+		Record<"workspaceHistory", WorkspaceHistoryType>
 	> {
 		return Browser.storage.local.get("workspaceHistory");
 	}
 
 	static setWorkspaceHistory(
-		workspaceHistory: Record<string, Pick<Ext.Workspace, "icon" | "name">>
+		workspaceHistory: WorkspaceHistoryType
 	): Promise<void> {
 		return Browser.storage.local.set({ workspaceHistory });
 	}

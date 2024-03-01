@@ -124,13 +124,18 @@ class WorkspaceStorage {
 		return this.#windows.get(windowId)!;
 	}
 
-	async getOrCreateWindow(
-		windowId: number,
-		options: { restored?: boolean } = {}
-	): Promise<Window> {
-		const { restored = false } = options;
+	async getOrCreateWindow({
+		windowId,
+		windowUUID = undefined,
+		restored = false,
+	}: {
+		windowId: number;
+		windowUUID?: string;
+		restored?: boolean;
+	}): Promise<Window> {
 		return (
-			this.getWindow(windowId) || (await this.addWindow(windowId, restored))
+			this.getWindow(windowId) ||
+			(await this.addWindow({ windowId, windowUUID, restored }))
 		);
 	}
 
@@ -248,9 +253,17 @@ class WorkspaceStorage {
 		this.#persistWindows();
 	}
 
-	async addWindow(windowId: number, restored = false): Promise<Window> {
+	async addWindow({
+		windowId,
+		windowUUID = undefined,
+		restored = false,
+	}: {
+		windowId: number;
+		windowUUID?: string;
+		restored?: boolean;
+	}): Promise<Window> {
 		this.#focusedWindowId = windowId;
-		const newWindow = new Window(undefined, windowId);
+		const newWindow = new Window(windowUUID, windowId);
 		await newWindow.init({ lookInStorage: false, restored });
 		this.#windows.set(windowId, newWindow);
 
