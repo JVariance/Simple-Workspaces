@@ -54,6 +54,44 @@
 	function keepPinnedTabsChanged(e) {
 		BrowserStorage.setKeepPinnedTabs(e.target.checked);
 	}
+
+	function createAndDownloadExportFile(content: string, download = "download.txt", type = "text/plain"){
+		const file = new Blob([content], { type });
+		const href = URL.createObjectURL(file);
+		const anchor = document.createElement("a");
+		anchor.href = href;
+		anchor.download = download;
+		document.body.append(anchor);
+		anchor.click();
+		anchor.remove();
+		URL.revokeObjectURL(href);
+	}
+
+	let exportOptions = $state({ homeWorkspace: true, defaultWorkspaces: true, tabs: true });
+
+	async function getExportData() {
+		// homeWorkspace, defaultWorkspaces, windows with workspaces and tabs (urls)
+		const data = {} as { homeWorkspace: Ext.SimpleWorkspace, defaultWorkspaces: Ext.SimpleWorkspace[] };
+		if(exportOptions.homeWorkspace) {
+			const { homeWorkspace } = await BrowserStorage.getHomeWorkspace();
+			data.homeWorkspace = homeWorkspace;
+		}
+
+		if(exportOptions.defaultWorkspaces) {
+			const { defaultWorkspaces } = await BrowserStorage.getDefaultWorkspaces();
+			data.defaultWorkspaces = defaultWorkspaces;
+		}
+
+		if(exportOptions.tabs) {
+			const fullExportData = await Browser.runtime.sendMessage({ msg: "getFullExportData" });
+			console.info({ fullExportData });
+		}
+	}
+
+	async function exportData() {
+		const data = await getExportData();
+		createAndDownloadExportFile(JSON.stringify(data, null, 2), "simple-workspaces.json", "application/json");
+	}
 </script>
 
 {#snippet Section(content, classes)}
@@ -180,6 +218,9 @@
 				{i18n.getMessage('github_repository')}
 			</ButtonLink>
 		{/snippet}
+		{#snippet Section_ImportExport()}
+			<button onclick={exportData}>Export</button>
+		{/snippet}
 
 		{@render Section(Section_Theme, "basis-full flex-1")}
 		{@render Section(Section_HomeWorkspace, "flex-1")}
@@ -187,6 +228,7 @@
 		{@render Section(Section_DefaultWorkspaces, "flex-1 overflow-auto scrollbar-gutter:_stable] sm:scrollbar-gutter:_unset] @container")}
 		{@render Section(Section_TabPinning, "basis-full")}
 		{@render Section(Section_Shortcuts, "basis-full")}
+		{@render Section(Section_ImportExport, "basis-full")}
 		{@render Section(Section_ClearExtensionData, "basis-full")}
 		{@render Section(Section_WelcomePage, "flex-1")}
 		{@render Section(Section_FurtherLinks, "flex-1")}
