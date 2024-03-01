@@ -29,6 +29,18 @@ export class BrowserStorage {
 		});
 	}
 
+	static getWorkspaceHistory(): Promise<
+		Record<string, Pick<Ext.Workspace, "icon" | "name">>
+	> {
+		return Browser.storage.local.get("workspaceHistory");
+	}
+
+	static setWorkspaceHistory(
+		workspaceHistory: Record<string, Pick<Ext.Workspace, "icon" | "name">>
+	): Promise<void> {
+		return Browser.storage.local.set({ workspaceHistory });
+	}
+
 	static getKeepPinnedTabs(): Promise<Record<"keepPinnedTabs", boolean>> {
 		return Browser.storage.local.get("keepPinnedTabs");
 	}

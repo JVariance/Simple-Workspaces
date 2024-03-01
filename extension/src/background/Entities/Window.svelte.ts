@@ -178,6 +178,11 @@ export class Window {
 				const { homeWorkspace: localHomeWorkspace } =
 					await Browser.storage.local.get("homeWorkspace");
 
+				const { workspaceHistory: localWorkspaceHistory } =
+					await BrowserStorage.getWorkspaceHistory();
+
+				console.info({ localWorkspaceHistory });
+
 				for (let [UUID, tabs] of tabsPerWorkspace.entries()) {
 					const isActiveWorkspace = UUID === activeWorkspaceUUID;
 
@@ -186,12 +191,26 @@ export class Window {
 						.filter(({ pinned }) => pinned!)
 						.map(({ id }) => id!);
 
+					const localHistoryWorkspace = structuredClone(
+						localWorkspaceHistory[UUID]
+					);
+
+					console.info({ localHistoryWorkspace });
+
+					delete localWorkspaceHistory[UUID];
+					console.info({ localHistoryWorkspace });
+
 					const workspace = new Workspace({
 						...this.#getNewWorkspace(),
 						...(UUID === "HOME" && {
 							icon: localHomeWorkspace?.icon || "🏠",
 							name: localHomeWorkspace?.name || "Home",
 						}),
+						...(UUID !== "HOME" &&
+							localHistoryWorkspace && {
+								icon: localHistoryWorkspace?.icon,
+								name: localHistoryWorkspace?.name,
+							}),
 						UUID,
 						tabIds,
 						pinnedTabIds,
@@ -214,6 +233,8 @@ export class Window {
 
 					this.#workspaces.set(UUID, workspace);
 				}
+
+				await BrowserStorage.setWorkspaceHistory(localWorkspaceHistory);
 			} else {
 				const tabIds = tabs.map((tab) => tab.id!);
 				const pinnedTabIds = tabs
@@ -484,6 +505,16 @@ export class Window {
 	}
 
 	async remove() {
+		const { workspaceHistory } = await BrowserStorage.getWorkspaceHistory();
+		for (let workspace of this.#workspaces.values()) {
+			if (workspace.UUID !== "HOME") {
+				workspaceHistory[workspace.UUID] = {
+					icon: workspace.icon,
+					name: workspace.name,
+				};
+			}
+		}
+		await BrowserStorage.setWorkspaceHistory(workspaceHistory);
 		await this.#removeFromStorage();
 	}
 
