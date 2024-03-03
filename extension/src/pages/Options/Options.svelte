@@ -306,7 +306,7 @@
 						"
 						>
 						<h2>{i18n.getMessage('window')} {i + 1}</h2>
-						<label class="absolute inset-0 cursor-pointer">
+						<label class="absolute inset-0 cursor-pointer z-[1]">
 							<input type="checkbox" checked class="absolute top-4 left-4 !rounded-full">
 						</label>
 						<div class="grid gap-4">
@@ -315,7 +315,8 @@
 									<p><span class="[font-family:_Noto_Color_Emoji]">{workspace.icon}</span> <span class="font-semibold">{workspace.name}</span></p>
 									<div class="tabs-wrapper grid gap-1 relative pl-2">
 										{#each workspace.tabs as tab}
-										<p class="ml-4 overflow-x-auto whitespace-nowrap">{tab.url}</p>
+											{@const url = new URL(tab.url)}
+											<p class="ml-4 overflow-x-auto whitespace-nowrap">{url.hostname.replace('www.', '')}</p>
 										{/each}
 									</div>
 								</div>
