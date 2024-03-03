@@ -236,5 +236,11 @@
   },
   "changelog": {
     "message": "changelog"
+  },
+  "export": {
+    "message": "export"
+  },
+  "import": {
+    "message": "import"
   }
 }

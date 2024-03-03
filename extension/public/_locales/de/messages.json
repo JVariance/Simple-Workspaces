@@ -233,5 +233,11 @@
   },
   "changelog": {
     "message": "Änderungsprotokoll"
+  },
+  "export": {
+    "message": "exportieren"
+  },
+  "import": {
+    "message": "importieren"
   }
 }

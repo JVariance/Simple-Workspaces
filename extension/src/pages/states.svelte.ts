@@ -76,11 +76,15 @@ async function _setWorkspaces() {
 
 async function setHomeWorkspace() {
 	console.info("states: setHomeWorkspace");
-	homeWorkspace = (await BrowserStorage.getHomeWorkspace())?.homeWorkspace || {
+	const localHomeWorkspace = (await BrowserStorage.getHomeWorkspace())
+		?.homeWorkspace;
+	console.info({ localHomeWorkspace });
+	homeWorkspace = localHomeWorkspace || {
 		id: -1,
 		icon: "🏠",
 		name: "Home",
 	};
+	console.info({ homeWorkspace });
 }
 
 const addIdToSimpleWorkspace = (workspace: Ext.SimpleWorkspace, i: number) => {

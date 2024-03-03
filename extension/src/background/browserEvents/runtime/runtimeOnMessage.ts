@@ -2,6 +2,8 @@ import { WorkspaceStorage, Processes, BrowserStorage } from "../../Entities";
 import { informViews } from "../../informViews";
 import Browser from "webextension-polyfill";
 import * as API from "@root/browserAPI";
+import { exportData } from "@root/background/helper/exportData";
+import { importData } from "@root/background/helper/importData";
 
 function switchWorkspaceCommand({
 	workspaceUUID,
@@ -88,6 +90,7 @@ export function runtimeOnMessage(message: any) {
 					Processes.TabCreation,
 					Processes.TabDetachment,
 					Processes.TabAttachment,
+					Processes.DataImport,
 				]);
 
 				const workspaces = WorkspaceStorage.getWindow(
@@ -300,55 +303,14 @@ export function runtimeOnMessage(message: any) {
 						: "light"
 				);
 			});
+		case "importData":
+			return new Promise<void>(async (resolve) => {
+				await importData(message);
+				return resolve();
+			});
 		case "getFullExportData":
 			return new Promise(async (resolve) => {
-				const fullExportData = new Map<
-					Ext.Window["UUID"],
-					Map<
-						Ext.Workspace["UUID"],
-						{
-							icon: string;
-							name: string;
-							tabs: { url: string; active: boolean }[];
-						}
-					>
-				>();
-
-				for (let [windowId, window] of WorkspaceStorage.windows.entries()) {
-					const windowTabs = (await API.queryTabs({ windowId }))?.tabs || [];
-
-					fullExportData.set(window.UUID, new Map());
-
-					for (let tab of windowTabs) {
-						const workspaceUUID = await API.getTabValue<string>(
-							tab.id,
-							"workspaceUUID"
-						);
-
-						if (workspaceUUID) {
-							if (!fullExportData.get(window.UUID)?.has(workspaceUUID)) {
-								const workspace = window.workspaces.get(workspaceUUID)!;
-								fullExportData.get(window.UUID)!.set(workspaceUUID, {
-									icon: workspace.icon,
-									name: workspace.name,
-									tabs: [],
-								});
-							}
-
-							fullExportData.get(window.UUID)?.get(workspaceUUID)?.tabs.push({
-								url: tab.url!,
-								active: tab.active,
-							});
-						}
-					}
-				}
-
-				const fullExportDataArray = [];
-
-				for (let [windowUUID, window] of fullExportData) {
-					fullExportDataArray.push([windowUUID, Array.from(window)]);
-				}
-
+				const fullExportDataArray = await exportData();
 				return resolve(fullExportDataArray);
 			});
 		default:

@@ -80,7 +80,7 @@ class WorkspaceStorage {
 			API.hideTabs(inactiveWorkspaces.flatMap(({ tabIds }) => tabIds));
 		}
 
-		this.#persistWindows();
+		this.persistWindows();
 		this.initialized = true;
 	}
 
@@ -100,7 +100,7 @@ class WorkspaceStorage {
 		return this.#windows.get(this.focusedWindowId)!;
 	}
 
-	#persistWindows = promisedDebounceFunc<void>(this.#_persistWindows, 500);
+	persistWindows = promisedDebounceFunc<void>(this.#_persistWindows, 500);
 
 	#_persistWindows() {
 		const windowUUIDs = Array.from(this.#windows).flatMap(
@@ -250,7 +250,7 @@ class WorkspaceStorage {
 		console.info("Workspace Storage - window to be removed");
 		await this.getWindow(windowId).remove();
 		this.#windows.delete(windowId);
-		this.#persistWindows();
+		this.persistWindows();
 	}
 
 	async addWindow({
@@ -267,7 +267,7 @@ class WorkspaceStorage {
 		await newWindow.init({ lookInStorage: false, restored });
 		this.#windows.set(windowId, newWindow);
 
-		this.#persistWindows();
+		this.persistWindows();
 
 		return newWindow;
 	}

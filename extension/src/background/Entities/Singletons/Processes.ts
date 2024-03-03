@@ -1,7 +1,4 @@
 import { DeferredPromise } from "@root/utils";
-import { BrowserStorage } from "../Static/Storage";
-
-type Process = keyof typeof Processes;
 
 class Processes {
 	private static _instance: Processes;
@@ -15,6 +12,7 @@ class Processes {
 	WorkspaceCreation = new DeferredPromise<void>();
 	WorkspaceSwitch = new DeferredPromise<void>();
 	TabCreations = new DeferredPromise<void>();
+	DataImport = new DeferredPromise<void>();
 
 	extensionInitialized = false;
 	manualTabAddition = false;
@@ -24,17 +22,9 @@ class Processes {
 	runningTabsOnCreated = false;
 	runningTabsOnAttached = false;
 	runningTabsOnDetached = false;
+	importingData = false;
 
-	private constructor() {
-		// this.ExtensionInitialization.finish();
-		// this.TabAttachment.finish();
-		// this.TabCreation.finish();
-		// this.TabDetachment.finish();
-		// this.TabRemoval.finish();
-		// this.WindowCreation.finish();
-		// this.WindowRemoval.finish();
-		// this.WorkspaceSwitch.finish();
-	}
+	private constructor() {}
 
 	public static get Instance() {
 		return this._instance || (this._instance = new this());

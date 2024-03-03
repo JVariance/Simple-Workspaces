@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from "@root/components/Icon.svelte";
-	import { mount } from "svelte";
+	import { mount, onMount } from "svelte";
 	import Browser, { i18n } from "webextension-polyfill";
 	import Accordion from "@components/Accordion/Accordion.svelte";
 	import Summary from "@components/Accordion/Summary.svelte";
@@ -13,7 +13,7 @@
 	import Logo from "@root/components/Logo.svelte";
 	import HomeWorkspace from "@root/components/ViewBlocks/HomeWorkspace.svelte";
 	import Layout from "@pages/Special_Pages/Layout.svelte";
-	import { getKeepPinnedTabs, getWorkspacesState } from "@pages/states.svelte";
+	import { getKeepPinnedTabs, getWorkspacesState, initView } from "@pages/states.svelte";
 	import ThemeSwitch from "@root/components/ViewBlocks/ThemeSwitch.svelte";
 	import { BrowserStorage } from "@root/background/Entities";
 	import Tooltip from "@root/components/Tooltip.svelte";
@@ -71,7 +71,7 @@
 
 	async function getExportData() {
 		// homeWorkspace, defaultWorkspaces, windows with workspaces and tabs (urls)
-		const data = {} as { homeWorkspace: Ext.SimpleWorkspace, defaultWorkspaces: Ext.SimpleWorkspace[] };
+		const data = {} as { homeWorkspace: Ext.SimpleWorkspace, defaultWorkspaces: Ext.SimpleWorkspace[], windows: any };
 		if(exportOptions.homeWorkspace) {
 			const { homeWorkspace } = await BrowserStorage.getHomeWorkspace();
 			data.homeWorkspace = homeWorkspace;
@@ -85,13 +85,43 @@
 		if(exportOptions.tabs) {
 			const fullExportData = await Browser.runtime.sendMessage({ msg: "getFullExportData" });
 			console.info({ fullExportData });
+			data.windows = fullExportData;
 		}
+
+		return data;
 	}
 
 	async function exportData() {
+		const [dateString, timeString] = new Date().toLocaleDateString('en', {day: '2-digit', month: '2-digit',year:'2-digit', time: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false}).split(', ');
+		const date = dateString.split('/').reverse().join('') + '-' + timeString.replaceAll(':', '_');
 		const data = await getExportData();
-		createAndDownloadExportFile(JSON.stringify(data, null, 2), "simple-workspaces.json", "application/json");
+		createAndDownloadExportFile(JSON.stringify(data, null, 2), `simple-workspaces-${date}.json`, "application/json");
 	}
+
+	function importData(e: Event & { currentTarget: HTMLInputElement }) {
+		const files = e.currentTarget.files;
+		if(files?.length === 0){
+		} else {
+			const file = files![0];
+
+			if(file.type === "application/json") {
+				const reader = new FileReader();
+				reader.onload = async (e) => {
+					try {
+						const data = JSON.parse(e.target!.result as string);
+						if(data) {
+							Browser.runtime.sendMessage({ msg: 'importData', data });
+						}
+					} catch(e){}
+				};
+				reader.readAsText(file);
+			}
+		}
+	}
+
+	onMount(() => {
+		initView();
+	});
 </script>
 
 {#snippet Section(content, classes)}
@@ -219,7 +249,18 @@
 			</ButtonLink>
 		{/snippet}
 		{#snippet Section_ImportExport()}
-			<button onclick={exportData}>Export</button>
+			<h1 class="text-xl font-semibold text-[--heading-2-color]">Import/Export/Backup</h1>
+			<div class="flex gap-4 flex-wrap">
+				<button class="btn primary-btn" onclick={exportData}>
+					<Icon icon="json-file" />
+					<span class="first-letter:uppercase text-left">{i18n.getMessage('export')}</span>
+				</button>
+				<label class="btn primary-btn cursor-pointer" for="import-data">
+					<Icon icon="json-file" />	
+					<span class="first-letter:uppercase">{i18n.getMessage('import')}</span>
+				</label>
+				<input id="import-data" class="opacity-0 absolute pointer-events-none" type="file" accept="application/json" onchange={importData} />
+			</div>
 		{/snippet}
 
 		{@render Section(Section_Theme, "basis-full flex-1")}

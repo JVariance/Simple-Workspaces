@@ -5,6 +5,7 @@ import * as API from "@root/browserAPI";
 
 export async function tabsOnCreated(tab: Browser.Tabs.Tab) {
 	// console.info("tabsOnCreated bef", Processes.TabCreations);
+	if (Processes.importingData) return;
 	console.info("tabsOnCreated 1");
 	Processes.runningTabsOnCreated = true;
 	const manualTabAddition = Processes.manualTabAddition;

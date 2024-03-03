@@ -33,6 +33,7 @@
 		edit: "fluent:edit-24-filled",
 		external: "octicon:link-external-24",
 		info: "material-symbols:info",
+		"json-file": "bxs:file-json",
 		"next-filled": "carbon:next-filled",
 		reload: "ion:reload-outline",
 		reset: "radix-icons:reset",

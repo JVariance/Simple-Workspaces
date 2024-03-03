@@ -9,6 +9,9 @@ export async function tabsOnActivated(
 	/* 
 		if user searched a tab via Firefox' search feature
 	*/
+
+	if (Processes.importingData) return;
+
 	console.info("tabsOnActivated");
 	const runningTabsOnCreated = Processes.runningTabsOnCreated;
 	const runningTabsOnAttached = Processes.runningTabsOnAttached;
