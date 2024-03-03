@@ -22,6 +22,8 @@
 	let windowWorkspaces = $derived(getWorkspacesState()?.filter(({ UUID }) => UUID !== "HOME") || []);
 	let keepPinnedTabs = $derived(getKeepPinnedTabs());
 
+	let importDialogElem = $state<HTMLDialogElement>();
+
 	async function applyCurrentWorkspacesChanges() {
 		const props = $state({
 				state: "loading",
@@ -115,6 +117,7 @@
 						const data = JSON.parse(e.target!.result as string) as ImportData;
 						if(data) {
 							importedData = data;
+							importDialogElem?.showModal();
 						}
 					} catch(e){}
 				};
@@ -269,29 +272,6 @@
 				</label>
 				<input id="import-data" class="opacity-0 absolute pointer-events-none" type="file" accept="application/json" onchange={importDataRequest} />
 			</div>
-			<dialog>
-				<h1>{i18n.getMessage('import_select_windows')}</h1>
-				{#if importedData}
-					{#each Object.entries(importedData.windows) as [_, window], i}
-						<div class="grid gap-2 relative has-[input.checked]:bg-blue-300">
-							<h2>{i18n.getMessage('window')} {i + 1}</h2>
-							<label class="absolute inset-0">
-								<input type="checkbox">
-							</label>
-							<div class="grid gap-1">
-								{#each Object.entries(window.workspaces) as [_, [__, workspace]]}
-									<p><span class="[font-family:_Noto_Color_Emoji]">{workspace.icon}</span> {workspace.name}</p>
-									<div class="grid gap-1">
-										{#each workspace.tabs as tab}
-											<p>{tab.url}</p>
-										{/each}
-									</div>
-								{/each}
-							</div>
-						</div>
-					{/each}
-				{/if}
-			</dialog>
 		{/snippet}
 
 		{@render Section(Section_Theme, "basis-full flex-1")}
@@ -305,4 +285,56 @@
 		{@render Section(Section_WelcomePage, "flex-1")}
 		{@render Section(Section_FurtherLinks, "flex-1")}
 	</main>
+	<dialog 
+		bind:this={importDialogElem}
+		class="open:grid grid-rows-[auto_1fr_auto] content-start gap-4 p-6 backdrop:bg-black/10 backdrop:backdrop-blur bg-[--body-bg] rounded-md w-[90dvw] h-[90dvh]"
+	>
+		<button
+			class="btn ghost absolute right-6 top-6 w-max !p-0"
+		 	onclick={() => importDialogElem?.close()}
+		>
+			<Icon icon="cross"/>
+		</button>
+		<h1 class="text-xl font-semibold text-[--heading-2-color]">{i18n.getMessage('import_select_windows')}</h1>
+		{#if importedData}
+			<div class="overflow-auto [scrollbar-width:thin] pr-2 grid gap-2">
+				{#each Object.entries(importedData.windows) as [_, window], i}
+					<div 
+						class="
+							relative grid gap-4 border has-[input:checked]:bg-blue-100 has-[input:checked]:border-blue-300 px-12 py-4 rounded-md
+							dark:has-[input:checked]:bg-blue-950 dark:has-[input:checked]:border-blue-800 dark:border-white/25
+						"
+						>
+						<h2>{i18n.getMessage('window')} {i + 1}</h2>
+						<label class="absolute inset-0 cursor-pointer">
+							<input type="checkbox" checked class="absolute top-4 left-4 !rounded-full">
+						</label>
+						<div class="grid gap-4">
+							{#each Object.entries(window.workspaces) as [_, [__, workspace]]}
+								<div>
+									<p><span class="[font-family:_Noto_Color_Emoji]">{workspace.icon}</span> <span class="font-semibold">{workspace.name}</span></p>
+									<div class="tabs-wrapper grid gap-1 relative pl-2">
+										{#each workspace.tabs as tab}
+										<p class="ml-4 overflow-x-auto whitespace-nowrap">{tab.url}</p>
+										{/each}
+									</div>
+								</div>
+							{/each}
+						</div>
+					</div>
+				{/each}
+			</div>
+			<button class="btn primary-btn" onclick={importData}>
+				<Icon icon="json-file" />
+				{i18n.getMessage('import')}
+			</button>
+		{/if}
+	</dialog>
 </Layout>
+
+<style lang="postcss">
+	.tabs-wrapper::before {
+		content: "";
+		@apply rounded-full w-px absolute top-2 left-[9px] bottom-[5px] bg-black dark:bg-white;
+	}
+</style>
