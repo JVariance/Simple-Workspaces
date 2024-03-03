@@ -239,5 +239,8 @@
   },
   "import": {
     "message": "importieren"
+  },
+  "import_select_windows": {
+    "message": "Wähle Daten für den Import"
   }
 }

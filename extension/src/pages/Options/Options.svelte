@@ -17,6 +17,7 @@
 	import ThemeSwitch from "@root/components/ViewBlocks/ThemeSwitch.svelte";
 	import { BrowserStorage } from "@root/background/Entities";
 	import Tooltip from "@root/components/Tooltip.svelte";
+	import { type ImportData } from "@root/background/helper/importData";
 
 	let windowWorkspaces = $derived(getWorkspacesState()?.filter(({ UUID }) => UUID !== "HOME") || []);
 	let keepPinnedTabs = $derived(getKeepPinnedTabs());
@@ -98,7 +99,10 @@
 		createAndDownloadExportFile(JSON.stringify(data, null, 2), `simple-workspaces-${date}.json`, "application/json");
 	}
 
-	function importData(e: Event & { currentTarget: HTMLInputElement }) {
+	let importedData  = $state<ImportData>();
+	let userRefinedImportData = $state<ImportData>();
+
+	function importDataRequest(e: Event & { currentTarget: HTMLInputElement }) {
 		const files = e.currentTarget.files;
 		if(files?.length === 0){
 		} else {
@@ -108,15 +112,19 @@
 				const reader = new FileReader();
 				reader.onload = async (e) => {
 					try {
-						const data = JSON.parse(e.target!.result as string);
+						const data = JSON.parse(e.target!.result as string) as ImportData;
 						if(data) {
-							Browser.runtime.sendMessage({ msg: 'importData', data });
+							importedData = data;
 						}
 					} catch(e){}
 				};
 				reader.readAsText(file);
 			}
 		}
+	}
+
+	function importData() {
+		Browser.runtime.sendMessage({ msg: 'importData', userRefinedImportData });
 	}
 
 	onMount(() => {
@@ -257,10 +265,33 @@
 				</button>
 				<label class="btn primary-btn cursor-pointer" for="import-data">
 					<Icon icon="json-file" />	
-					<span class="first-letter:uppercase">{i18n.getMessage('import')}</span>
+					<span class="first-letter:uppercase">{i18n.getMessage('import')}...</span>
 				</label>
-				<input id="import-data" class="opacity-0 absolute pointer-events-none" type="file" accept="application/json" onchange={importData} />
+				<input id="import-data" class="opacity-0 absolute pointer-events-none" type="file" accept="application/json" onchange={importDataRequest} />
 			</div>
+			<dialog>
+				<h1>{i18n.getMessage('import_select_windows')}</h1>
+				{#if importedData}
+					{#each Object.entries(importedData.windows) as [_, window], i}
+						<div class="grid gap-2 relative has-[input.checked]:bg-blue-300">
+							<h2>{i18n.getMessage('window')} {i + 1}</h2>
+							<label class="absolute inset-0">
+								<input type="checkbox">
+							</label>
+							<div class="grid gap-1">
+								{#each Object.entries(window.workspaces) as [_, [__, workspace]]}
+									<p><span class="[font-family:_Noto_Color_Emoji]">{workspace.icon}</span> {workspace.name}</p>
+									<div class="grid gap-1">
+										{#each workspace.tabs as tab}
+											<p>{tab.url}</p>
+										{/each}
+									</div>
+								{/each}
+							</div>
+						</div>
+					{/each}
+				{/if}
+			</dialog>
 		{/snippet}
 
 		{@render Section(Section_Theme, "basis-full flex-1")}

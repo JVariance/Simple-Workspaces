@@ -2,7 +2,7 @@ import * as API from "@root/browserAPI";
 import { Processes, Window, WorkspaceStorage } from "../Entities";
 import { Workspace } from "../Entities/Workspace";
 
-type ImportData = Record<
+export type ImportData = Record<
 	"windows",
 	Record<
 		Ext.Window["UUID"],
