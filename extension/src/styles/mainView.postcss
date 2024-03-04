@@ -8,12 +8,14 @@
 	--body-color: light-dark(#000, #fff);
 
 	--button-bg: light-dark(#fff, #030615);
-	--button-bg-hover: light-dark(#d8e2eb, #3e4852);
-	--button-bg-focus: light-dark(#b2cce3, #4d647a);
-	--button-border-color: light-dark(#d8e2eb, #3e4852);
-	--button-color: light-dark(#000, #fff);
+	--button-bg-hover: light-dark(#e9e9fd, #3e4852);
+	--button-bg-focus: light-dark(#e9e9fd, #4d647a);
+	--button-border-color: light-dark(#e9e9fd, #3e4852);
+	--button-hover-border-color: light-dark(#c9c6ff, #3e4852);
+	--button-focus-border-color: light-dark(#c9c6ff, #3e4852);
+	--button-color: light-dark(#272464, #fff);
 
-	--search-bg: light-dark(#e6eef5, #030615);
+	--search-bg: light-dark(#f2f2fd, #030615);
 	--search-bg-hover: light-dark(
 		color-mix(in hsl, var(--search-bg) 95%, black),
 		color-mix(in hsl, var(--search-bg) 95%, white)
@@ -22,16 +24,17 @@
 		color-mix(in hsl, var(--search-bg) 95%, black),
 		color-mix(in hsl, var(--search-bg) 95%, white)
 	);
-	--search-color: light-dark(#000, #fff);
+	--search-placeholder-color: light-dark(#716ea2, #fff);
+	--search-color: light-dark(#272464, #fff);
 	--search-border-color: light-dark(transparent, transparent);
 
-	--icon-fill: light-dark(#000, #fff);
+	--icon-fill: light-dark(#272464, #fff);
 
 	--workspace-bg: light-dark(transparent, transparent);
 	--workspace-color: light-dark(#000, #fff);
-	--workspace-bg-hover: light-dark(#ebf5fb, #3f5265);
-	--workspace-bg-focus: light-dark(#ebf5fb, #3f5265);
-	--workspace-active-bg: light-dark(#5021ff, #5021ff);
+	--workspace-bg-hover: light-dark(#f2f2fd, #3f5265);
+	--workspace-bg-focus: light-dark(#f2f2fd, #3f5265);
+	--workspace-active-bg: light-dark(#c9c6ff, #c9c6ff);
 	--workspace-active-bg-hover: light-dark(
 		color-mix(in hsl, var(--workspace-active-bg) 85%, white),
 		color-mix(in hsl, var(--workspace-active-bg) 85%, white)
@@ -40,7 +43,7 @@
 		color-mix(in hsl, var(--workspace-active-bg) 85%, white),
 		color-mix(in hsl, var(--workspace-active-bg) 85%, white)
 	);
-	--workspace-active-color: light-dark(#fff, #fff);
+	--workspace-active-color: light-dark(#272464, #272464);
 }
 
 html[theme="browser"] {
@@ -58,7 +61,7 @@ body {
 
 button {
 	@apply rounded-md p-2;
-	@apply bg-[--button-bg] hover:bg-[--button-bg-hover] focus-within:bg-[--button-bg-hover] text-[--button-color] border-[--button-border-color];
+	@apply bg-[--button-bg] hover:bg-[--button-bg-hover] focus-within:bg-[--button-bg-hover] text-[--button-color] border-[--button-border-color] hover:border-[--button-hover-border-color] focus-within:border-[--button-hover-border-color];
 
 	&.ghost {
 		&:not(:focus, :hover) {

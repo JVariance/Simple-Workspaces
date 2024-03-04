@@ -19,7 +19,7 @@
 <details 
 	bind:this={detailsElement}
 	class="{classes}"
-	style:--accordion-border-color="light-dark(#e5e7eb, #525252)"
+	style:--accordion-border-color="light-dark(var(--button-border-color), #525252)"
 	{...attributes}
 >
 	{@render summary()}
@@ -44,7 +44,7 @@
 	}
 
 	:global(details :where(summary)) {
-		--accordion-summary-hover-bg: light-dark(#f5f5f5, #17171c);
+		--accordion-summary-hover-bg: light-dark(var(--workspace-bg-hover), #17171c);
 		--accordion-summary-hover-color: inherit;
 		@apply flex items-center gap-2 p-2 border-[--accordion-border-color] rounded-md list-none cursor-pointer;
 		@apply hover:bg-[--accordion-summary-hover-bg] hover:text-[--accordion-summary-hover-color];

@@ -517,16 +517,16 @@
 				hidden @[184px]:flex w-full items-center gap-2 border
 				bg-[--search-bg] hover:bg-[--search-bg-hover] focus-within:bg-[--search-bg-focus]
 				border-[--search-border-color] text-[--search-color]
-				focus-within:shadow-xl rounded-md px-4 py-2
+				focus-within:shadow-lg !shadow-[color-mix(in_srgb,var(--search-bg)_100%,_black)] rounded-md px-4 py-2
 			"
 		>
 			<label for="search">
-				<Icon icon="search" width={20} class="text-neutral-400" />
+				<Icon icon="search" width={20} class="text-[--search-placeholder-color]" />
 			</label>
 			<input
 				id="search"
 				type="search"
-				class="min-w-0 w-full bg-transparent p-1 !outline-none !outline-0"
+				class="min-w-0 w-full bg-transparent p-1 !outline-none !outline-0 placeholder:text-[--search-placeholder-color]"
 				data-focusable
 				bind:this={searchInput}
 				bind:value={searchValue}
