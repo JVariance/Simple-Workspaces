@@ -48,11 +48,22 @@
 
 html[theme="browser"] {
 	//--button-bg: color-mix(in hsl, black 20%, transparent);
-	--button-bg-hover: color-mix(in hsl, var(--button-bg) 75%, black);
-	--button-border-color: color-mix(in hsl, var(--button-bg) 75%, black);
-	--workspace-bg-hover: color-mix(in hsl, var(--workspace-bg) 80%, black);
-	--workspace-bg-focus: color-mix(in hsl, var(--workspace-bg) 80%, black);
-	--search-bg: color-mix(in hsl, black 50%, transparent);
+	--icon-fill: color-mix(in hsl, light-dark(black, white) 50%, var(--search-bg));
+	--search-placeholder-color: color-mix(in hsl, light-dark(black, white) 75%, var(--search-bg));
+	--search-color: light-dark(#000, #fff);
+	--button-bg-hover: color-mix(in hsl, var(--button-bg) 85%, black);
+	--button-border-color: color-mix(in hsl, var(--button-bg) 85%, black);
+	--workspace-bg-hover: color-mix(in hsl, black 20%, var(--body-bg));
+	--workspace-bg-focus: color-mix(in hsl, black 20%, var(--body-bg));
+	--search-bg: light-dark(
+		color-mix(in hsl, black 10%, var(--body-bg)),
+		color-mix(in hsl, black 30%, var(--body-bg))
+	);
+	--search-bg-hover: light-dark(
+		color-mix(in hsl, black 20%, var(--body-bg)),
+		color-mix(in hsl, black 40%, var(--body-bg))
+	);
+	--search-bg-focus: var(--search-bg-hover);
 }
 
 body {
