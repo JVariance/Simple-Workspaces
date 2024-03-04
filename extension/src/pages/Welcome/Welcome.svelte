@@ -5,14 +5,14 @@
 	import Browser, { i18n } from "webextension-polyfill";
 	import Layout from "../Special_Pages/Layout.svelte";
 	import Shortcuts from "@root/components/ViewBlocks/Shortcuts.svelte";
-	import Info from "@root/components/Info.svelte";
 	import Logo from "@root/components/Logo.svelte";
-	import { intersect } from "svelte-intersection-observer-action";
 	import OnMount from "@root/components/OnMount.svelte";
 	import HomeWorkspace from "@root/components/ViewBlocks/HomeWorkspace.svelte";
+	import { initView } from "../states.svelte";
 
 	onMount(() => {
 		document.body.classList.add("js-enabled");
+		initView();
 	});
 </script>
 

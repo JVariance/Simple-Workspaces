@@ -20,8 +20,9 @@ import { WorkspaceStorage } from "./Entities";
 import { informViews } from "./informViews";
 import { tabsOnActivated } from "./browserEvents/tabs/tabsActivated";
 import { tabsOnPinned } from "./browserEvents/tabs/tabsOnPinned";
-import { initExtension } from "./initExtension";
 import { managementOnEnabled } from "./browserEvents/management/managementOnEnabled";
+import { alarmsOnAlarm } from "./browserEvents/alarms/alarmsOnAlarm";
+
 /* Event Order:
 Creation:
 1. browser.tabs.onCreated
@@ -51,6 +52,8 @@ Removal:
 
 browser.runtime.onInstalled.addListener(runtimeOnInstalled);
 browser.runtime.onStartup.addListener(runtimeOnStartup);
+
+browser.alarms.onAlarm.addListener(alarmsOnAlarm);
 
 browser.management.onEnabled.addListener(managementOnEnabled);
 
