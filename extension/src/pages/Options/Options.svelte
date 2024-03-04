@@ -300,6 +300,19 @@
 		{#if importedData}
 			{@const windowsArray = Object.entries(importedData.windows)}
 			{@const selectedWindowsCount = windowsArray.filter(([_, window]) => !window?.skip).length}
+			<label class="flex gap-3 items-center w-max ml-4 cursor-pointer">
+				<input 
+					type="checkbox" 
+					class="rounded-full"
+					checked={selectedWindowsCount === windowsArray.length}
+					onchange={(e) => windowsArray.forEach(([_, window]) => window.skip = !e.currentTarget.checked)}
+				/>
+				{#if selectedWindowsCount === windowsArray.length}
+					{i18n.getMessage('deselect_all')}
+					{:else}
+						{i18n.getMessage('select_all')}
+				{/if}
+			</label>
 			<div class="overflow-auto [scrollbar-width:thin] pr-2 grid gap-2 overscroll-contain">
 				{#each windowsArray as [_, window], i}
 					<div 

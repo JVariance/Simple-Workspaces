@@ -254,5 +254,11 @@
   },
   "selected": {
     "message": "selected"
+  },
+  "select_all": {
+    "message": "select all"
+  },
+  "deselect_all": {
+    "message": "deselect all"
   }
 }
