@@ -300,11 +300,11 @@
 		{#if importedData}
 			{@const windowsArray = Object.entries(importedData.windows)}
 			{@const selectedWindowsCount = windowsArray.filter(([_, window]) => !window?.skip).length}
-			<div class="overflow-auto [scrollbar-width:thin] pr-2 grid gap-2">
+			<div class="overflow-auto [scrollbar-width:thin] pr-2 grid gap-2 overscroll-contain">
 				{#each windowsArray as [_, window], i}
 					<div 
 						class="
-							relative grid gap-4 border has-[input:checked]:bg-blue-100 has-[input:checked]:border-blue-300 px-12 py-4 rounded-md
+							group relative grid gap-4 border has-[input:checked]:bg-blue-100 has-[input:checked]:border-blue-300 px-12 py-4 rounded-md
 							dark:has-[input:checked]:bg-blue-950 dark:has-[input:checked]:border-blue-800 dark:border-white/25
 						"
 					>
@@ -325,7 +325,7 @@
 										{#each workspace.tabs as tab}
 											{@const url = new URL(tab.url)}
 											{#if url.protocol !== 'about:'}
-												<p class="ml-4 overflow-x-auto whitespace-nowrap">{url.hostname.replace('www.', '')}</p>
+												<p class="ml-4 overflow-x-auto whitespace-nowrap font-thin">{url.hostname.replace('www.', '')}</p>
 											{/if}
 										{/each}
 									</div>
@@ -335,22 +335,19 @@
 					</div>
 				{/each}
 			</div>
-			<p>
-				{selectedWindowsCount}/{windowsArray.length} {i18n.getMessage('selected')}
-				<!-- {#if selectedWindowsCount === 1}
-					{i18n.getMessage('selected_window')}
-					{:else}
-					{i18n.getMessage('selected_windows')}
-				{/if} -->
-			</p>
-			<button 
-				class="btn primary-btn disabled:pointer-events-none disabled:opacity-20" 
-				onclick={importData} 
-				disabled={selectedWindowsCount < 1}
-			>
-				<Icon icon="json-file" />
-				{i18n.getMessage('import')}
-			</button>
+			<div class="flex gap-2 items-center flex-wrap">
+				<button 
+					class="btn primary-btn disabled:pointer-events-none disabled:opacity-20" 
+					onclick={importData} 
+					disabled={selectedWindowsCount < 1}
+				>
+					<Icon icon="json-file" />
+					{i18n.getMessage('import')}
+				</button>
+				<p class="text-black/50 dark:text-white/50">
+					{selectedWindowsCount}/{windowsArray.length} {i18n.getMessage('selected')}
+				</p>
+			</div>
 		{/if}
 	</dialog>
 </Layout>
@@ -358,6 +355,7 @@
 <style lang="postcss">
 	.tabs-wrapper::before {
 		content: "";
-		@apply rounded-full w-px absolute top-2 left-[9px] bottom-[5px] bg-black dark:bg-white;
+		@apply rounded-full w-px absolute top-2 left-[9px] bottom-[5px] border;
+		@apply group-has-[input:checked]:border-blue-300 dark:group-has-[input:checked]:border-blue-800 dark:border-white/25;
 	}
 </style>
