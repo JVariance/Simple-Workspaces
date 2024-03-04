@@ -260,5 +260,8 @@
   },
   "deselect_all": {
     "message": "deselect all"
+  },
+  "clear_extension_data_are_you_sure": {
+    "message": "I really want to reset the extension data"
   }
 }

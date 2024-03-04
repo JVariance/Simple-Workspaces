@@ -60,7 +60,7 @@
     "description": "options page"
   },
   "clear": {
-    "message": "Erweiterungsdaten löschen",
+    "message": "Erweiterungsdaten zurücksetzen",
     "description": "options page -> clear extension data"
   },
   "new_workspace": {
@@ -257,5 +257,8 @@
   },
   "select_all": {
     "message": "alle auswählen"
+  },
+  "clear_extension_data_are_you_sure": {
+    "message": "Ich möchte die Erweiterungsdaten wirklich zurücksetzen"
   }
 }

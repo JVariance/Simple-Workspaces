@@ -24,6 +24,8 @@
 
 	let importDialogElem = $state<HTMLDialogElement>();
 
+	let clearExtensionDataConfirmed = $state(false);
+
 	async function applyCurrentWorkspacesChanges() {
 		const props = $state({
 				state: "loading",
@@ -195,7 +197,7 @@
 			{#if windowWorkspaces?.length}
 				<button class="btn justify-center mt-4" style:width="-moz-available" onclick={applyCurrentWorkspacesChanges}>
 					<Icon icon="check" />
-					<span class="-mt-1">{i18n.getMessage('apply_changes')}</span>
+					<span class="">{i18n.getMessage('apply_changes')}</span>
 				</button>
 				{:else}
 				{i18n.getMessage('There_are_no_current_workspaces_in_this_window')}.
@@ -246,7 +248,18 @@
 						</h1>
 					</Summary>
 				{/snippet}
-				<button class="btn mt-4" onclick={clearExtensionData}>{i18n.getMessage('clear')}</button>
+				<label class="flex gap-2 items-center mt-4 cursor-pointer">
+					<input type="checkbox" bind:checked={clearExtensionDataConfirmed} />
+					{i18n.getMessage('clear_extension_data_are_you_sure')}
+				</label>
+				<button 
+					class="btn mt-4 !bg-red-500 disabled:opacity-20 disabled:pointer-events-none" 
+					onclick={clearExtensionData} 
+					disabled={!clearExtensionDataConfirmed}
+				>
+					<Icon icon="clear" />
+					<span class="-mt-[0rem] first-letter:uppercase">{i18n.getMessage('clear')}</span>
+				</button>
 			</Accordion>
 		{/snippet}
 		{#snippet Section_WelcomePage()}

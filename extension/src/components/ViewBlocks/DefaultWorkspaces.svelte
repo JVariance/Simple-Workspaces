@@ -240,7 +240,7 @@
 				onclick={applyDefaultWorkspacesChanges}
 			>
 				<Icon icon="check" />
-				<span class="-mt-1">{i18n.getMessage('apply_changes')}</span>
+				<span class="">{i18n.getMessage('apply_changes')}</span>
 			</button>
 		</div>
 		{#if !isWelcomePage}
