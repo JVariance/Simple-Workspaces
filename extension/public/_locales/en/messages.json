@@ -245,5 +245,14 @@
   },
   "import_select_windows": {
     "message": "Select data to import"
+  },
+  "selected_windows": {
+    "message": "selected window"
+  },
+  "selected_window": {
+    "message": "selected window"
+  },
+  "selected": {
+    "message": "selected"
   }
 }

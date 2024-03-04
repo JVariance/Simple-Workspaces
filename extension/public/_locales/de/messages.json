@@ -242,5 +242,14 @@
   },
   "import_select_windows": {
     "message": "Wähle Daten für den Import"
+  },
+  "selected_windows": {
+    "message": "ausgewählte Fenster"
+  },
+  "selected_window": {
+    "message": "ausgewähltes Fenster"
+  },
+  "selected": {
+    "message": "ausgewählt"
   }
 }

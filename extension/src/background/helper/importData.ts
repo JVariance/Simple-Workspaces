@@ -2,7 +2,7 @@ import * as API from "@root/browserAPI";
 import { Processes, Window, WorkspaceStorage } from "../Entities";
 import { Workspace } from "../Entities/Workspace";
 
-export type ImportData = Record<
+export type ImportData<WindowProps = {}> = Record<
 	"windows",
 	Record<
 		Ext.Window["UUID"],
@@ -16,16 +16,23 @@ export type ImportData = Record<
 					tabs: { url: string; active: boolean; pinned: boolean }[];
 				}
 			][]
-		>
+		> &
+			WindowProps
 	>
 >;
 
-export async function importData({ data }: { data: ImportData }) {
+export async function importData({
+	data,
+}: {
+	data: ImportData<{ skip?: boolean }>;
+}) {
 	const { windows } = data;
 	Processes.importingData = true;
 	Processes.DataImport.start();
 
 	for (let [windowUUID, window] of Object.entries(windows)) {
+		if (window?.skip) continue;
+
 		const browserWindow = (
 			await API.createWindows([{ focused: false }])
 		).createdWindows?.at(0);

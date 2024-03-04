@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from "@root/components/Icon.svelte";
-	import { mount, onMount } from "svelte";
+	import { mount, onMount, unstate } from "svelte";
 	import Browser, { i18n } from "webextension-polyfill";
 	import Accordion from "@components/Accordion/Accordion.svelte";
 	import Summary from "@components/Accordion/Summary.svelte";
@@ -101,8 +101,7 @@
 		createAndDownloadExportFile(JSON.stringify(data, null, 2), `simple-workspaces-${date}.json`, "application/json");
 	}
 
-	let importedData  = $state<ImportData>();
-	let userRefinedImportData = $state<ImportData>();
+	let importedData  = $state<ImportData<{skip?: boolean}>>();
 
 	function importDataRequest(e: Event & { currentTarget: HTMLInputElement }) {
 		const files = e.currentTarget.files;
@@ -126,8 +125,10 @@
 		}
 	}
 
-	function importData() {
-		Browser.runtime.sendMessage({ msg: 'importData', userRefinedImportData });
+	async function importData() {
+		importDialogElem?.close();
+		await Browser.runtime.sendMessage({ msg: 'importData', data: unstate(importedData) });
+		importedData = undefined;
 	}
 
 	onMount(() => {
@@ -297,17 +298,24 @@
 		</button>
 		<h1 class="text-xl font-semibold text-[--heading-2-color]">{i18n.getMessage('import_select_windows')}</h1>
 		{#if importedData}
+			{@const windowsArray = Object.entries(importedData.windows)}
+			{@const selectedWindowsCount = windowsArray.filter(([_, window]) => !window?.skip).length}
 			<div class="overflow-auto [scrollbar-width:thin] pr-2 grid gap-2">
-				{#each Object.entries(importedData.windows) as [_, window], i}
+				{#each windowsArray as [_, window], i}
 					<div 
 						class="
 							relative grid gap-4 border has-[input:checked]:bg-blue-100 has-[input:checked]:border-blue-300 px-12 py-4 rounded-md
 							dark:has-[input:checked]:bg-blue-950 dark:has-[input:checked]:border-blue-800 dark:border-white/25
 						"
-						>
-						<h2>{i18n.getMessage('window')} {i + 1}</h2>
+					>
+						<h2 class="font-thin leading-tight">{i18n.getMessage('window')} {i + 1}</h2>
 						<label class="absolute inset-0 cursor-pointer z-[1]">
-							<input type="checkbox" checked class="absolute top-4 left-4 !rounded-full">
+							<input 
+								type="checkbox" 
+								checked={window?.skip ? false : true}
+								class="absolute top-4 left-4 !rounded-full"
+								onchange={(e) => window.skip = !e.currentTarget.checked}
+							/>
 						</label>
 						<div class="grid gap-4">
 							{#each Object.entries(window.workspaces) as [_, [__, workspace]]}
@@ -316,7 +324,9 @@
 									<div class="tabs-wrapper grid gap-1 relative pl-2">
 										{#each workspace.tabs as tab}
 											{@const url = new URL(tab.url)}
-											<p class="ml-4 overflow-x-auto whitespace-nowrap">{url.hostname.replace('www.', '')}</p>
+											{#if url.protocol !== 'about:'}
+												<p class="ml-4 overflow-x-auto whitespace-nowrap">{url.hostname.replace('www.', '')}</p>
+											{/if}
 										{/each}
 									</div>
 								</div>
@@ -325,7 +335,19 @@
 					</div>
 				{/each}
 			</div>
-			<button class="btn primary-btn" onclick={importData}>
+			<p>
+				{selectedWindowsCount}/{windowsArray.length} {i18n.getMessage('selected')}
+				<!-- {#if selectedWindowsCount === 1}
+					{i18n.getMessage('selected_window')}
+					{:else}
+					{i18n.getMessage('selected_windows')}
+				{/if} -->
+			</p>
+			<button 
+				class="btn primary-btn disabled:pointer-events-none disabled:opacity-20" 
+				onclick={importData} 
+				disabled={selectedWindowsCount < 1}
+			>
 				<Icon icon="json-file" />
 				{i18n.getMessage('import')}
 			</button>
