@@ -19,7 +19,7 @@
 <details 
 	bind:this={detailsElement}
 	class="{classes}"
-	style:--accordion-border-color="light-dark(var(--button-border-color), #525252)"
+	style:--accordion-border-color="var(--button-border-color)"
 	{...attributes}
 >
 	{@render summary()}

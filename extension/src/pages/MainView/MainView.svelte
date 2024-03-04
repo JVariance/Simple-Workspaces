@@ -544,13 +544,13 @@
 		<button 
 			class="
 				flex @[184px]:hidden bg-[--search-bg] hover:bg-[--search-bg-hover] focus-within:bg-[--search-bg-focus]
-				border-[--search-border-color] text-[--search-color]
+				border border-[--search-border-color] text-[--search-color]
 				mx-auto w-10 h-10 @[56px]:w-12 @[56px]:h-12 items-center justify-center
 			"
 			onclick={() => Browser.browserAction.openPopup({windowId})}
 			title={i18n.getMessage('search')}
 		>
-			<Icon icon="search" width={20} class="text-neutral-400" />
+			<Icon icon="search" width={20} class="text-[--search-placeholder-color]" />
 		</button>
 	</section>
 	<!-- <hr class="border-neutral-800" /> -->
