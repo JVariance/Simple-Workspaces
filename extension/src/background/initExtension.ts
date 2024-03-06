@@ -1,9 +1,11 @@
+import Browser from "webextension-polyfill";
 import {
 	BrowserStorage,
 	Processes,
 	TabMenuMove,
 	WorkspaceStorage,
 } from "./Entities";
+import { createBackupAlarm } from "./helper/backupAlarm";
 
 async function initTabMenu() {
 	await TabMenuMove.init(
@@ -23,36 +25,41 @@ async function initWorkspaceStorage(options: { extensionUpdated?: boolean }) {
 	await WorkspaceStorage.init({ extensionUpdated });
 }
 
-export async function initExtension(
-	options: { extensionUpdated?: boolean } = {}
-) {
-	console.info("initExtension 0");
-	// await Processes.ExtensionInitialization;
+export function initExtension(options: { extensionUpdated?: boolean } = {}) {
+	return new Promise<void>(async (resolve) => {
+		console.info("initExtension 0");
+		// await Processes.ExtensionInitialization;
 
-	const { extensionUpdated = false } = options;
+		const { extensionUpdated = false } = options;
 
-	if (
-		Processes.extensionInitialized &&
-		Processes.ExtensionInitialization.state === "pending"
-	)
-		return;
-	console.info("initExtension 1");
-	Processes.ExtensionInitialization.start();
-	console.info("initExtension 2");
+		if (
+			Processes.extensionInitialized &&
+			Processes.ExtensionInitialization.state === "pending"
+		)
+			return;
+		console.info("initExtension 1");
+		Processes.ExtensionInitialization.start();
+		console.info("initExtension 2");
 
-	const { keepPinnedTabs } = await BrowserStorage.getKeepPinnedTabs();
-	Processes.keepPinnedTabs = keepPinnedTabs ?? false;
+		const { keepPinnedTabs } = await BrowserStorage.getKeepPinnedTabs();
+		Processes.keepPinnedTabs = keepPinnedTabs ?? false;
 
-	// await browser.storage.local.clear();
-	// if (!WorkspaceStorage.initialized && !TabMenu.initialized) {
-	if (!WorkspaceStorage.initialized) {
-		console.info("initExtension 3");
-		await initWorkspaceStorage({ extensionUpdated });
-		console.info("initExtension 4");
-	}
-	await initTabMenu();
-	// informViews("initialized");
-	console.info("initExtension 5");
-	Processes.ExtensionInitialization.finish();
-	Processes.extensionInitialized = true;
+		// await browser.storage.local.clear();
+		// if (!WorkspaceStorage.initialized && !TabMenu.initialized) {
+		if (!WorkspaceStorage.initialized) {
+			console.info("initExtension 3");
+			await initWorkspaceStorage({ extensionUpdated });
+			console.info("initExtension 4");
+		}
+		await initTabMenu();
+		// informViews("initialized");
+		console.info("initExtension 5");
+		Processes.ExtensionInitialization.finish();
+		Processes.extensionInitialized = true;
+
+		resolve();
+
+		const { backupEnabled = false } = await BrowserStorage.getBackupEnabled();
+		backupEnabled && createBackupAlarm();
+	});
 }

@@ -617,9 +617,9 @@
 								onclick={() => {switchWorkspaceAndFocusTab(workspace.UUID, tab.id)}}
 							>
 								{#if tab.favIconUrl && !tab.favIconUrl.startsWith('chrome')}
-									<img class="w-5 h-5 overflow-hidden" src={tab.favIconUrl} alt="{tab.title} favicon"/>
+									<img class="w-5 h-5 min-w-5 min-h-5 overflow-hidden" src={tab.favIconUrl} alt="{tab.title} favicon"/>
 									{:else}
-										<div class="w-5 h-5"/>
+										<div class="w-5 h-5 min-w-5 min-h-5"/>
 								{/if}
 								<span class="max-w-[30ch] overflow-hidden text-ellipsis whitespace-nowrap -mt-[0.2rem]">
 									{tab.title}

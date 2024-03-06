@@ -24,7 +24,8 @@
 		"sessions",
 		"storage",
 		"tabHide",
-		"tabs"
+		"tabs",
+		"unlimitedStorage"
 	],
 	"commands": {
 		"_execute_browser_action": {

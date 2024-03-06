@@ -89,7 +89,6 @@
 
 		if(exportOptions.tabs) {
 			const fullExportData = await Browser.runtime.sendMessage({ msg: "getFullExportData" });
-			console.info({ fullExportData });
 			data.windows = fullExportData;
 		}
 
@@ -129,6 +128,7 @@
 
 	async function importData() {
 		importDialogElem?.close();
+		console.info({importedData});
 		await Browser.runtime.sendMessage({ msg: 'importData', data: unstate(importedData) });
 		importedData = undefined;
 	}
@@ -344,12 +344,12 @@
 							/>
 						</label>
 						<div class="grid gap-4">
-							{#each Object.entries(window.workspaces) as [_, [__, workspace]]}
+							{#each Object.entries(window.w) as [_, [__, workspace]]}
 								<div>
-									<p><span class="[font-family:_Noto_Color_Emoji]">{workspace.icon}</span> <span class="font-semibold">{workspace.name}</span></p>
+									<p><span class="[font-family:_Noto_Color_Emoji]">{workspace.i}</span> <span class="font-semibold">{workspace.n}</span></p>
 									<div class="tabs-wrapper grid gap-1 relative pl-2">
-										{#each workspace.tabs as tab}
-											{@const url = new URL(tab.url)}
+										{#each workspace.t as tab}
+											{@const url = new URL(tab.u)}
 											{#if url.protocol !== 'about:'}
 												<p class="ml-4 overflow-x-auto whitespace-nowrap font-thin">{url.hostname.replace('www.', '')}</p>
 											{/if}

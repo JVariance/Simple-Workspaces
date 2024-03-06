@@ -1,3 +1,4 @@
+import type { ExportData } from "@root/background/helper/exportData";
 import Browser from "webextension-polyfill";
 
 type WorkspaceHistoryType = [
@@ -70,5 +71,54 @@ export class BrowserStorage {
 
 	static setForceDefaultThemeIfDarkMode(bool: boolean) {
 		return Browser.storage.local.set({ forceDefaultThemeIfDarkMode: bool });
+	}
+
+	static getBackupDeviceName(): Promise<Record<"backupDeviceName", string>> {
+		return Browser.storage.local.get("backupDeviceName");
+	}
+
+	static setBackupDeviceName(deviceName: string): Promise<void> {
+		return Browser.storage.local.set({ backupDeviceName: deviceName });
+	}
+
+	static getSyncedBackupDeviceNames(): Promise<
+		Record<"syncedBackupDeviceNames", string>
+	> {
+		return Browser.storage.sync.get("syncedBackupDeviceNames");
+	}
+
+	static setSyncedBackupDeviceNames(deviceNames: string[]): Promise<void> {
+		return Browser.storage.sync.set({ syncedBackupDeviceNames: deviceNames });
+	}
+
+	static getBackupDataFromDevice(
+		device: string
+	): Promise<Record<string, ExportData>> {
+		return Browser.storage.sync.get(`backup_${device}`);
+	}
+
+	static setBackupDataFromDevice(
+		device: string,
+		backupData: ExportData
+	): Promise<void> {
+		return Browser.storage.sync.set({ [`backup_${device}`]: backupData });
+	}
+
+	static getBackupEnabled(): Promise<Record<"backupEnabled", boolean>> {
+		return Browser.storage.local.get("backupEnabled");
+	}
+
+	static setBackupEnabled(backupEnabled: boolean): Promise<void> {
+		return Browser.storage.local.set({ backupEnabled });
+	}
+
+	static getBackupPeriodInMinutes(): Promise<
+		Record<"backupPeriodInMinutes", number>
+	> {
+		return Browser.storage.local.get("backupPeriodInMinutes");
+	}
+
+	static setBackupPeriodInMinutes(val: number): Promise<void> {
+		return Browser.storage.local.set({ backupPeriodInMinutes: val });
 	}
 }

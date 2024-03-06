@@ -1,8 +1,12 @@
-import type Browser from "webextension-polyfill";
+import Browser from "webextension-polyfill";
 import { Processes, WorkspaceStorage } from "../../Entities";
 import { informViews } from "../../informViews";
 import * as API from "@root/browserAPI";
 import { pinTabs, unpinTabs } from "@root/background/helper/tabsPinning";
+import {
+	clearBackupAlarm,
+	createBackupAlarm,
+} from "@root/background/helper/backupAlarm";
 
 export function storageOnChanged(
 	changes: Browser.Storage.StorageAreaOnChangedChangesType
@@ -11,6 +15,13 @@ export function storageOnChanged(
 	for (let key in changes) {
 		const item = changes[key];
 		switch (key) {
+			case "backupEnabled":
+				if (item.newValue) {
+					createBackupAlarm();
+				} else {
+					clearBackupAlarm();
+				}
+				break;
 			case "homeWorkspace":
 				WorkspaceStorage.windows.forEach((window) => {
 					informViews(window.windowId, "updatedHomeWorkspace", {

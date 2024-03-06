@@ -2,18 +2,19 @@ import * as API from "@root/browserAPI";
 import { Processes, Window, WorkspaceStorage } from "../Entities";
 import { Workspace } from "../Entities/Workspace";
 
+// w: workspaces, i: icon, n: name, t: tabs, u:url, a: active, p: pinned
 export type ImportData<WindowProps = {}> = Record<
 	"windows",
 	Record<
 		Ext.Window["UUID"],
 		Record<
-			"workspaces",
+			"w",
 			[
 				Ext.Workspace["UUID"],
 				{
-					icon: string;
-					name: string;
-					tabs: { url: string; active: boolean; pinned: boolean }[];
+					i: string;
+					n: string;
+					t: { u: string; a: 0 | 1; p: 0 | 1 }[];
 				}
 			][]
 		> &
@@ -52,13 +53,13 @@ export async function importData({
 			})
 		).tabs?.at(0);
 
-		const { workspaces } = window;
+		const { w: workspaces } = window;
 		for (let [workspaceUUID, workspace] of workspaces) {
 			const extWorkspace = new Workspace({
 				UUID: workspaceUUID === "HOME" ? "HOME" : crypto.randomUUID(),
 				active: false,
-				name: workspace.name,
-				icon: workspace.icon,
+				name: workspace.n,
+				icon: workspace.i,
 				pinnedTabIds: [],
 				tabIds: [],
 				windowId: extWindow.windowId,
@@ -68,11 +69,11 @@ export async function importData({
 			extWindow.workspaces.set(extWorkspace.UUID, extWorkspace);
 
 			Processes.manualTabAddition = true;
-			for (let tab of workspace.tabs) {
+			for (let tab of workspace.t) {
 				const browserTab = await API.createTab({
-					active: tab.active,
-					url: tab.url,
-					pinned: tab.pinned,
+					active: tab.a ? true : false,
+					url: tab.u,
+					pinned: tab.p ? true : false,
 				});
 
 				if (!browserTab) continue;
@@ -82,7 +83,7 @@ export async function importData({
 					extWorkspace.UUID
 				);
 
-				if (tab.active) {
+				if (tab.a) {
 					extWorkspace.active = true;
 					extWorkspace.activeTabId = browserTab.id!;
 					extWindow.activeWorkspace = extWorkspace;
@@ -90,7 +91,7 @@ export async function importData({
 
 				extWorkspace.tabIds.push(browserTab.id!);
 
-				if (tab.pinned) {
+				if (tab.p) {
 					extWorkspace.pinnedTabIds.push(browserTab.id!);
 				}
 			}

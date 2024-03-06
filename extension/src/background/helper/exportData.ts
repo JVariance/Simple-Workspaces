@@ -1,5 +1,21 @@
-import { WorkspaceStorage } from "../Entities";
+import { Window, WorkspaceStorage } from "../Entities";
 import * as API from "@root/browserAPI";
+
+type _ExportData = Record<
+	Window["UUID"],
+	{
+		w: [
+			string,
+			{
+				i: string;
+				n: string;
+				t: { u: string; a: 0 | 1; p: 0 | 1 }[];
+			}
+		][];
+	}
+>;
+
+export type ExportData = { windows: _ExportData; codes?: [string, string][] };
 
 export async function exportData() {
 	const fullExportData = new Map<
@@ -7,9 +23,9 @@ export async function exportData() {
 		Map<
 			Ext.Workspace["UUID"],
 			{
-				icon: string;
-				name: string;
-				tabs: { url: string; active: boolean; pinned: boolean }[];
+				i: string;
+				n: string;
+				t: { u: string; a: 0 | 1; p: 0 | 1 }[];
 			}
 		>
 	>();
@@ -29,37 +45,29 @@ export async function exportData() {
 				if (!fullExportData.get(window.UUID)?.has(workspaceUUID)) {
 					const workspace = window.workspaces.get(workspaceUUID)!;
 					fullExportData.get(window.UUID)!.set(workspaceUUID, {
-						icon: workspace.icon,
-						name: workspace.name,
-						tabs: [],
+						i: workspace.icon,
+						n: workspace.name,
+						t: [],
 					});
 				}
 
-				fullExportData.get(window.UUID)?.get(workspaceUUID)?.tabs.push({
-					url: tab.url!,
-					active: tab.active,
-					pinned: tab.pinned,
-				});
+				fullExportData
+					.get(window.UUID)
+					?.get(workspaceUUID)
+					?.t.push({
+						u: tab.url!,
+						a: tab.active ? 1 : 0,
+						p: tab.pinned ? 1 : 0,
+					});
 			}
 		}
 	}
 
-	const fullExportDataArray = {} as {
-		[key: string]: {
-			workspaces: [
-				string,
-				{
-					icon: string;
-					name: string;
-					tabs: { url: string; active: boolean }[];
-				}
-			][];
-		};
-	};
+	const finalFullExportData = {} as _ExportData;
 
 	for (let [windowUUID, window] of fullExportData) {
-		fullExportDataArray[windowUUID] = { workspaces: Array.from(window) };
+		finalFullExportData[windowUUID] = { w: Array.from(window) };
 	}
 
-	return fullExportDataArray;
+	return finalFullExportData;
 }
