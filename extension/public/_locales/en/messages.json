@@ -263,5 +263,11 @@
   },
   "clear_extension_data_are_you_sure": {
     "message": "I really want to reset the extension data"
+  },
+  "provider": {
+    "message": "provider"
+  },
+  "sync": {
+    "message": "synchronize"
   }
 }

@@ -4,6 +4,9 @@ import Browser from "webextension-polyfill";
 import * as API from "@root/browserAPI";
 import { exportData } from "@root/background/helper/exportData";
 import { importData } from "@root/background/helper/importData";
+import GoogleDrive from "@root/background/helper/Authorization/GoogleDrive";
+
+const Providers = new Map<string, GoogleDrive>();
 
 function switchWorkspaceCommand({
 	workspaceUUID,
@@ -52,6 +55,24 @@ function switchWorkspaceAndFocusTab({
 		});
 	}
 }
+
+// function getUserInfo(accessToken: string) {
+// 	const requestURL = "https://www.googleapis.com/oauth2/v1/userinfo?alt=json";
+// 	const requestHeaders = new Headers();
+// 	requestHeaders.append("Authorization", "Bearer " + accessToken);
+// 	const driveRequest = new Request(requestURL, {
+// 		method: "GET",
+// 		headers: requestHeaders,
+// 	});
+
+// 	return fetch(driveRequest).then((response) => {
+// 		if (response.status === 200) {
+// 			return response.json();
+// 		} else {
+// 			throw response.status;
+// 		}
+// 	});
+// }
 
 export function runtimeOnMessage(message: any) {
 	const { msg } = message;
@@ -312,6 +333,44 @@ export function runtimeOnMessage(message: any) {
 			return new Promise(async (resolve) => {
 				const fullExportDataArray = await exportData();
 				return resolve(fullExportDataArray);
+			});
+		case "synchronize":
+			return new Promise<void>(async (resolve) => {
+				const { provider } = message;
+				switch (provider) {
+					case "Google Drive":
+						try {
+							Processes.authorizingProvider = true;
+							let currentProvider;
+							if (Providers.has("GoogleDrive")) {
+								currentProvider = Providers.get("GoogleDrive");
+							} else {
+								currentProvider = new GoogleDrive();
+								Providers.set("GoogleDrive", currentProvider);
+							}
+							console.info({ currentProvider, Providers });
+							const { accessToken } = await currentProvider!.getAccessToken();
+							console.info({ accessToken });
+							// const info = accessToken ? await getUserInfo(accessToken) : null;
+							// console.info({ info });
+							const files = await currentProvider?.filesList();
+							console.info({ files });
+
+							const exportedData = await exportData();
+							const { backupDeviceName } =
+								await BrowserStorage.getBackupDeviceName();
+							await currentProvider?.fileUpload({
+								id: "",
+								name: `${backupDeviceName}.json`,
+								contents: exportedData,
+							});
+							Processes.authorizingProvider = false;
+						} catch (e) {}
+						break;
+					default:
+						break;
+				}
+				return resolve();
 			});
 		default:
 			break;

@@ -24,6 +24,8 @@
 
 	let importDialogElem = $state<HTMLDialogElement>();
 
+	const providers = ["Google Drive"] as const;
+	let selectedBackupProvider = $state<typeof providers[number]>('Google Drive');
 	let clearExtensionDataConfirmed = $state(false);
 
 	async function applyCurrentWorkspacesChanges() {
@@ -131,6 +133,10 @@
 		console.info({importedData});
 		await Browser.runtime.sendMessage({ msg: 'importData', data: unstate(importedData) });
 		importedData = undefined;
+	}
+
+	async function synchronize(){
+		Browser.runtime.sendMessage({ msg: 'synchronize', provider: selectedBackupProvider });
 	}
 
 	onMount(() => {
@@ -274,7 +280,7 @@
 			</ButtonLink>
 		{/snippet}
 		{#snippet Section_ImportExport()}
-			<h1 class="text-xl font-semibold text-[--heading-2-color]">Import/Export/Backup</h1>
+			<h1 class="text-xl font-semibold text-[--heading-2-color]">Import/Export</h1>
 			<div class="flex gap-4 flex-wrap">
 				<button class="btn primary-btn" onclick={exportData}>
 					<Icon icon="json-file" />
@@ -285,6 +291,31 @@
 					<span class="first-letter:uppercase">{i18n.getMessage('import')}...</span>
 				</label>
 				<input id="import-data" class="opacity-0 absolute pointer-events-none" type="file" accept="application/json" onchange={importDataRequest} />
+			</div>
+			<!-- <a href={Browser.identity.getRedirectURL()}>Link</a> -->
+			<div>
+				<h2 class="text-xl font-semibold text-[--heading-2-color]">Backup</h2>
+				<div class="mt-4 grid gap-4">
+					<label class="grid gap-1">
+						<span class="text-[--heading-2-color] font-semibold first-letter:uppercase">
+							{i18n.getMessage('provider')}
+						</span>
+						<select 
+							id="select-backup-provider"
+							name="select-backup-provider"
+							class="p-1 rounded-md bg-[--workspace-bg] text-[--workspace-color] w-max"
+							bind:value={selectedBackupProvider}
+						>
+							{#each ["Google Drive"] as provider}
+								<option class="bg-[--workspace-bg] text-[--workspace-color]" value={provider}>{provider}</option>
+							{/each}
+						</select>
+					</label>
+					<button class="btn primary-btn" onclick={synchronize}>
+						<Icon icon="sync" />
+						<span>{i18n.getMessage('sync')}</span>
+					</button>
+				</div>
 			</div>
 		{/snippet}
 

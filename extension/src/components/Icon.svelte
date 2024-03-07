@@ -41,6 +41,7 @@
 		"sad-face-2": "fluent-emoji:sad-but-relieved-face",
 		search: "tabler:search",
 		settings: "material-symbols:settings",
+		sync: "mdi:cloud-sync",
 		touch: "carbon:touch-1-filled",
 		triangleUp: "ion:triangle-sharp",
 	};

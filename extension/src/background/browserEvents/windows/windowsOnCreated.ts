@@ -3,7 +3,12 @@ import { WorkspaceStorage, Processes } from "../../Entities";
 import * as API from "@root/browserAPI";
 
 export async function windowsOnCreated(window: Browser.Windows.Window) {
-	if (Processes.importingData || window.type !== "normal") return;
+	if (
+		Processes.importingData ||
+		Processes.authorizingProvider ||
+		window.type !== "normal"
+	)
+		return;
 	await Processes.TabCreation;
 	Processes.WindowCreation.start();
 	console.info("windows.onCreated");

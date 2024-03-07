@@ -260,5 +260,11 @@
   },
   "clear_extension_data_are_you_sure": {
     "message": "Ich möchte die Erweiterungsdaten wirklich zurücksetzen"
+  },
+  "provider": {
+    "message": "Anbieter"
+  },
+  "sync": {
+    "message": "synchronisieren"
   }
 }

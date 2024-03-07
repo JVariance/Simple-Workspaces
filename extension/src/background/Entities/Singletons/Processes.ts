@@ -23,6 +23,7 @@ class Processes {
 	runningTabsOnAttached = false;
 	runningTabsOnDetached = false;
 	importingData = false;
+	authorizingProvider = false;
 
 	private constructor() {}
 
