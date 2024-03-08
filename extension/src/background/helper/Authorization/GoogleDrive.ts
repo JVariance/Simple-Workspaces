@@ -6,7 +6,11 @@ import StorageProvider from "./StorageProvider";
 const REDIRECT_URL = Browser.identity.getRedirectURL();
 const CLIENT_ID =
 	"758528028452-hlu883tbm6bu8oolrso5sripso72a5ig.apps.googleusercontent.com";
-const SCOPES = ["openid", "email", "profile"];
+// drive.appdata, drive.file, drive.metadata, drive.readonly
+const SCOPES = [
+	"https://www.googleapis.com/auth/drive.appdata",
+	"https://www.googleapis.com/auth/drive.file",
+];
 const AUTH_URL = `https://accounts.google.com/o/oauth2/auth?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(
 	REDIRECT_URL
 )}&scope=${encodeURIComponent(SCOPES.join(" "))}`;

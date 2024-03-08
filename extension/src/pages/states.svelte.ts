@@ -22,7 +22,7 @@ const activeWorkspaceIndex = (() => {
 	};
 })();
 let keepPinnedTabs = $state<boolean>(false);
-let backupDeviceName = $state<string>("");
+let backupDeviceName = $state<string>();
 let backupEnabled = $state<boolean>(false);
 let backupProviderConnected = $state<boolean>();
 let backupProvider = $state<"Google Drive">("Google Drive");
@@ -291,6 +291,10 @@ async function backupLastTimeStampChanged({
 	backupLastTimeStamp = timestamp;
 }
 
+function backupDeviceNameChanged({ deviceName }: { deviceName: string }) {
+	backupDeviceName = deviceName;
+}
+
 Browser.runtime.onMessage.addListener((message) => {
 	console.info("browser runtime onmessage hehe");
 
@@ -347,6 +351,9 @@ Browser.runtime.onMessage.addListener((message) => {
 			break;
 		case "backupLastTimeStampChanged":
 			backupLastTimeStampChanged(message);
+			break;
+		case "backupDeviceNameChanged":
+			backupDeviceNameChanged(message);
 			break;
 		default:
 			break;

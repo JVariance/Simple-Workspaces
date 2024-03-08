@@ -78,6 +78,42 @@ function switchWorkspaceAndFocusTab({
 // 	});
 // }
 
+async function backupData({ provider }: { provider: "Google Drive" }) {
+	console.info("bg - backupData to: ", provider);
+	switch (provider) {
+		case "Google Drive":
+			try {
+				Processes.authorizingProvider = true;
+				let currentProvider;
+				if (Providers.has("GoogleDrive")) {
+					currentProvider = Providers.get("GoogleDrive");
+				} else {
+					currentProvider = new GoogleDrive();
+					Providers.set("GoogleDrive", currentProvider);
+				}
+				console.info({ currentProvider, Providers });
+				const { accessToken } = await currentProvider!.getAccessToken();
+				console.info({ accessToken });
+				// const info = accessToken ? await getUserInfo(accessToken) : null;
+				// console.info({ info });
+				const files = await currentProvider?.filesList();
+				console.info({ files });
+
+				const exportedData = await exportData();
+				const { backupDeviceName } = await BrowserStorage.getBackupDeviceName();
+				await currentProvider?.fileUpload({
+					id: "",
+					name: `${backupDeviceName}.json`,
+					contents: exportedData,
+				});
+				Processes.authorizingProvider = false;
+			} catch (e) {}
+			break;
+		default:
+			break;
+	}
+}
+
 export function runtimeOnMessage(message: any) {
 	const { msg } = message;
 
@@ -328,6 +364,17 @@ export function runtimeOnMessage(message: any) {
 						: "light"
 				);
 			});
+		case "applyBackupDeviceName":
+			return new Promise<void>(async (resolve) => {
+				await BrowserStorage.setBackupDeviceName(message.deviceName);
+				for (let windowId of WorkspaceStorage.windows.keys()) {
+					console.info({ windowId });
+					informViews(windowId, "backupDeviceNameChanged", {
+						deviceName: message.deviceName,
+					});
+				}
+				return resolve();
+			});
 		case "changedBackupInterval":
 			return new Promise<void>(async (resolve) => {
 				const { val, unit } = message;
@@ -356,42 +403,14 @@ export function runtimeOnMessage(message: any) {
 				const fullExportDataArray = await exportData();
 				return resolve(fullExportDataArray);
 			});
+		case "connectToBackupProvider":
+			return new Promise<void>(async (resolve) => {
+				await backupData(message);
+				return resolve();
+			});
 		case "backupData":
 			return new Promise<void>(async (resolve) => {
-				const { provider } = message;
-				switch (provider) {
-					case "Google Drive":
-						try {
-							Processes.authorizingProvider = true;
-							let currentProvider;
-							if (Providers.has("GoogleDrive")) {
-								currentProvider = Providers.get("GoogleDrive");
-							} else {
-								currentProvider = new GoogleDrive();
-								Providers.set("GoogleDrive", currentProvider);
-							}
-							console.info({ currentProvider, Providers });
-							const { accessToken } = await currentProvider!.getAccessToken();
-							console.info({ accessToken });
-							// const info = accessToken ? await getUserInfo(accessToken) : null;
-							// console.info({ info });
-							const files = await currentProvider?.filesList();
-							console.info({ files });
-
-							const exportedData = await exportData();
-							const { backupDeviceName } =
-								await BrowserStorage.getBackupDeviceName();
-							await currentProvider?.fileUpload({
-								id: "",
-								name: `${backupDeviceName}.json`,
-								contents: exportedData,
-							});
-							Processes.authorizingProvider = false;
-						} catch (e) {}
-						break;
-					default:
-						break;
-				}
+				await backupData(message);
 				return resolve();
 			});
 		default:

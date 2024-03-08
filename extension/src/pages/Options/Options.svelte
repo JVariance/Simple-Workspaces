@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from "@root/components/Icon.svelte";
-	import { mount, onMount, unstate } from "svelte";
+	import { mount, onMount, tick, unstate, untrack } from "svelte";
 	import Browser, { i18n } from "webextension-polyfill";
 	import Accordion from "@components/Accordion/Accordion.svelte";
 	import Summary from "@components/Accordion/Summary.svelte";
@@ -25,15 +25,24 @@
 
 	let windowWorkspaces = $derived(getWorkspacesState()?.filter(({ UUID }) => UUID !== "HOME") || []);
 	let keepPinnedTabs = $derived(getKeepPinnedTabs());
-	let deviceName = $state('');
-	let editDeviceName = $state<boolean>(false);
-	let _deviceName = $derived.by(() => {
-		const name = getBackupDeviceName();
-		deviceName = _deviceName;
-		editDeviceName = name.length <= 0;
-		console.info({ name,deviceName, editDeviceName });
-		return name;
+	let deviceName = $state<string>();
+	let editDeviceName = $state<boolean>();
+	let _deviceName = $derived(getBackupDeviceName());
+	// let _deviceName = $derived.by(() => {
+	// 	const name = getBackupDeviceName();
+	// 	deviceName = _deviceName;
+	// 	editDeviceName = name ? name?.length <= 0 : false;
+	// 	console.info({ name,deviceName, editDeviceName });
+	// 	return name;
+	// });
+
+	$effect(() => {
+			untrack(() => editDeviceName);
+			untrack(() => deviceName);
+			deviceName = _deviceName;
+			editDeviceName = _deviceName ? _deviceName?.length <= 0 : true;
 	});
+
 	let backupProviderConnected = $derived(getBackupProviderConnected());
 	let backupProvider = $derived(getBackupProvider());
 	let backupLastTimeStamp = $derived(getBackupLastTimeStamp());
@@ -156,7 +165,11 @@
 	}
 
 	async function backupData() {
-		Browser.runtime.sendMessage({ msg: 'backupData', provider: selectedBackupProvider });
+		Browser.runtime.sendMessage({ msg: 'backupData', provider: backupProvider });
+	}
+
+	async function connectToBackupProvider() {
+		Browser.runtime.sendMessage({ msg: 'connectToBackupProvider', provider: selectedBackupProvider });
 	}
 
 	const changedBackupInterval = debounceFunc(_changedBackupInterval, 500);
@@ -166,11 +179,14 @@
 	}
 
 	function applyDeviceName() {
-		Browser.runtime.sendMessage({ msg: 'applyDeviceName', deviceName });
+		Browser.runtime.sendMessage({ msg: 'applyBackupDeviceName', deviceName });
+		editDeviceName = false;
 	}
 
-	onMount(() => {
-		initView();
+	onMount(async () => {
+		await initView();
+		// await tick();
+		// editDeviceName = deviceName ? deviceName.length > 0 : true;
 	});
 </script>
 
@@ -349,16 +365,20 @@
 								<input 
 									id="device-name-input"
 									type="text" 
-									class="rounded-md p-2 placeholder:text-[color-mix(in_srgb,_var(--heading-color)_50%,_transparent)] w-[37ch]"
+									class="
+										rounded-md p-2 placeholder:text-[color-mix(in_srgb,_var(--heading-color)_50%,_transparent)] w-[37ch]
+										[&:user-invalid]:!bg-red-200
+									"
 									placeholder="Win10 Nightly @Home"
-									bind:value={deviceName} 
+									value={deviceName || ''} 
+									oninput={(e) => deviceName = e.currentTarget.value}
 									required
 									minlength="1" maxlength="32"
-									disabled={editDeviceName}
+									disabled={!editDeviceName}
 									bind:this={deviceNameInput}
 								/>
 								<span class="absolute right-1 text-[13px] text-[color-mix(in_srgb,_var(--heading-color)_50%,_transparent)]">
-									{deviceName.length}/32
+									{deviceName?.length || 0}/32
 								</span>
 							</div>
 							{#if editDeviceName}	
@@ -366,7 +386,7 @@
 									class="btn primary-btn !p-1 h-max w-max disabled:pointer-events-none disabled:opacity-50" 
 									onclick={applyDeviceName} 
 									title={i18n.getMessage('apply_device_name')}
-									disabled={!deviceNameInput.checkValidity()}
+									disabled={deviceName?.length ? !deviceNameInput.checkValidity() : true}
 								>
 									<Icon icon="check" />
 								</button>
@@ -421,6 +441,7 @@
 						<button 
 							class="btn primary-btn disabled:pointer-events-none disabled:opacity-50" 
 							title={i18n.getMessage('connect_to_provider')}
+							onclick={connectToBackupProvider}
 							disabled={!deviceName?.length && !deviceNameInput?.checkValidity()}
 						>
 							<Icon icon="sync" />
@@ -428,7 +449,7 @@
 						</button>
 					{/if}
 					{#if backupProviderConnected}
-						<button class="btn primary-btn" disabled={!deviceName.length && !deviceNameInput?.checkValidity()} onclick={backupData}>
+						<button class="btn primary-btn" disabled={!deviceName?.length && !deviceNameInput?.checkValidity()} onclick={backupData}>
 							<Icon icon="sync" />
 							<span>{i18n.getMessage('backup')}</span>
 						</button>
