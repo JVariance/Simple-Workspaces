@@ -112,13 +112,45 @@ export class BrowserStorage {
 		return Browser.storage.local.set({ backupEnabled });
 	}
 
-	static getBackupPeriodInMinutes(): Promise<
-		Record<"backupPeriodInMinutes", number>
+	static getBackupIntervalInMinutes(): Promise<
+		Record<"backupIntervalInMinutes", number>
 	> {
-		return Browser.storage.local.get("backupPeriodInMinutes");
+		return Browser.storage.local.get("backupIntervalInMinutes");
 	}
 
-	static setBackupPeriodInMinutes(val: number): Promise<void> {
-		return Browser.storage.local.set({ backupPeriodInMinutes: val });
+	static setBackupIntervalInMinutes(val: number): Promise<void> {
+		return Browser.storage.local.set({ backupIntervalInMinutes: val });
+	}
+
+	static getBackupProvider(): Promise<
+		Record<"backupProvider", "Google Drive">
+	> {
+		return Browser.storage.local.get("backupProvider");
+	}
+
+	static setBackupProvider(
+		backupProvider: "Google Drive" | (string & {})
+	): Promise<void> {
+		return Browser.storage.local.set({ backupProvider });
+	}
+
+	static getBackupProviderConnected(): Promise<
+		Record<"backupProviderConnected", boolean>
+	> {
+		return Browser.storage.local.get("backupProviderConnected");
+	}
+
+	static setBackupProviderConnected(val: boolean): Promise<void> {
+		return Browser.storage.local.set({ backupProviderConnected: val });
+	}
+
+	static getBackupLastTimeStamp(): Promise<
+		Record<"backupLastTimeStamp", number>
+	> {
+		return Browser.storage.local.get("backupLastTimeStamp");
+	}
+
+	static setBackupLastTimeStamp(timeVal: number): Promise<void> {
+		return Browser.storage.local.set({ backupLastTimeStamp: timeVal });
 	}
 }

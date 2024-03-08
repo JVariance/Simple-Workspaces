@@ -13,19 +13,39 @@
 	import Logo from "@root/components/Logo.svelte";
 	import HomeWorkspace from "@root/components/ViewBlocks/HomeWorkspace.svelte";
 	import Layout from "@pages/Special_Pages/Layout.svelte";
-	import { getKeepPinnedTabs, getWorkspacesState, initView } from "@pages/states.svelte";
+	import { getBackupDeviceName, getBackupProviderConnected, getBackupLastTimeStamp, getBackupProvider, getKeepPinnedTabs, getWorkspacesState, initView } from "@pages/states.svelte";
 	import ThemeSwitch from "@root/components/ViewBlocks/ThemeSwitch.svelte";
 	import { BrowserStorage } from "@root/background/Entities";
 	import Tooltip from "@root/components/Tooltip.svelte";
 	import { type ImportData } from "@root/background/helper/importData";
+	import type { HTMLAttributes } from "svelte/elements";
+	import type { Snippet } from "svelte";
+	import { DEFAULT_BACKUP_INTERVAL_IN_MINUTES } from "@root/background/helper/Constants";
+	import { debounceFunc } from "@root/utils";
 
 	let windowWorkspaces = $derived(getWorkspacesState()?.filter(({ UUID }) => UUID !== "HOME") || []);
 	let keepPinnedTabs = $derived(getKeepPinnedTabs());
+	let deviceName = $state('');
+	let editDeviceName = $state<boolean>(false);
+	let _deviceName = $derived.by(() => {
+		const name = getBackupDeviceName();
+		deviceName = _deviceName;
+		editDeviceName = name.length <= 0;
+		console.info({ name,deviceName, editDeviceName });
+		return name;
+	});
+	let backupProviderConnected = $derived(getBackupProviderConnected());
+	let backupProvider = $derived(getBackupProvider());
+	let backupLastTimeStamp = $derived(getBackupLastTimeStamp());
+	
+	let backupIntervalNumber = $state<number>(DEFAULT_BACKUP_INTERVAL_IN_MINUTES);
+	let backupIntervalUnit = $state<"minutes" | "hours" | "days">("minutes");
 
+	let deviceNameInput = $state<HTMLInputElement>();
 	let importDialogElem = $state<HTMLDialogElement>();
 
 	const providers = ["Google Drive"] as const;
-	let selectedBackupProvider = $state<typeof providers[number]>('Google Drive');
+	let selectedBackupProvider = $state<typeof providers[number]>(backupProvider || 'Google Drive');
 	let clearExtensionDataConfirmed = $state(false);
 
 	async function applyCurrentWorkspacesChanges() {
@@ -135,8 +155,18 @@
 		importedData = undefined;
 	}
 
-	async function synchronize(){
-		Browser.runtime.sendMessage({ msg: 'synchronize', provider: selectedBackupProvider });
+	async function backupData() {
+		Browser.runtime.sendMessage({ msg: 'backupData', provider: selectedBackupProvider });
+	}
+
+	const changedBackupInterval = debounceFunc(_changedBackupInterval, 500);
+
+	function _changedBackupInterval() {
+		Browser.runtime.sendMessage({ msg: 'changedBackupInterval', val: backupIntervalNumber, unit: backupIntervalUnit });
+	}
+
+	function applyDeviceName() {
+		Browser.runtime.sendMessage({ msg: 'applyDeviceName', deviceName });
 	}
 
 	onMount(() => {
@@ -144,8 +174,8 @@
 	});
 </script>
 
-{#snippet Section(content, classes)}
-	<section class="[background:_var(--section-bg)] p-4 rounded-md grid gap-4 basis-full max-w-[100cqw] overflow-auto md:overflow-visible {classes}">
+{#snippet Section(content: Snippet, {class: classes, ...props}: HTMLAttributes<HTMLElement>)}
+	<section class="[background:_var(--section-bg)] p-4 rounded-md grid gap-4 basis-full max-w-[100cqw] overflow-auto md:overflow-visible {classes}" {...props}>
 		{@render content()}
 	</section>
 {/snippet}
@@ -303,32 +333,120 @@
 						<select 
 							id="select-backup-provider"
 							name="select-backup-provider"
-							class="p-1 rounded-md bg-[--workspace-bg] text-[--workspace-color] w-max"
 							bind:value={selectedBackupProvider}
 						>
 							{#each ["Google Drive"] as provider}
-								<option class="bg-[--workspace-bg] text-[--workspace-color]" value={provider}>{provider}</option>
+								<option value={provider}>{provider}</option>
 							{/each}
 						</select>
 					</label>
-					<button class="btn primary-btn" onclick={synchronize}>
-						<Icon icon="sync" />
-						<span>{i18n.getMessage('sync')}</span>
-					</button>
+					<div class="grid gap-1">
+						<label for="device-name-input" class="text-[--heading-2-color] font-semibold first-letter:uppercase">
+							{i18n.getMessage('device_name')} ({i18n.getMessage('required')})
+						</label>
+						<div class="flex gap-2 items-center">
+							<div class="relative flex items-start w-max">
+								<input 
+									id="device-name-input"
+									type="text" 
+									class="rounded-md p-2 placeholder:text-[color-mix(in_srgb,_var(--heading-color)_50%,_transparent)] w-[37ch]"
+									placeholder="Win10 Nightly @Home"
+									bind:value={deviceName} 
+									required
+									minlength="1" maxlength="32"
+									disabled={editDeviceName}
+									bind:this={deviceNameInput}
+								/>
+								<span class="absolute right-1 text-[13px] text-[color-mix(in_srgb,_var(--heading-color)_50%,_transparent)]">
+									{deviceName.length}/32
+								</span>
+							</div>
+							{#if editDeviceName}	
+								<button 
+									class="btn primary-btn !p-1 h-max w-max disabled:pointer-events-none disabled:opacity-50" 
+									onclick={applyDeviceName} 
+									title={i18n.getMessage('apply_device_name')}
+									disabled={!deviceNameInput.checkValidity()}
+								>
+									<Icon icon="check" />
+								</button>
+								{:else}
+									<button 
+										class="btn primary-btn !p-2 h-max w-max" 
+										onclick={() => editDeviceName = !editDeviceName} 
+										title={i18n.getMessage('edit_device_name')}
+									>
+										<Icon icon="edit" width={18} />
+									</button>
+							{/if}
+						</div>
+					</div>
+					{#if backupProviderConnected}
+						<div>
+							<p>provider: {backupProvider || '-'}</p>
+							<p>last backup: {backupLastTimeStamp || '-'}</p>
+						</div>
+					{/if}
+					<div class="grid gap-1">
+						<label for="backup-interval-input" class="text-[--heading-2-color] font-semibold">
+							{i18n.getMessage('backup_interval')}
+						</label>
+						<div class="flex gap-2 items-stretch">
+							<input 
+								id="backup-interval-input"
+								type="number" 
+								min="1" max="60" step="0.25"
+								bind:value={backupIntervalNumber}
+								class="rounded-md p-2 invalid:!bg-red-300 max-w-[8ch]" 
+								onchange={changedBackupInterval}
+							/>
+							<select 
+								name="select-backup-interval-unit" 
+								id="select-backup-interval-unit" 
+								bind:value={backupIntervalUnit}
+								onchange={changedBackupInterval}
+							>
+								{#each ['minutes', 'hours', 'days'] as unit}
+									<option value={unit}>{i18n.getMessage(unit)}</option>
+								{/each}
+							</select>
+						</div>
+					</div>
+					{#if backupProviderConnected}
+						<button class="btn primary-btn" title={i18n.getMessage('disconnect_from_provider')}>
+							<Icon icon="sync" />
+							<span>{i18n.getMessage('disconnect')}</span>
+						</button>
+					{:else}
+						<button 
+							class="btn primary-btn disabled:pointer-events-none disabled:opacity-50" 
+							title={i18n.getMessage('connect_to_provider')}
+							disabled={!deviceName?.length && !deviceNameInput?.checkValidity()}
+						>
+							<Icon icon="sync" />
+							<span>{i18n.getMessage('connect')}</span>
+						</button>
+					{/if}
+					{#if backupProviderConnected}
+						<button class="btn primary-btn" disabled={!deviceName.length && !deviceNameInput?.checkValidity()} onclick={backupData}>
+							<Icon icon="sync" />
+							<span>{i18n.getMessage('backup')}</span>
+						</button>
+					{/if}
 				</div>
 			</div>
 		{/snippet}
 
-		{@render Section(Section_Theme, "basis-full flex-1")}
-		{@render Section(Section_HomeWorkspace, "flex-1")}
-		{@render Section(Section_CurrentWorkspaces, "flex-1")}
-		{@render Section(Section_DefaultWorkspaces, "flex-1 overflow-auto scrollbar-gutter:_stable] sm:scrollbar-gutter:_unset] @container")}
-		{@render Section(Section_TabPinning, "basis-full")}
-		{@render Section(Section_Shortcuts, "basis-full")}
-		{@render Section(Section_ImportExport, "basis-full")}
-		{@render Section(Section_ClearExtensionData, "basis-full")}
-		{@render Section(Section_WelcomePage, "flex-1")}
-		{@render Section(Section_FurtherLinks, "flex-1")}
+		{@render Section(Section_Theme, {class: "basis-full flex-1"})}
+		{@render Section(Section_HomeWorkspace, {class: "flex-1"})}
+		{@render Section(Section_CurrentWorkspaces, {class: "flex-1"})}
+		{@render Section(Section_DefaultWorkspaces, {class: "flex-1 overflow-auto scrollbar-gutter:_stable] sm:scrollbar-gutter:_unset] @container"})}
+		{@render Section(Section_TabPinning, {class: "basis-full"})}
+		{@render Section(Section_Shortcuts, {class: "basis-full"})}
+		{@render Section(Section_ImportExport, {class: "basis-full"})}
+		{@render Section(Section_ClearExtensionData, {class: "basis-full"})}
+		{@render Section(Section_WelcomePage, {class: "flex-1"})}
+		{@render Section(Section_FurtherLinks, {class: "flex-1"})}
 	</main>
 	<dialog 
 		bind:this={importDialogElem}
@@ -414,5 +532,13 @@
 		content: "";
 		@apply rounded-full w-px absolute top-2 left-[9px] bottom-[5px] border;
 		@apply group-has-[input:checked]:border-blue-300 dark:group-has-[input:checked]:border-blue-800 dark:border-white/25;
+	}
+
+	select {
+		@apply p-1 rounded-md bg-[--workspace-bg] text-[--workspace-color] w-max;
+	}
+
+	option {
+		@apply bg-[--workspace-bg] text-[--workspace-color];
 	}
 </style>

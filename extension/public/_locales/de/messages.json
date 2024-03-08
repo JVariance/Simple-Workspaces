@@ -266,5 +266,47 @@
   },
   "sync": {
     "message": "synchronisieren"
+  },
+  "device_name": {
+    "message": "Gerätename"
+  },
+  "connect": {
+    "message": "verbinden"
+  },
+  "connect_to_provider": {
+    "message": "Mit dem Anbieter verbinden"
+  },
+  "disconnect": {
+    "message": "Verbindung trennen"
+  },
+  "disconnect_from_provider": {
+    "message": "Verbindung zum Anbieter trennen"
+  },
+  "backup": {
+    "message": "sichern"
+  },
+  "hour": {
+    "message": "Stunden"
+  },
+  "hours": {
+    "message": "Stunden"
+  },
+  "minutes": {
+    "message": "Minuten"
+  },
+  "days": {
+    "message": "Tage"
+  },
+  "backup_interval": {
+    "message": "Backup-Intervall"
+  },
+  "required": {
+    "message": "erforderlich"
+  },
+  "apply_device_name": {
+    "message": "Gerätenamen bestätigen"
+  },
+  "edit_device_name": {
+    "message": "Gerätenamen bearbeiten"
   }
 }

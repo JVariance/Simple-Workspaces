@@ -6,6 +6,8 @@ import {
 	WorkspaceStorage,
 } from "./Entities";
 import { createBackupAlarm } from "./helper/backupAlarm";
+import { convertMillisecondsToMinutes } from "./helper/Time";
+import { DEFAULT_BACKUP_INTERVAL_IN_MINUTES } from "./helper/Constants";
 
 async function initTabMenu() {
 	await TabMenuMove.init(
@@ -60,6 +62,25 @@ export function initExtension(options: { extensionUpdated?: boolean } = {}) {
 		resolve();
 
 		const { backupEnabled = false } = await BrowserStorage.getBackupEnabled();
-		backupEnabled && createBackupAlarm();
+
+		if (backupEnabled) {
+			createBackupAlarm();
+
+			const { backupIntervalInMinutes = DEFAULT_BACKUP_INTERVAL_IN_MINUTES } =
+				await BrowserStorage.getBackupIntervalInMinutes();
+			const { backupLastTimeStamp } =
+				await BrowserStorage.getBackupLastTimeStamp();
+
+			if (backupLastTimeStamp) {
+				const currentTime = new Date().getTime();
+				const timeDiffInMinutes = convertMillisecondsToMinutes(
+					currentTime - backupLastTimeStamp
+				);
+
+				if (timeDiffInMinutes > backupIntervalInMinutes) {
+					//TODO: backup data
+				}
+			}
+		}
 	});
 }

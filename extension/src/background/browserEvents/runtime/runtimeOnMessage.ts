@@ -5,6 +5,10 @@ import * as API from "@root/browserAPI";
 import { exportData } from "@root/background/helper/exportData";
 import { importData } from "@root/background/helper/importData";
 import GoogleDrive from "@root/background/helper/Authorization/GoogleDrive";
+import {
+	convertDaysToMinutes,
+	convertHoursToMinutes,
+} from "@root/background/helper/Time";
 
 const Providers = new Map<string, GoogleDrive>();
 
@@ -324,6 +328,24 @@ export function runtimeOnMessage(message: any) {
 						: "light"
 				);
 			});
+		case "changedBackupInterval":
+			return new Promise<void>(async (resolve) => {
+				const { val, unit } = message;
+				let intervalInMinutes =
+					unit === "minutes"
+						? val
+						: unit === "hours"
+						? convertHoursToMinutes(val)
+						: unit === "days"
+						? convertDaysToMinutes(val)
+						: null;
+
+				console.info({ intervalInMinutes });
+
+				intervalInMinutes &&
+					(await BrowserStorage.setBackupIntervalInMinutes(intervalInMinutes));
+				return resolve();
+			});
 		case "importData":
 			return new Promise<void>(async (resolve) => {
 				await importData(message);
@@ -334,7 +356,7 @@ export function runtimeOnMessage(message: any) {
 				const fullExportDataArray = await exportData();
 				return resolve(fullExportDataArray);
 			});
-		case "synchronize":
+		case "backupData":
 			return new Promise<void>(async (resolve) => {
 				const { provider } = message;
 				switch (provider) {

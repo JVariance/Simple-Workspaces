@@ -22,6 +22,11 @@ const activeWorkspaceIndex = (() => {
 	};
 })();
 let keepPinnedTabs = $state<boolean>(false);
+let backupDeviceName = $state<string>("");
+let backupEnabled = $state<boolean>(false);
+let backupProviderConnected = $state<boolean>();
+let backupProvider = $state<"Google Drive">("Google Drive");
+let backupLastTimeStamp = $state<number>();
 
 export const getWorkspacesState = () => workspaces;
 export const getDefaultWorkspacesState = () => defaultWorkspaces;
@@ -34,6 +39,11 @@ export const getActiveWorkspaceIndexState = () => activeWorkspaceIndex.value;
 export const setActiveWorkspaceIndexState = (i: number) =>
 	(activeWorkspaceIndex.value = i);
 export const getKeepPinnedTabs = () => keepPinnedTabs;
+export const getBackupEnabled = () => backupEnabled;
+export const getBackupDeviceName = () => backupDeviceName;
+export const getBackupProviderConnected = () => backupProviderConnected;
+export const getBackupProvider = () => backupProvider;
+export const getBackupLastTimeStamp = () => backupLastTimeStamp;
 
 function addedWorkspace({ workspace }: { workspace: Ext.Workspace }) {
 	console.info("states: addedWorkspace");
@@ -227,6 +237,60 @@ async function setKeepPinnedTabs() {
 	keepPinnedTabs = _keepPinnedTabs;
 }
 
+async function setBackupEnabled() {
+	const { backupEnabled: _backupEnabled } =
+		await BrowserStorage.getBackupEnabled();
+	backupEnabled = _backupEnabled;
+}
+
+async function setBackupDeviceName() {
+	const { backupDeviceName: _backupDeviceName = "" } =
+		await BrowserStorage.getBackupDeviceName();
+	backupDeviceName = _backupDeviceName;
+}
+
+async function setBackupProvider() {
+	const { backupProvider: _backupProvider } =
+		await BrowserStorage.getBackupProvider();
+	backupProvider = _backupProvider;
+}
+
+async function setBackupProviderConnected() {
+	const { backupProviderConnected: _backupProviderConnected } =
+		await BrowserStorage.getBackupProviderConnected();
+	backupProviderConnected = _backupProviderConnected;
+}
+
+async function setBackupLastTimeStamp() {
+	const { backupLastTimeStamp: _backupLastTimeStamp } =
+		await BrowserStorage.getBackupLastTimeStamp();
+	backupLastTimeStamp = _backupLastTimeStamp;
+}
+
+async function backupEnabledChanged({ enabled }: { enabled: boolean }) {
+	backupEnabled = enabled;
+}
+
+async function backupProviderChanged({ provider }: { provider: string }) {
+	backupProvider = provider;
+}
+
+async function backupProviderConnectedChanged({
+	connected,
+}: {
+	connected: boolean;
+}) {
+	backupProviderConnected = connected;
+}
+
+async function backupLastTimeStampChanged({
+	timestamp,
+}: {
+	timestamp: number;
+}) {
+	backupLastTimeStamp = timestamp;
+}
+
 Browser.runtime.onMessage.addListener((message) => {
 	console.info("browser runtime onmessage hehe");
 
@@ -272,6 +336,18 @@ Browser.runtime.onMessage.addListener((message) => {
 		case "forceDefaultThemeIfDarkModeChanged":
 			forceDefaultThemeIfDarkModeChanged(message);
 			break;
+		case "backupEnabledChanged":
+			backupEnabledChanged(message);
+			break;
+		case "backupProviderChanged":
+			backupProviderChanged(message);
+			break;
+		case "backupProviderConnectedChanged":
+			backupProviderConnectedChanged(message);
+			break;
+		case "backupLastTimeStampChanged":
+			backupLastTimeStampChanged(message);
+			break;
 		default:
 			break;
 	}
@@ -292,6 +368,11 @@ export async function initView() {
 		setTheme(),
 		setKeepPinnedTabs(),
 		setForceDefaultThemeIfDarkMode(),
+		setBackupEnabled(),
+		setBackupDeviceName(),
+		setBackupProvider(),
+		setBackupProviderConnected(),
+		setBackupLastTimeStamp(),
 	]);
 }
 

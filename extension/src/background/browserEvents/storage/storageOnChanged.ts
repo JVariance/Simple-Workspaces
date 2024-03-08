@@ -22,6 +22,10 @@ export function storageOnChanged(
 					clearBackupAlarm();
 				}
 				break;
+			case "backupIntervalInMinutes":
+				clearBackupAlarm();
+				createBackupAlarm();
+				break;
 			case "homeWorkspace":
 				WorkspaceStorage.windows.forEach((window) => {
 					informViews(window.windowId, "updatedHomeWorkspace", {
