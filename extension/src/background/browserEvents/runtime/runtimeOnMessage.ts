@@ -100,6 +100,9 @@ async function backupData({ provider }: { provider: "Google Drive" }) {
 				console.info({ files });
 
 				const exportedData = await exportData();
+
+				console.info({ exportedData });
+
 				const { backupDeviceName } = await BrowserStorage.getBackupDeviceName();
 				await currentProvider?.fileUpload({
 					id: "",

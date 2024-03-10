@@ -17,6 +17,7 @@ const AUTH_URL = `https://accounts.google.com/o/oauth2/auth?client_id=${CLIENT_I
 const VALIDATION_BASE_URL = "https://www.googleapis.com/oauth2/v3/tokeninfo";
 
 const FILES_URL = "https://www.googleapis.com/drive/v3/files";
+const FILES_UPLOAD_URL = "https://www.googleapis.com/upload/drive/v3/files";
 
 export default class GoogleDrive extends StorageProvider {
 	#accessToken?: string;
@@ -174,7 +175,7 @@ export default class GoogleDrive extends StorageProvider {
 		const data = await response.json();
 
 		const filesFound = data.files.filter(
-			(file) => file.mimeType === "application/vnd.google-apps.folder"
+			(file) => file.mimeType !== "application/vnd.google-apps.folder"
 		);
 
 		return filesFound.map((file) => ({
@@ -201,14 +202,16 @@ export default class GoogleDrive extends StorageProvider {
 			throw new Error("Error, profile id and file name are required");
 		} else {
 			existingFile = filesList.find(
-				(file) => file.id === data.id || file.name === data.name
+				(file) => file.id === data.id || `${file.name}.json` === data.name
 			);
 		}
 
 		//TODO: encrypt Data
 
 		const method = existingFile ? "PATCH" : "POST";
-		const url = existingFile ? `${FILES_URL}/${existingFile.id}` : FILES_URL;
+		const url = existingFile
+			? `${FILES_UPLOAD_URL}/${existingFile.id}`
+			: FILES_UPLOAD_URL;
 
 		const params = { uploadType: "resumable" };
 
@@ -234,18 +237,11 @@ export default class GoogleDrive extends StorageProvider {
 			body: JSON.stringify(metadata),
 		});
 
-		const _data = await response.json();
-
-		// upload the file
-
-		const _params = {
-			uploadType: "resumable",
-		};
-
-		await fetch(`${_data.headers.location}?${new URLSearchParams(_params)}`, {
+		await fetch(`${response.headers.get("location")}`, {
 			method: "PUT",
 			headers: {
 				Authorization: `Bearer ${this.#accessToken}`,
+				"Content-Length": `${file.size}`,
 			},
 			body: file,
 		});
