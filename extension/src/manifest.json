@@ -28,6 +28,12 @@
 		"tabs",
 		"unlimitedStorage"
 	],
+	"content_scripts": [
+		{
+			"matches": ["http://localhost/*"],
+			"js": ["src/content_scripts/getTokens.ts"]
+		}
+	],
 	"commands": {
 		"_execute_browser_action": {
 			"suggested_key": {

@@ -9,6 +9,7 @@ import {
 	convertDaysToMinutes,
 	convertHoursToMinutes,
 } from "@root/background/helper/Time";
+import { debounceFunc, immediateDebounceFunc } from "@root/utils";
 
 const Providers = new Map<string, GoogleDrive>();
 
@@ -115,6 +116,13 @@ async function backupData({ provider }: { provider: "Google Drive" }) {
 		default:
 			break;
 	}
+}
+
+const processAuthTokens = immediateDebounceFunc(_processAuthTokens, 1000);
+
+async function _processAuthTokens({ tokens = "" }: { tokens: string }) {
+	const [access_token = null, refresh_token = null] = tokens.split(":");
+	console.info({ access_token, refresh_token });
 }
 
 export function runtimeOnMessage(message: any) {
@@ -366,6 +374,11 @@ export function runtimeOnMessage(message: any) {
 						? "dark"
 						: "light"
 				);
+			});
+		case "authTokens":
+			return new Promise<void>((resolve) => {
+				processAuthTokens(message);
+				return resolve();
 			});
 		case "applyBackupDeviceName":
 			return new Promise<void>(async (resolve) => {

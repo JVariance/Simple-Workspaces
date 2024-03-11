@@ -169,7 +169,24 @@
 	}
 
 	async function connectToBackupProvider() {
-		Browser.runtime.sendMessage({ msg: 'connectToBackupProvider', provider: selectedBackupProvider });
+		const REDIRECT_URL = import.meta.env.PROD
+		? Browser.identity.getRedirectURL()
+		: "http://localhost:3000/auth/googledrive";
+		const CLIENT_ID =
+			"758528028452-hlu883tbm6bu8oolrso5sripso72a5ig.apps.googleusercontent.com";
+		const SCOPES = [
+			"https://www.googleapis.com/auth/drive.appdata",
+			"https://www.googleapis.com/auth/drive.file",
+		];
+
+		const AUTH_URL = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(
+			REDIRECT_URL
+		)}&scope=${encodeURIComponent(SCOPES.join(" "))}&prompt=consent&access_type=offline`;
+
+		console.info({ REDIRECT_URL, AUTH_URL });
+
+		Browser.windows.create({ url: AUTH_URL, type: "popup" });
+		// Browser.runtime.sendMessage({ msg: 'connectToBackupProvider', provider: selectedBackupProvider });
 	}
 
 	const changedBackupInterval = debounceFunc(_changedBackupInterval, 500);

@@ -11,6 +11,8 @@ const SCOPES = [
 	"https://www.googleapis.com/auth/drive.appdata",
 	"https://www.googleapis.com/auth/drive.file",
 ];
+
+// &prompt=consent&access_type=offline
 const AUTH_URL = `https://accounts.google.com/o/oauth2/auth?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(
 	REDIRECT_URL
 )}&scope=${encodeURIComponent(SCOPES.join(" "))}`;
@@ -115,7 +117,13 @@ export default class GoogleDrive extends StorageProvider {
 	}> {
 		try {
 			const redirectURL = await this.authorize();
+
+			console.info({ redirectURL });
+
 			const validationString = await this.validate(redirectURL);
+
+			console.info({ validationString });
+
 			return { accessToken: this.#accessToken ?? null, error: null };
 		} catch (e) {
 			return { accessToken: null, error: e as Error };

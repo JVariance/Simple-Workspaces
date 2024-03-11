@@ -300,7 +300,7 @@ Browser.runtime.onMessage.addListener((message) => {
 
 	console.info({ message });
 	const { windowId: targetWindowId, msg } = message;
-	if (targetWindowId !== windowId) return;
+	if (targetWindowId !== windowId && msg !== "tokens") return;
 
 	switch (msg) {
 		case "addedWorkspace":
@@ -354,6 +354,12 @@ Browser.runtime.onMessage.addListener((message) => {
 			break;
 		case "backupDeviceNameChanged":
 			backupDeviceNameChanged(message);
+			break;
+		case "tokens":
+			Browser.runtime.sendMessage({
+				msg: "authTokens",
+				tokens: message?.tokens,
+			});
 			break;
 		default:
 			break;
