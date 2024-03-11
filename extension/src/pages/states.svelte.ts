@@ -3,6 +3,8 @@ import { BrowserStorage } from "@root/background/Entities/Static/Storage";
 import { tick } from "svelte";
 import { debounceFunc } from "@root/utils";
 
+type BackupProvider = "Google Drive";
+
 let workspaces = $state<Ext.Workspace[]>([]);
 let homeWorkspace = $state<Ext.SimpleWorkspace>();
 let defaultWorkspaces = $state<Ext.SimpleWorkspace[]>([]);
@@ -25,7 +27,7 @@ let keepPinnedTabs = $state<boolean>(false);
 let backupDeviceName = $state<string>();
 let backupEnabled = $state<boolean>(false);
 let backupProviderConnected = $state<boolean>();
-let backupProvider = $state<"Google Drive">("Google Drive");
+let backupProvider = $state<BackupProvider>("Google Drive");
 let backupLastTimeStamp = $state<number>();
 
 export const getWorkspacesState = () => workspaces;
@@ -271,7 +273,11 @@ async function backupEnabledChanged({ enabled }: { enabled: boolean }) {
 	backupEnabled = enabled;
 }
 
-async function backupProviderChanged({ provider }: { provider: string }) {
+async function backupProviderChanged({
+	provider,
+}: {
+	provider: BackupProvider;
+}) {
 	backupProvider = provider;
 }
 
@@ -359,6 +365,7 @@ Browser.runtime.onMessage.addListener((message) => {
 			Browser.runtime.sendMessage({
 				msg: "authTokens",
 				tokens: message?.tokens,
+				provider: backupProvider,
 			});
 			break;
 		default:

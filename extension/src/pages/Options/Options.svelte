@@ -185,7 +185,7 @@
 
 		console.info({ REDIRECT_URL, AUTH_URL });
 
-		Browser.windows.create({ url: AUTH_URL, type: "popup" });
+		Browser.windows.create({ url: AUTH_URL, type: "popup", allowScriptsToClose: true });
 		// Browser.runtime.sendMessage({ msg: 'connectToBackupProvider', provider: selectedBackupProvider });
 	}
 

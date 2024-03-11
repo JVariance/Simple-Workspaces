@@ -9,7 +9,7 @@ import {
 	convertDaysToMinutes,
 	convertHoursToMinutes,
 } from "@root/background/helper/Time";
-import { debounceFunc, immediateDebounceFunc } from "@root/utils";
+import { immediateDebounceFunc } from "@root/utils";
 
 const Providers = new Map<string, GoogleDrive>();
 
@@ -86,12 +86,14 @@ async function backupData({ provider }: { provider: "Google Drive" }) {
 			try {
 				Processes.authorizingProvider = true;
 				let currentProvider;
-				if (Providers.has("GoogleDrive")) {
-					currentProvider = Providers.get("GoogleDrive");
+				if (Providers.has("Google Drive")) {
+					currentProvider = Providers.get("Google Drive");
 				} else {
 					currentProvider = new GoogleDrive();
-					Providers.set("GoogleDrive", currentProvider);
+					await currentProvider.init();
+					Providers.set("Google Drive", currentProvider);
 				}
+
 				console.info({ currentProvider, Providers });
 				const { accessToken } = await currentProvider!.getAccessToken();
 				console.info({ accessToken });
@@ -120,9 +122,17 @@ async function backupData({ provider }: { provider: "Google Drive" }) {
 
 const processAuthTokens = immediateDebounceFunc(_processAuthTokens, 1000);
 
-async function _processAuthTokens({ tokens = "" }: { tokens: string }) {
-	const [access_token = null, refresh_token = null] = tokens.split(":");
+async function _processAuthTokens({
+	tokens = "",
+	provider,
+}: {
+	tokens: string;
+	provider: "Google Drive";
+}) {
+	const [access_token = undefined, refresh_token = undefined] =
+		tokens.split(":");
 	console.info({ access_token, refresh_token });
+	Providers.get(provider)?.setCredentials({ access_token, refresh_token });
 }
 
 export function runtimeOnMessage(message: any) {

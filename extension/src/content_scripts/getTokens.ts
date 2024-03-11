@@ -12,5 +12,6 @@ window.addEventListener("message", (e) => {
 		const p = document.createElement("p");
 		p.textContent = "this window will close automatically in 3 seconds";
 		document.body.appendChild(p);
+		setTimeout(() => window.close(), 3000);
 	}
 });

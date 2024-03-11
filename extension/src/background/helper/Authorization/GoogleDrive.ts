@@ -2,6 +2,7 @@
 
 import Browser from "webextension-polyfill";
 import StorageProvider from "./StorageProvider";
+import { BrowserStorage } from "@root/background/Entities";
 
 const REDIRECT_URL = Browser.identity.getRedirectURL();
 const CLIENT_ID =
@@ -29,8 +30,15 @@ export default class GoogleDrive extends StorageProvider {
 		super();
 	}
 
+	async init() {
+		const { access_token = null, refresh_token = null } =
+			await BrowserStorage.getGoogleDriveCredentials();
+		if (access_token) this.#accessToken = access_token;
+		if (refresh_token) this.#refreshToken = refresh_token;
+	}
+
 	getType(): string {
-		return "google-drive";
+		return "Google Drive";
 	}
 
 	getCredentials() {
@@ -39,34 +47,21 @@ export default class GoogleDrive extends StorageProvider {
 			: null;
 	}
 
-	isAuthed(): boolean {
-		return this.#accessToken ? true : false;
+	setCredentials(
+		credentials: { access_token?: string; refresh_token?: string } = {}
+	) {
+		const { access_token = null, refresh_token = null } = credentials;
+		if (access_token) this.#accessToken = access_token;
+		if (refresh_token) this.#refreshToken = refresh_token;
 	}
 
-	/**
-		Authenticate and authorize using browser.identity.launchWebAuthFlow().
-		If successful, this resolves with a redirectURL string that contains
-		an access token.
-	*/
-	authorize(): Promise<string> {
-		console.info("authorize", AUTH_URL);
-		return Browser.identity.launchWebAuthFlow({
-			interactive: true,
-			url: AUTH_URL,
-		});
+	isAuthed(): boolean {
+		return !!this.#accessToken;
 	}
 
 	async deauthorize() {
-		//TODO: check validation
 		this.#accessToken = undefined;
 		this.#refreshToken = undefined;
-	}
-
-	extractAccessToken(redirectUri: string) {
-		let m = redirectUri.match(/[#?](.*)/);
-		if (!m || m.length < 1) return null;
-		let params = new URLSearchParams(m[1].split("#")[0]);
-		return params.get("access_token");
 	}
 
 	/**
@@ -81,34 +76,29 @@ export default class GoogleDrive extends StorageProvider {
 		Note that the Google page talks about an "audience" property, but in fact
 		it seems to be "aud".
 	*/
-	async validate(redirectURL: string): Promise<string | unknown> {
-		const accessToken = this.extractAccessToken(redirectURL);
-		if (!accessToken) {
-			throw "Authorization failure";
-		}
-		const validationURL = `${VALIDATION_BASE_URL}?access_token=${accessToken}`;
+	async validate(): Promise<string | unknown> {
+		const validationURL = `${VALIDATION_BASE_URL}?access_token=${
+			this.#accessToken
+		}`;
 		const validationRequest = new Request(validationURL, {
 			method: "GET",
 		});
 
-		let self = this;
-		function checkResponse(response) {
-			return new Promise((resolve, reject) => {
-				if (response.status != 200) {
-					reject("Token validation error");
-				}
-				response.json().then((json: { aud: string }) => {
-					if (json.aud && json.aud === CLIENT_ID) {
-						self.#accessToken = accessToken ? accessToken : undefined;
-						resolve(accessToken);
-					} else {
-						reject("Token validation error");
-					}
-				});
-			});
-		}
+		try {
+			const response = await fetch(validationRequest);
+			if (response.status != 200) {
+				throw new Error("Token validation error");
+			}
 
-		return fetch(validationRequest).then(checkResponse);
+			const json = (await response.json()) as { aud: string };
+			if (json.aud && json.aud === CLIENT_ID) {
+				return;
+			} else {
+				throw new Error("Token validation error");
+			}
+		} catch (error) {
+			return error.message;
+		}
 	}
 
 	async getAccessToken(): Promise<{
@@ -116,14 +106,7 @@ export default class GoogleDrive extends StorageProvider {
 		error: Error | null;
 	}> {
 		try {
-			const redirectURL = await this.authorize();
-
-			console.info({ redirectURL });
-
-			const validationString = await this.validate(redirectURL);
-
-			console.info({ validationString });
-
+			await this.validate();
 			return { accessToken: this.#accessToken ?? null, error: null };
 		} catch (e) {
 			return { accessToken: null, error: e as Error };
@@ -131,8 +114,6 @@ export default class GoogleDrive extends StorageProvider {
 	}
 
 	async getOrCreateAppFolder() {
-		//TODO: check validation
-
 		const params = {
 			includeItemsFromAllDrives: "true",
 			supportsAllDrives: "true",
@@ -173,7 +154,6 @@ export default class GoogleDrive extends StorageProvider {
 	}
 
 	async filesList(): Promise<[]> {
-		//TODO: check validation
 		await this.getOrCreateAppFolder();
 
 		const response = await fetch(FILES_URL, {
@@ -197,8 +177,6 @@ export default class GoogleDrive extends StorageProvider {
 		name: string;
 		contents: any;
 	}): Promise<void> {
-		//TODO: check validation
-
 		let file = null;
 		let appFolder = null;
 
