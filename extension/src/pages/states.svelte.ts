@@ -1,7 +1,8 @@
 import Browser from "webextension-polyfill";
 import { BrowserStorage } from "@root/background/Entities/Static/BrowserStorage";
 import { tick } from "svelte";
-import { debounceFunc } from "@root/utils";
+import { Subscriber, debounceFunc } from "@root/utils";
+import type { BackupProviderStatusProps } from "@root/background/Entities/Singletons/BackupProviders";
 
 type BackupProvider = "Google Drive";
 
@@ -26,9 +27,7 @@ const activeWorkspaceIndex = (() => {
 let keepPinnedTabs = $state<boolean>(false);
 let backupDeviceName = $state<string>();
 let backupEnabled = $state<boolean>(false);
-let backupProviderConnected = $state<boolean>();
 let backupProvider = $state<BackupProvider>("Google Drive");
-let backupLastTimeStamp = $state<number>();
 
 export const getWorkspacesState = () => workspaces;
 export const getDefaultWorkspacesState = () => defaultWorkspaces;
@@ -43,9 +42,7 @@ export const setActiveWorkspaceIndexState = (i: number) =>
 export const getKeepPinnedTabs = () => keepPinnedTabs;
 export const getBackupEnabled = () => backupEnabled;
 export const getBackupDeviceName = () => backupDeviceName;
-export const getBackupProviderConnected = () => backupProviderConnected;
 export const getBackupProvider = () => backupProvider;
-export const getBackupLastTimeStamp = () => backupLastTimeStamp;
 
 function addedWorkspace({ workspace }: { workspace: Ext.Workspace }) {
 	console.info("states: addedWorkspace");
@@ -257,18 +254,6 @@ async function setBackupProvider() {
 	backupProvider = _backupProvider;
 }
 
-async function setBackupProviderConnected() {
-	const { backupProviderConnected: _backupProviderConnected } =
-		await BrowserStorage.getBackupProviderConnected();
-	backupProviderConnected = _backupProviderConnected;
-}
-
-async function setBackupLastTimeStamp() {
-	const { backupLastTimeStamp: _backupLastTimeStamp } =
-		await BrowserStorage.getBackupLastTimeStamp();
-	backupLastTimeStamp = _backupLastTimeStamp;
-}
-
 async function backupEnabledChanged({ enabled }: { enabled: boolean }) {
 	backupEnabled = enabled;
 }
@@ -281,32 +266,31 @@ async function backupProviderChanged({
 	backupProvider = provider;
 }
 
-async function backupProviderConnectedChanged({
-	connected,
-}: {
-	connected: boolean;
-}) {
-	backupProviderConnected = connected;
-}
-
-async function backupLastTimeStampChanged({
-	timestamp,
-}: {
-	timestamp: number;
-}) {
-	backupLastTimeStamp = timestamp;
-}
-
 function backupDeviceNameChanged({ deviceName }: { deviceName: string }) {
 	backupDeviceName = deviceName;
 }
 
+export const BackupProviderStatusNotifier = Subscriber();
+
+function backupProviderStatusChanged({
+	provider,
+	newStatus,
+}: {
+	provider: BackupProvider;
+	newStatus: BackupProviderStatusProps;
+}) {
+	BackupProviderStatusNotifier.notify({ provider, newStatus });
+}
+
 Browser.runtime.onMessage.addListener((message) => {
-	console.info("browser runtime onmessage hehe");
+	console.info("states: browser.runtime.onMessage-Listener");
 
 	console.info({ message });
+
+	const messageExceptions = ["tokens", "backupProviderStatusChanged"];
+
 	const { windowId: targetWindowId, msg } = message;
-	if (targetWindowId !== windowId && msg !== "tokens") return;
+	if (targetWindowId !== windowId && !messageExceptions.includes(msg)) return;
 
 	switch (msg) {
 		case "addedWorkspace":
@@ -352,16 +336,11 @@ Browser.runtime.onMessage.addListener((message) => {
 		case "backupProviderChanged":
 			backupProviderChanged(message);
 			break;
-		case "backupProviderConnectedChanged":
-			backupProviderConnectedChanged(message);
-			break;
-		case "backupLastTimeStampChanged":
-			backupLastTimeStampChanged(message);
-			break;
 		case "backupDeviceNameChanged":
 			backupDeviceNameChanged(message);
 			break;
 		case "backupProviderStatusChanged":
+			backupProviderStatusChanged(message);
 			break;
 		case "tokens":
 			Browser.runtime.sendMessage({
@@ -393,8 +372,6 @@ export async function initView() {
 		setBackupEnabled(),
 		setBackupDeviceName(),
 		setBackupProvider(),
-		setBackupProviderConnected(),
-		setBackupLastTimeStamp(),
 	]);
 }
 

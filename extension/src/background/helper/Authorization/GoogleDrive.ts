@@ -1,8 +1,7 @@
 /* exported getAccessToken */
 
 import Browser from "webextension-polyfill";
-import StorageProvider from "./StorageProvider";
-import { BrowserStorage } from "@root/background/Entities";
+import type { IBackupProvider } from "./IBackupProvider";
 import type {
 	BackupProviderCredentials,
 	BackupProviderStatusProps,
@@ -35,29 +34,36 @@ const AUTH_URL = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchPa
 const FILES_URL = "https://www.googleapis.com/drive/v3/files";
 const FILES_UPLOAD_URL = "https://www.googleapis.com/upload/drive/v3/files";
 
-export default class GoogleDrive extends StorageProvider {
+export default class GoogleDrive implements IBackupProvider {
 	#accessToken?: string;
 	#refreshToken?: string;
-	#connected: boolean = false;
+	#authorized: boolean = false;
+	#selected: boolean = true;
 	#lastBackupTimeStamp: number = 0;
 
-	constructor() {
-		super();
-	}
+	constructor() {}
 
 	async init() {
 		const {
-			GoogleDriveCredentials: { access_token = null, refresh_token = null },
-		} = (await this.getLocalCredentials()) || {};
+			GoogleDriveCredentials: {
+				access_token = null,
+				refresh_token = null,
+			} = {},
+		} = await this.getLocalCredentials();
 		if (access_token) this.#accessToken = access_token;
 		if (refresh_token) this.#refreshToken = refresh_token;
 
 		const {
-			GoogleDriveStatus: { connected = false, lastTimeStamp = 0 },
-		} = (await this.getLocalStatus()) || {};
+			GoogleDriveStatus: {
+				selected = true,
+				lastBackupTimeStamp = 0,
+				authorized = false,
+			} = {},
+		} = await this.getLocalStatus();
 
-		this.#connected = connected;
-		this.#lastBackupTimeStamp = lastTimeStamp;
+		this.#authorized = authorized;
+		this.#selected = selected;
+		this.#lastBackupTimeStamp = lastBackupTimeStamp;
 	}
 
 	getLocalCredentials(): Promise<
@@ -80,6 +86,14 @@ export default class GoogleDrive extends StorageProvider {
 		return Browser.storage.local.set({
 			GoogleDriveStatus: status,
 		});
+	}
+
+	get status(): BackupProviderStatusProps {
+		return {
+			selected: this.#selected,
+			lastBackupTimeStamp: this.#lastBackupTimeStamp,
+			authorized: this.#authorized,
+		};
 	}
 
 	get type() {
@@ -112,17 +126,25 @@ export default class GoogleDrive extends StorageProvider {
 			refresh_token,
 		});
 
-		await this.setLocalStatus({ connected: true, lastTimeStamp: 0 });
+		await this.setLocalStatus({
+			selected: this.#selected,
+			lastBackupTimeStamp: 0,
+			authorized: true,
+		});
 	}
 
-	get isAuthed(): boolean {
-		return !!this.#accessToken;
+	get authorized(): boolean {
+		return this.#authorized;
 	}
 
 	async deauthorize() {
 		this.#accessToken = undefined;
 		this.#refreshToken = undefined;
-		await this.setLocalStatus({ connected: false, lastTimeStamp: 0 });
+		await this.setLocalStatus({
+			selected: this.#selected,
+			lastBackupTimeStamp: 0,
+			authorized: false,
+		});
 		await this.setLocalCredentials({
 			access_token: undefined,
 			refresh_token: undefined,

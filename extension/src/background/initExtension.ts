@@ -66,8 +66,8 @@ export function initExtension(options: { extensionUpdated?: boolean } = {}) {
 
 			const { backupIntervalInMinutes = DEFAULT_BACKUP_INTERVAL_IN_MINUTES } =
 				await BrowserStorage.getBackupIntervalInMinutes();
-			const { backupLastTimeStamp } =
-				await BrowserStorage.getBackupLastTimeStamp();
+			const backupLastTimeStamp =
+				BackupProviders.currentProvider.status.lastBackupTimeStamp;
 
 			if (backupLastTimeStamp) {
 				const currentTime = new Date().getTime();

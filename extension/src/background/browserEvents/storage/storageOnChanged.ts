@@ -14,16 +14,14 @@ import type {
 
 function informAboutBackupProviderStatusChange(
 	provider: BackupProvider,
-	oldStatus: BackupProviderStatusProps,
 	newStatus: BackupProviderStatusProps
 ) {
-	if (newStatus.connected !== oldStatus.connected) {
-		WorkspaceStorage.windows.forEach((window) => {
-			informViews(window.windowId, "backupProviderStatusChanged", {
-				provider,
-			});
+	WorkspaceStorage.windows.forEach((window) => {
+		informViews(window.windowId, "backupProviderStatusChanged", {
+			provider,
+			newStatus,
 		});
-	}
+	});
 }
 
 export function storageOnChanged(
@@ -34,11 +32,7 @@ export function storageOnChanged(
 		const item = changes[key];
 		switch (key) {
 			case "GoogleDriveStatus":
-				informAboutBackupProviderStatusChange(
-					"Google Drive",
-					item.oldValue,
-					item.newValue
-				);
+				informAboutBackupProviderStatusChange("Google Drive", item.newValue);
 				break;
 			case "backupEnabled":
 				if (item.newValue) {

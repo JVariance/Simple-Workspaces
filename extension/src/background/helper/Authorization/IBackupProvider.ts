@@ -25,33 +25,21 @@ export class StorageProviderError extends Error {
 	}
 }
 
-export default class StorageProvider {
-	constructor() {}
-
-	get type() {
-		return "storageProvider";
-	}
+export interface IBackupProvider {
+	get type(): string;
 	getCredentials(): {
 		accessToken: string | null;
 		refreshToken: string | null;
-	} {
-		return { accessToken: null, refreshToken: null };
-	}
-	async openAuthPage() {}
-	get isAuthed() {
-		return true;
-	}
-	async authorize(credentials: BackupProviderCredentials) {}
-	async deauthorize() {}
-	async filesList(): Promise<[]> {
-		return [];
-	}
-	async fileUpload(data: any) {}
-	async fileDownload(data: any): Promise<any> {}
-	encryptData(contents: any) {
-		// return cryptr.encrypt(LZString.compressToBase64(JSON.stringify(contents)));
-	}
-	decryptData(contents: any) {
-		// return JSON.parse(LZString.decompressFromBase64(cryptr.decrypt(contents)));
-	}
+	};
+	openAuthPage: () => void;
+	isAuthed: () => boolean;
+	authorize: (credentials: BackupProviderCredentials) => Promise<void>;
+	deauthorize: () => Promise<void>;
+	filesList: () => Promise<[]>;
+	fileUpload: (data: any) => Promise<void>;
+	fileDownload: (data: any) => Promise<void>;
+	encryptData: (contents: any) => string;
+	// return cryptr.encrypt(LZString.compressToBase64(JSON.stringify(contents)));
+	decryptData: (contents: any) => string;
+	// return JSON.parse(LZString.decompressFromBase64(cryptr.decrypt(contents)));
 }

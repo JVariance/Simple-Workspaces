@@ -9,8 +9,10 @@ import {
 	convertHoursToMinutes,
 } from "@root/background/helper/Time";
 import { immediateDebounceFunc } from "@root/utils";
-import { getProvider } from "@root/background/helper/BackupProviders";
-import type { BackupProvider } from "@root/background/Entities/Singletons/BackupProviders";
+import type {
+	BackupProvider,
+	BackupProviderStatusProps,
+} from "@root/background/Entities/Singletons/BackupProviders";
 import BackupProviders from "@root/background/Entities/Singletons/BackupProviders";
 
 function switchWorkspaceCommand({
@@ -85,10 +87,10 @@ async function backupData({ provider }: { provider: "Google Drive" }) {
 		case "Google Drive":
 			try {
 				Processes.authorizingProvider = true;
-				let currentProvider = getProvider(provider);
+				let currentProvider = await BackupProviders.getProvider(provider);
 
 				console.info({ currentProvider });
-				const { accessToken } = await currentProvider!.getCredentials();
+				const { accessToken } = currentProvider!.getCredentials();
 				console.info({ accessToken });
 				// const info = accessToken ? await getUserInfo(accessToken) : null;
 				// console.info({ info });
@@ -125,7 +127,10 @@ async function _processAuthTokens({
 	const [access_token = undefined, refresh_token = undefined] =
 		tokens.split(":");
 	console.info({ access_token, refresh_token });
-	Providers.get(provider)?.setCredentials({ access_token, refresh_token });
+	(await BackupProviders.getProvider(provider))?.authorize({
+		access_token,
+		refresh_token,
+	});
 }
 
 export function runtimeOnMessage(message: any) {
@@ -427,6 +432,12 @@ export function runtimeOnMessage(message: any) {
 				const { provider } = message as { provider: BackupProvider };
 				(await BackupProviders.getProvider(provider)).openAuthPage();
 				return resolve();
+			});
+		case "getBackupProviderStatus":
+			return new Promise<BackupProviderStatusProps>(async (resolve) => {
+				const { provider } = message as { provider: BackupProvider };
+				const status = (await BackupProviders.getProvider(provider)).status;
+				return resolve(status);
 			});
 		case "backupData":
 			return new Promise<void>(async (resolve) => {

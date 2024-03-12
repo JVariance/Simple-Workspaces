@@ -132,24 +132,4 @@ export class BrowserStorage {
 	static setBackupProvider(backupProvider: BackupProvider): Promise<void> {
 		return Browser.storage.local.set({ backupProvider });
 	}
-
-	static getBackupProviderConnected(): Promise<
-		Record<"backupProviderConnected", boolean>
-	> {
-		return Browser.storage.local.get("backupProviderConnected");
-	}
-
-	static setBackupProviderConnected(val: boolean): Promise<void> {
-		return Browser.storage.local.set({ backupProviderConnected: val });
-	}
-
-	static getBackupLastTimeStamp(): Promise<
-		Record<"backupLastTimeStamp", number>
-	> {
-		return Browser.storage.local.get("backupLastTimeStamp");
-	}
-
-	static setBackupLastTimeStamp(timeVal: number): Promise<void> {
-		return Browser.storage.local.set({ backupLastTimeStamp: timeVal });
-	}
 }

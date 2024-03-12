@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from "@root/components/Icon.svelte";
-	import { mount, onMount, tick, unstate, untrack } from "svelte";
+	import { mount, onMount, unstate, untrack } from "svelte";
 	import Browser, { i18n } from "webextension-polyfill";
 	import Accordion from "@components/Accordion/Accordion.svelte";
 	import Summary from "@components/Accordion/Summary.svelte";
@@ -13,7 +13,7 @@
 	import Logo from "@root/components/Logo.svelte";
 	import HomeWorkspace from "@root/components/ViewBlocks/HomeWorkspace.svelte";
 	import Layout from "@pages/Special_Pages/Layout.svelte";
-	import { getBackupDeviceName, getBackupProviderConnected, getBackupLastTimeStamp, getBackupProvider, getKeepPinnedTabs, getWorkspacesState, initView } from "@pages/states.svelte";
+	import { BackupProviderStatusNotifier, getBackupDeviceName, getBackupProvider, getKeepPinnedTabs, getWorkspacesState, initView } from "@pages/states.svelte";
 	import ThemeSwitch from "@root/components/ViewBlocks/ThemeSwitch.svelte";
 	import { BrowserStorage } from "@root/background/Entities";
 	import Tooltip from "@root/components/Tooltip.svelte";
@@ -22,7 +22,11 @@
 	import type { Snippet } from "svelte";
 	import { DEFAULT_BACKUP_INTERVAL_IN_MINUTES } from "@root/background/helper/Constants";
 	import { debounceFunc } from "@root/utils";
-	import type { BackupProvider } from "@root/background/Entities/Singletons/BackupProviders";
+	import type { BackupProvider, BackupProviderStatusProps } from "@root/background/Entities/Singletons/BackupProviders";
+
+	BackupProviderStatusNotifier.subscribe(({ provider, newStatus }: { provider: BackupProvider; newStatus: BackupProviderStatusProps }) => {
+		backupProviders[provider] = newStatus;
+	});
 
 	let windowWorkspaces = $derived(getWorkspacesState()?.filter(({ UUID }) => UUID !== "HOME") || []);
 	let keepPinnedTabs = $derived(getKeepPinnedTabs());
@@ -44,25 +48,28 @@
 			editDeviceName = _deviceName ? _deviceName?.length <= 0 : true;
 	});
 
-	let backupProviderConnected = $derived(getBackupProviderConnected());
 	let backupProvider = $derived(getBackupProvider());
-	let backupLastTimeStamp = $derived(getBackupLastTimeStamp());
-	
+	let selectedBackupProvider = $state<BackupProvider>('Google Drive');
+
+	$effect(() => {
+		if(backupProvider) (selectedBackupProvider = backupProvider);
+	});
+
 	let backupIntervalNumber = $state<number>(DEFAULT_BACKUP_INTERVAL_IN_MINUTES);
 	let backupIntervalUnit = $state<"minutes" | "hours" | "days">("minutes");
 
 	let deviceNameInput = $state<HTMLInputElement>();
 	let importDialogElem = $state<HTMLDialogElement>();
 
-	let selectedBackupProvider = $state<BackupProvider>('Google Drive');
 	let clearExtensionDataConfirmed = $state(false);
 
-	const backupProviders: Record<BackupProvider, BackupProviderStatusProps> = {
+	const backupProviders = $state<Record<BackupProvider, BackupProviderStatusProps>>({
 		'Google Drive': {
-			connected: false,
-			lastTimeStamp: 0,
+			authorized: false,
+			selected: false,
+			lastBackupTimeStamp: 0,
 		}
-	};
+	});
 
 	async function applyCurrentWorkspacesChanges() {
 		const props = $state({
@@ -192,8 +199,12 @@
 
 	onMount(async () => {
 		await initView();
-		// await tick();
-		// editDeviceName = deviceName ? deviceName.length > 0 : true;
+
+		for(let provider of Object.keys(backupProviders) as BackupProvider[]) {
+			const status = (await Browser.runtime.sendMessage({ msg: 'getBackupProviderStatus', provider })) as BackupProviderStatusProps;
+			console.info({status, provider});
+			backupProviders[provider] = status;
+		}
 	});
 </script>
 
@@ -333,6 +344,7 @@
 			</ButtonLink>
 		{/snippet}
 		{#snippet Section_ImportExport()}
+			{@const provider = backupProviders[selectedBackupProvider]}
 			<h1 class="text-xl font-semibold text-[--heading-2-color]">Import/Export</h1>
 			<div class="flex gap-4 flex-wrap">
 				<button class="btn primary-btn" onclick={exportData}>
@@ -408,12 +420,11 @@
 							{/if}
 						</div>
 					</div>
-					{#if backupProviderConnected}
-						<div>
-							<p>provider: {backupProvider || '-'}</p>
-							<p>last backup: {backupLastTimeStamp || '-'}</p>
-						</div>
-					{/if}
+					<div>
+						<p>authorized: {provider?.authorized}</p>
+						<p>selected: {provider?.selected}</p>
+						<p>last backup: {provider?.lastBackupTimeStamp || '-'}</p>
+					</div>
 					<div class="grid gap-1">
 						<label for="backup-interval-input" class="text-[--heading-2-color] font-semibold">
 							{i18n.getMessage('backup_interval')}
@@ -439,7 +450,7 @@
 							</select>
 						</div>
 					</div>
-					{#if backupProviderConnected}
+					{#if provider?.selected && provider.authorized}
 						<button class="btn primary-btn" title={i18n.getMessage('disconnect_from_provider')}>
 							<Icon icon="sync" />
 							<span>{i18n.getMessage('disconnect')}</span>
@@ -455,7 +466,7 @@
 							<span>{i18n.getMessage('connect')}</span>
 						</button>
 					{/if}
-					{#if backupProviderConnected}
+					{#if provider?.authorized}
 						<button class="btn primary-btn" disabled={!deviceName?.length && !deviceNameInput?.checkValidity()} onclick={backupData}>
 							<Icon icon="sync" />
 							<span>{i18n.getMessage('backup')}</span>

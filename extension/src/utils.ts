@@ -187,3 +187,20 @@ export function isNullish(value: any): value is null | undefined {
 export function areNullish(...values: any[]): boolean {
 	return values.every((value) => value == null);
 }
+
+export function Subscriber() {
+	let callbacks: Function[] = [];
+
+	function unsubscribe(callback: Function) {
+		callbacks = callbacks.filter((_cb) => _cb !== callback);
+	}
+
+	return {
+		subscribe: function (callback: Function) {
+			callbacks.push(callback);
+			const _unsubscribe = () => unsubscribe(callback);
+			return _unsubscribe;
+		},
+		notify: (props?: any) => callbacks.forEach((callback) => callback(props)),
+	};
+}

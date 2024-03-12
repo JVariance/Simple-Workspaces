@@ -4,17 +4,20 @@ import { BrowserStorage } from "../Static/BrowserStorage";
 export type BackupProviderInstance = GoogleDrive;
 export type BackupProvider = "Google Drive";
 export type BackupProviderStatusProps = {
-	connected: boolean;
-	lastTimeStamp: number;
+	selected: boolean;
+	authorized: boolean;
+	lastBackupTimeStamp: number;
 };
 export type BackupProviderCredentials = {
 	access_token?: string;
 	refresh_token?: string;
 };
 
-class WorkspaceStorage {
+const allProviders: BackupProvider[] = ["Google Drive"];
+
+class BackupProviders {
 	initialized = false;
-	private static _instance: WorkspaceStorage;
+	private static _instance: BackupProviders;
 	#providers = new Map<BackupProvider, BackupProviderInstance>();
 	currentProvider!: BackupProviderInstance;
 
@@ -26,6 +29,8 @@ class WorkspaceStorage {
 
 	async init() {
 		const { backupProvider } = await BrowserStorage.getBackupProvider();
+		for (let provider of allProviders) {
+		}
 		this.currentProvider = await this.getProvider(backupProvider);
 	}
 
@@ -51,4 +56,4 @@ class WorkspaceStorage {
 	}
 }
 
-export default WorkspaceStorage.Instance;
+export default BackupProviders.Instance;
