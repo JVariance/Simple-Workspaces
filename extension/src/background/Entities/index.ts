@@ -4,4 +4,4 @@ import WorkspaceStorage from "./Singletons/WorkspaceStorage";
 
 export { Processes, TabMenuMove, WorkspaceStorage };
 export * from "./Window.svelte";
-export * from "./Static/Storage";
+export * from "./Static/BrowserStorage";

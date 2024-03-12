@@ -152,20 +152,4 @@ export class BrowserStorage {
 	static setBackupLastTimeStamp(timeVal: number): Promise<void> {
 		return Browser.storage.local.set({ backupLastTimeStamp: timeVal });
 	}
-
-	static getGoogleDriveCredentials(): Promise<
-		Record<
-			"GoogleDriveCredentials",
-			{ access_token: string | null; refresh_token: string | null }
-		>
-	> {
-		return Browser.storage.local.get("GoogleDriveCredentials");
-	}
-
-	static setGoogleDriveCredentials(credentials: {
-		access_token: string | null;
-		refresh_token: string | null;
-	}): Promise<void> {
-		return Browser.storage.local.set({ GoogleDriveCredentials: credentials });
-	}
 }

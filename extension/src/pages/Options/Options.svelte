@@ -22,6 +22,7 @@
 	import type { Snippet } from "svelte";
 	import { DEFAULT_BACKUP_INTERVAL_IN_MINUTES } from "@root/background/helper/Constants";
 	import { debounceFunc } from "@root/utils";
+	import type { BackupProvider } from "@root/background/Entities/Singletons/BackupProviders";
 
 	let windowWorkspaces = $derived(getWorkspacesState()?.filter(({ UUID }) => UUID !== "HOME") || []);
 	let keepPinnedTabs = $derived(getKeepPinnedTabs());
@@ -53,9 +54,15 @@
 	let deviceNameInput = $state<HTMLInputElement>();
 	let importDialogElem = $state<HTMLDialogElement>();
 
-	const providers = ["Google Drive"] as const;
-	let selectedBackupProvider = $state<typeof providers[number]>(backupProvider || 'Google Drive');
+	let selectedBackupProvider = $state<BackupProvider>('Google Drive');
 	let clearExtensionDataConfirmed = $state(false);
+
+	const backupProviders: Record<BackupProvider, BackupProviderStatusProps> = {
+		'Google Drive': {
+			connected: false,
+			lastTimeStamp: 0,
+		}
+	};
 
 	async function applyCurrentWorkspacesChanges() {
 		const props = $state({

@@ -3,6 +3,10 @@
 import Browser from "webextension-polyfill";
 import StorageProvider from "./StorageProvider";
 import { BrowserStorage } from "@root/background/Entities";
+import type {
+	BackupProviderCredentials,
+	BackupProviderStatusProps,
+} from "@root/background/Entities/Singletons/BackupProviders";
 
 const REDIRECT_URL = import.meta.env.PROD
 	? "https://simpleworkspaces.com/auth/googledrive"
@@ -28,14 +32,14 @@ const AUTH_URL = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchPa
 	AUTH_URL_PARAMS
 )}`;
 
-const VALIDATION_BASE_URL = "https://www.googleapis.com/oauth2/v3/tokeninfo";
-
 const FILES_URL = "https://www.googleapis.com/drive/v3/files";
 const FILES_UPLOAD_URL = "https://www.googleapis.com/upload/drive/v3/files";
 
 export default class GoogleDrive extends StorageProvider {
 	#accessToken?: string;
 	#refreshToken?: string;
+	#connected: boolean = false;
+	#lastBackupTimeStamp: number = 0;
 
 	constructor() {
 		super();
@@ -44,12 +48,41 @@ export default class GoogleDrive extends StorageProvider {
 	async init() {
 		const {
 			GoogleDriveCredentials: { access_token = null, refresh_token = null },
-		} = await BrowserStorage.getGoogleDriveCredentials();
+		} = (await this.getLocalCredentials()) || {};
 		if (access_token) this.#accessToken = access_token;
 		if (refresh_token) this.#refreshToken = refresh_token;
+
+		const {
+			GoogleDriveStatus: { connected = false, lastTimeStamp = 0 },
+		} = (await this.getLocalStatus()) || {};
+
+		this.#connected = connected;
+		this.#lastBackupTimeStamp = lastTimeStamp;
 	}
 
-	getType(): string {
+	getLocalCredentials(): Promise<
+		Record<"GoogleDriveCredentials", BackupProviderCredentials>
+	> {
+		return Browser.storage.local.get("GoogleDriveCredentials");
+	}
+
+	setLocalCredentials(credentials: BackupProviderCredentials): Promise<void> {
+		return Browser.storage.local.set({ GoogleDriveCredentials: credentials });
+	}
+
+	getLocalStatus(): Promise<
+		Record<"GoogleDriveStatus", BackupProviderStatusProps>
+	> {
+		return Browser.storage.local.get("GoogleDriveStatus");
+	}
+
+	setLocalStatus(status: BackupProviderStatusProps): Promise<void> {
+		return Browser.storage.local.set({
+			GoogleDriveStatus: status,
+		});
+	}
+
+	get type() {
 		return "Google Drive";
 	}
 
@@ -69,84 +102,31 @@ export default class GoogleDrive extends StorageProvider {
 		};
 	}
 
-	setCredentials(
-		credentials: { access_token?: string; refresh_token?: string } = {}
-	) {
-		const { access_token = null, refresh_token = null } = credentials;
+	async authorize(credentials: BackupProviderCredentials = {}) {
+		const { access_token = undefined, refresh_token = undefined } = credentials;
 		if (access_token) this.#accessToken = access_token;
 		if (refresh_token) this.#refreshToken = refresh_token;
+
+		await this.setLocalCredentials({
+			access_token,
+			refresh_token,
+		});
+
+		await this.setLocalStatus({ connected: true, lastTimeStamp: 0 });
 	}
 
-	isAuthed(): boolean {
+	get isAuthed(): boolean {
 		return !!this.#accessToken;
 	}
 
 	async deauthorize() {
 		this.#accessToken = undefined;
 		this.#refreshToken = undefined;
-	}
-
-	/**
-		Validate the token contained in redirectURL.
-		This follows essentially the process here:
-		https://developers.google.com/identity/protocols/OAuth2UserAgent#tokeninfo-validation
-		- make a GET request to the validation URL, including the access token
-		- if the response is 200, and contains an "aud" property, and that property
-		matches the clientID, then the response is valid
-		- otherwise it is not valid
-
-		Note that the Google page talks about an "audience" property, but in fact
-		it seems to be "aud".
-	*/
-	async validate(): Promise<string | unknown> {
-		const validationURL = `${VALIDATION_BASE_URL}?access_token=${
-			this.#accessToken
-		}`;
-		const validationRequest = new Request(validationURL, {
-			method: "GET",
+		await this.setLocalStatus({ connected: false, lastTimeStamp: 0 });
+		await this.setLocalCredentials({
+			access_token: undefined,
+			refresh_token: undefined,
 		});
-
-		try {
-			const response = await fetch(validationRequest);
-			if (response.status != 200) {
-				throw new Error("Token validation error");
-			}
-
-			const json = (await response.json()) as {
-				aud: string;
-				// iss: "accounts.google.com" | "https://accounts.google.com";
-			};
-			/*
-				TODO: check for other criteria
-				https://developers.google.com/identity/sign-in/web/backend-auth?hl=de#verify-the-integrity-of-the-id-token
-			*/
-
-			const allCriteriaMet = json.aud && json.aud === CLIENT_ID;
-			// &&
-			// json.iss &&
-			// ["accounts.google.com", "https://accounts.google.com"].includes(
-			// 	json.iss
-			// )
-			if (allCriteriaMet) {
-				return;
-			} else {
-				throw new Error("Token validation error");
-			}
-		} catch (error) {
-			return error.message;
-		}
-	}
-
-	async getAccessToken(): Promise<{
-		accessToken: string | null;
-		error: Error | null;
-	}> {
-		try {
-			await this.validate();
-			return { accessToken: this.#accessToken ?? null, error: null };
-		} catch (e) {
-			return { accessToken: null, error: e as Error };
-		}
 	}
 
 	async getOrCreateAppFolder() {

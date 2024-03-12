@@ -7,6 +7,24 @@ import {
 	clearBackupAlarm,
 	createBackupAlarm,
 } from "@root/background/helper/backupAlarm";
+import type {
+	BackupProvider,
+	BackupProviderStatusProps,
+} from "@root/background/Entities/Singletons/BackupProviders";
+
+function informAboutBackupProviderStatusChange(
+	provider: BackupProvider,
+	oldStatus: BackupProviderStatusProps,
+	newStatus: BackupProviderStatusProps
+) {
+	if (newStatus.connected !== oldStatus.connected) {
+		WorkspaceStorage.windows.forEach((window) => {
+			informViews(window.windowId, "backupProviderStatusChanged", {
+				provider,
+			});
+		});
+	}
+}
 
 export function storageOnChanged(
 	changes: Browser.Storage.StorageAreaOnChangedChangesType
@@ -15,6 +33,13 @@ export function storageOnChanged(
 	for (let key in changes) {
 		const item = changes[key];
 		switch (key) {
+			case "GoogleDriveStatus":
+				informAboutBackupProviderStatusChange(
+					"Google Drive",
+					item.oldValue,
+					item.newValue
+				);
+				break;
 			case "backupEnabled":
 				if (item.newValue) {
 					createBackupAlarm();

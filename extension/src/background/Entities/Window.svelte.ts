@@ -1,7 +1,7 @@
 import * as API from "@root/browserAPI";
 import { promisedDebounceFunc } from "@root/utils";
 import Browser from "webextension-polyfill";
-import { BrowserStorage } from "./Static/Storage";
+import { BrowserStorage } from "./Static/BrowserStorage";
 import { createTab } from "../browserAPIWrapper/tabCreation";
 import Processes from "./Singletons/Processes";
 import { pinTabs, unpinTabs } from "../helper/tabsPinning";

@@ -4,6 +4,8 @@
 	modified
 */
 
+import type { BackupProviderCredentials } from "@root/background/Entities/Singletons/BackupProviders";
+
 // import LZString from  "lz-string";
 // gzip, zstd,, brotli
 // import Cryptr from "cryptr";
@@ -26,7 +28,7 @@ export class StorageProviderError extends Error {
 export default class StorageProvider {
 	constructor() {}
 
-	getType() {
+	get type() {
 		return "storageProvider";
 	}
 	getCredentials(): {
@@ -36,12 +38,10 @@ export default class StorageProvider {
 		return { accessToken: null, refreshToken: null };
 	}
 	async openAuthPage() {}
-	isAuthed() {
+	get isAuthed() {
 		return true;
 	}
-	async authorize(credentials: any): Promise<string> {
-		return "";
-	}
+	async authorize(credentials: BackupProviderCredentials) {}
 	async deauthorize() {}
 	async filesList(): Promise<[]> {
 		return [];

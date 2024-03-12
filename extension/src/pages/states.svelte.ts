@@ -1,5 +1,5 @@
 import Browser from "webextension-polyfill";
-import { BrowserStorage } from "@root/background/Entities/Static/Storage";
+import { BrowserStorage } from "@root/background/Entities/Static/BrowserStorage";
 import { tick } from "svelte";
 import { debounceFunc } from "@root/utils";
 
@@ -360,6 +360,8 @@ Browser.runtime.onMessage.addListener((message) => {
 			break;
 		case "backupDeviceNameChanged":
 			backupDeviceNameChanged(message);
+			break;
+		case "backupProviderStatusChanged":
 			break;
 		case "tokens":
 			Browser.runtime.sendMessage({

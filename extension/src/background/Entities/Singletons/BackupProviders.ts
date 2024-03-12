@@ -1,8 +1,16 @@
 import GoogleDrive from "@root/background/helper/Authorization/GoogleDrive";
-import { BrowserStorage } from "../Static/Storage";
+import { BrowserStorage } from "../Static/BrowserStorage";
 
 export type BackupProviderInstance = GoogleDrive;
 export type BackupProvider = "Google Drive";
+export type BackupProviderStatusProps = {
+	connected: boolean;
+	lastTimeStamp: number;
+};
+export type BackupProviderCredentials = {
+	access_token?: string;
+	refresh_token?: string;
+};
 
 class WorkspaceStorage {
 	initialized = false;
