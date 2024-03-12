@@ -13,7 +13,7 @@
 	import Logo from "@root/components/Logo.svelte";
 	import HomeWorkspace from "@root/components/ViewBlocks/HomeWorkspace.svelte";
 	import Layout from "@pages/Special_Pages/Layout.svelte";
-	import { BackupProviderStatusNotifier, getBackupDeviceName, getBackupProvider, getKeepPinnedTabs, getWorkspacesState, initView } from "@pages/states.svelte";
+	import { BackupProviderStatusNotifier, getBackupDeviceName, getKeepPinnedTabs, getWorkspacesState, initView, setActiveBackupProvider } from "@pages/states.svelte";
 	import ThemeSwitch from "@root/components/ViewBlocks/ThemeSwitch.svelte";
 	import { BrowserStorage } from "@root/background/Entities";
 	import Tooltip from "@root/components/Tooltip.svelte";
@@ -26,6 +26,9 @@
 
 	BackupProviderStatusNotifier.subscribe(({ provider, newStatus }: { provider: BackupProvider; newStatus: BackupProviderStatusProps }) => {
 		backupProviders[provider] = newStatus;
+		if(newStatus.selected) {
+			activeBackupProvider = provider;
+		}
 	});
 
 	let windowWorkspaces = $derived(getWorkspacesState()?.filter(({ UUID }) => UUID !== "HOME") || []);
@@ -48,12 +51,12 @@
 			editDeviceName = _deviceName ? _deviceName?.length <= 0 : true;
 	});
 
-	let backupProvider = $derived(getBackupProvider());
 	let selectedBackupProvider = $state<BackupProvider>('Google Drive');
+	let activeBackupProvider = $state<BackupProvider>('Google Drive');
 
-	$effect(() => {
-		if(backupProvider) (selectedBackupProvider = backupProvider);
-	});
+	// $effect(() => {
+	// 	selectedBackupProvider = activeBackupProvider;
+	// });
 
 	let backupIntervalNumber = $state<number>(DEFAULT_BACKUP_INTERVAL_IN_MINUTES);
 	let backupIntervalUnit = $state<"minutes" | "hours" | "days">("minutes");
@@ -179,10 +182,11 @@
 	}
 
 	async function backupData() {
-		Browser.runtime.sendMessage({ msg: 'backupData', provider: backupProvider });
+		Browser.runtime.sendMessage({ msg: 'backupData', provider: activeBackupProvider });
 	}
 
 	async function openBackupProviderAuthPage() {
+		setActiveBackupProvider(selectedBackupProvider);
 		Browser.runtime.sendMessage({ msg: 'openBackupProviderAuthPage', provider: selectedBackupProvider });
 	}
 
@@ -202,7 +206,7 @@
 
 		for(let provider of Object.keys(backupProviders) as BackupProvider[]) {
 			const status = (await Browser.runtime.sendMessage({ msg: 'getBackupProviderStatus', provider })) as BackupProviderStatusProps;
-			console.info({status, provider});
+			console.info({ status, provider });
 			backupProviders[provider] = status;
 		}
 	});

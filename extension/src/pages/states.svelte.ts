@@ -27,7 +27,7 @@ const activeWorkspaceIndex = (() => {
 let keepPinnedTabs = $state<boolean>(false);
 let backupDeviceName = $state<string>();
 let backupEnabled = $state<boolean>(false);
-let backupProvider = $state<BackupProvider>("Google Drive");
+let activeBackupProvider = $state<BackupProvider>("Google Drive");
 
 export const getWorkspacesState = () => workspaces;
 export const getDefaultWorkspacesState = () => defaultWorkspaces;
@@ -42,7 +42,8 @@ export const setActiveWorkspaceIndexState = (i: number) =>
 export const getKeepPinnedTabs = () => keepPinnedTabs;
 export const getBackupEnabled = () => backupEnabled;
 export const getBackupDeviceName = () => backupDeviceName;
-export const getBackupProvider = () => backupProvider;
+export const setActiveBackupProvider = (provider: BackupProvider) =>
+	(activeBackupProvider = provider);
 
 function addedWorkspace({ workspace }: { workspace: Ext.Workspace }) {
 	console.info("states: addedWorkspace");
@@ -248,22 +249,8 @@ async function setBackupDeviceName() {
 	backupDeviceName = _backupDeviceName;
 }
 
-async function setBackupProvider() {
-	const { backupProvider: _backupProvider } =
-		await BrowserStorage.getBackupProvider();
-	backupProvider = _backupProvider;
-}
-
 async function backupEnabledChanged({ enabled }: { enabled: boolean }) {
 	backupEnabled = enabled;
-}
-
-async function backupProviderChanged({
-	provider,
-}: {
-	provider: BackupProvider;
-}) {
-	backupProvider = provider;
 }
 
 function backupDeviceNameChanged({ deviceName }: { deviceName: string }) {
@@ -333,9 +320,6 @@ Browser.runtime.onMessage.addListener((message) => {
 		case "backupEnabledChanged":
 			backupEnabledChanged(message);
 			break;
-		case "backupProviderChanged":
-			backupProviderChanged(message);
-			break;
 		case "backupDeviceNameChanged":
 			backupDeviceNameChanged(message);
 			break;
@@ -346,7 +330,7 @@ Browser.runtime.onMessage.addListener((message) => {
 			Browser.runtime.sendMessage({
 				msg: "authTokens",
 				tokens: message?.tokens,
-				provider: backupProvider,
+				provider: activeBackupProvider,
 			});
 			break;
 		default:
@@ -371,7 +355,6 @@ export async function initView() {
 		setForceDefaultThemeIfDarkMode(),
 		setBackupEnabled(),
 		setBackupDeviceName(),
-		setBackupProvider(),
 	]);
 }
 

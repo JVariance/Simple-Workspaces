@@ -122,14 +122,4 @@ export class BrowserStorage {
 	static setBackupIntervalInMinutes(val: number): Promise<void> {
 		return Browser.storage.local.set({ backupIntervalInMinutes: val });
 	}
-
-	static getBackupProvider(): Promise<
-		Record<"backupProvider", BackupProvider>
-	> {
-		return Browser.storage.local.get("backupProvider");
-	}
-
-	static setBackupProvider(backupProvider: BackupProvider): Promise<void> {
-		return Browser.storage.local.set({ backupProvider });
-	}
 }

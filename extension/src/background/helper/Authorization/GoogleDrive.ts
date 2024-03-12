@@ -18,18 +18,11 @@ const SCOPES = [
 	"https://www.googleapis.com/auth/drive.file",
 ];
 
-const AUTH_URL_PARAMS = {
-	client_id: CLIENT_ID,
-	response_type: "code",
-	redirect_uri: encodeURIComponent(REDIRECT_URL),
-	scope: encodeURIComponent(SCOPES.join(" ")),
-	prompt: "consent",
-	access_type: "offline",
-};
-
-const AUTH_URL = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams(
-	AUTH_URL_PARAMS
-)}`;
+const AUTH_URL = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(
+	REDIRECT_URL
+)}&scope=${encodeURIComponent(
+	SCOPES.join(" ")
+)}&prompt=consent&access_type=offline`;
 
 const FILES_URL = "https://www.googleapis.com/drive/v3/files";
 const FILES_UPLOAD_URL = "https://www.googleapis.com/upload/drive/v3/files";
@@ -100,7 +93,7 @@ export default class GoogleDrive implements IBackupProvider {
 		return "Google Drive";
 	}
 
-	async openAuhPage() {
+	async openAuthPage() {
 		console.info({ REDIRECT_URL, AUTH_URL });
 		Browser.windows.create({
 			url: AUTH_URL,
