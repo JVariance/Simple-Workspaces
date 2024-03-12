@@ -1,5 +1,6 @@
 import type { ExportData } from "@root/background/helper/exportData";
 import Browser from "webextension-polyfill";
+import type { BackupProvider } from "../Singletons/BackupProviders";
 
 type WorkspaceHistoryType = [
 	string,
@@ -123,14 +124,12 @@ export class BrowserStorage {
 	}
 
 	static getBackupProvider(): Promise<
-		Record<"backupProvider", "Google Drive">
+		Record<"backupProvider", BackupProvider>
 	> {
 		return Browser.storage.local.get("backupProvider");
 	}
 
-	static setBackupProvider(
-		backupProvider: "Google Drive" | (string & {})
-	): Promise<void> {
+	static setBackupProvider(backupProvider: BackupProvider): Promise<void> {
 		return Browser.storage.local.set({ backupProvider });
 	}
 
@@ -152,5 +151,21 @@ export class BrowserStorage {
 
 	static setBackupLastTimeStamp(timeVal: number): Promise<void> {
 		return Browser.storage.local.set({ backupLastTimeStamp: timeVal });
+	}
+
+	static getGoogleDriveCredentials(): Promise<
+		Record<
+			"GoogleDriveCredentials",
+			{ access_token: string | null; refresh_token: string | null }
+		>
+	> {
+		return Browser.storage.local.get("GoogleDriveCredentials");
+	}
+
+	static setGoogleDriveCredentials(credentials: {
+		access_token: string | null;
+		refresh_token: string | null;
+	}): Promise<void> {
+		return Browser.storage.local.set({ GoogleDriveCredentials: credentials });
 	}
 }

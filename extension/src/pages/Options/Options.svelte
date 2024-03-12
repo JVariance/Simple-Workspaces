@@ -168,25 +168,8 @@
 		Browser.runtime.sendMessage({ msg: 'backupData', provider: backupProvider });
 	}
 
-	async function connectToBackupProvider() {
-		const REDIRECT_URL = import.meta.env.PROD
-		? Browser.identity.getRedirectURL()
-		: "http://localhost:3000/auth/googledrive";
-		const CLIENT_ID =
-			"758528028452-hlu883tbm6bu8oolrso5sripso72a5ig.apps.googleusercontent.com";
-		const SCOPES = [
-			"https://www.googleapis.com/auth/drive.appdata",
-			"https://www.googleapis.com/auth/drive.file",
-		];
-
-		const AUTH_URL = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(
-			REDIRECT_URL
-		)}&scope=${encodeURIComponent(SCOPES.join(" "))}&prompt=consent&access_type=offline`;
-
-		console.info({ REDIRECT_URL, AUTH_URL });
-
-		Browser.windows.create({ url: AUTH_URL, type: "popup", allowScriptsToClose: true });
-		// Browser.runtime.sendMessage({ msg: 'connectToBackupProvider', provider: selectedBackupProvider });
+	async function openBackupProviderAuthPage() {
+		Browser.runtime.sendMessage({ msg: 'openBackupProviderAuthPage', provider: selectedBackupProvider });
 	}
 
 	const changedBackupInterval = debounceFunc(_changedBackupInterval, 500);
@@ -458,7 +441,7 @@
 						<button 
 							class="btn primary-btn disabled:pointer-events-none disabled:opacity-50" 
 							title={i18n.getMessage('connect_to_provider')}
-							onclick={connectToBackupProvider}
+							onclick={openBackupProviderAuthPage}
 							disabled={!deviceName?.length && !deviceNameInput?.checkValidity()}
 						>
 							<Icon icon="sync" />

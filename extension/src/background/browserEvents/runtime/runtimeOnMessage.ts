@@ -4,14 +4,14 @@ import Browser from "webextension-polyfill";
 import * as API from "@root/browserAPI";
 import { exportData } from "@root/background/helper/exportData";
 import { importData } from "@root/background/helper/importData";
-import GoogleDrive from "@root/background/helper/Authorization/GoogleDrive";
 import {
 	convertDaysToMinutes,
 	convertHoursToMinutes,
 } from "@root/background/helper/Time";
 import { immediateDebounceFunc } from "@root/utils";
-
-const Providers = new Map<string, GoogleDrive>();
+import { getProvider } from "@root/background/helper/BackupProviders";
+import type { BackupProvider } from "@root/background/Entities/Singletons/BackupProviders";
+import BackupProviders from "@root/background/Entities/Singletons/BackupProviders";
 
 function switchWorkspaceCommand({
 	workspaceUUID,
@@ -85,17 +85,10 @@ async function backupData({ provider }: { provider: "Google Drive" }) {
 		case "Google Drive":
 			try {
 				Processes.authorizingProvider = true;
-				let currentProvider;
-				if (Providers.has("Google Drive")) {
-					currentProvider = Providers.get("Google Drive");
-				} else {
-					currentProvider = new GoogleDrive();
-					await currentProvider.init();
-					Providers.set("Google Drive", currentProvider);
-				}
+				let currentProvider = getProvider(provider);
 
-				console.info({ currentProvider, Providers });
-				const { accessToken } = await currentProvider!.getAccessToken();
+				console.info({ currentProvider });
+				const { accessToken } = await currentProvider!.getCredentials();
 				console.info({ accessToken });
 				// const info = accessToken ? await getUserInfo(accessToken) : null;
 				// console.info({ info });
@@ -429,9 +422,10 @@ export function runtimeOnMessage(message: any) {
 				const fullExportDataArray = await exportData();
 				return resolve(fullExportDataArray);
 			});
-		case "connectToBackupProvider":
+		case "openBackupProviderAuthPage":
 			return new Promise<void>(async (resolve) => {
-				await backupData(message);
+				const { provider } = message as { provider: BackupProvider };
+				(await BackupProviders.getProvider(provider)).openAuthPage();
 				return resolve();
 			});
 		case "backupData":

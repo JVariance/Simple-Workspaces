@@ -29,9 +29,13 @@ export default class StorageProvider {
 	getType() {
 		return "storageProvider";
 	}
-	getCredentials(): { accessToken: string; refreshToken: string } | null {
-		return null;
+	getCredentials(): {
+		accessToken: string | null;
+		refreshToken: string | null;
+	} {
+		return { accessToken: null, refreshToken: null };
 	}
+	async openAuthPage() {}
 	isAuthed() {
 		return true;
 	}

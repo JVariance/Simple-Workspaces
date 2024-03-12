@@ -1,4 +1,3 @@
-import Browser from "webextension-polyfill";
 import {
 	BrowserStorage,
 	Processes,
@@ -8,6 +7,7 @@ import {
 import { createBackupAlarm } from "./helper/backupAlarm";
 import { convertMillisecondsToMinutes } from "./helper/Time";
 import { DEFAULT_BACKUP_INTERVAL_IN_MINUTES } from "./helper/Constants";
+import BackupProviders from "./Entities/Singletons/BackupProviders";
 
 async function initTabMenu() {
 	await TabMenuMove.init(
@@ -20,18 +20,18 @@ async function initTabMenu() {
 }
 
 async function initWorkspaceStorage(options: { extensionUpdated?: boolean }) {
-	// WorkspaceStorage = new WorkspaceStorage();
-
 	const { extensionUpdated = false } = options;
 
 	await WorkspaceStorage.init({ extensionUpdated });
 }
 
+async function initBackupProviders() {
+	await BackupProviders.init();
+}
+
 export function initExtension(options: { extensionUpdated?: boolean } = {}) {
 	return new Promise<void>(async (resolve) => {
 		console.info("initExtension 0");
-		// await Processes.ExtensionInitialization;
-
 		const { extensionUpdated = false } = options;
 
 		if (
@@ -46,15 +46,13 @@ export function initExtension(options: { extensionUpdated?: boolean } = {}) {
 		const { keepPinnedTabs } = await BrowserStorage.getKeepPinnedTabs();
 		Processes.keepPinnedTabs = keepPinnedTabs ?? false;
 
-		// await browser.storage.local.clear();
-		// if (!WorkspaceStorage.initialized && !TabMenu.initialized) {
 		if (!WorkspaceStorage.initialized) {
 			console.info("initExtension 3");
 			await initWorkspaceStorage({ extensionUpdated });
 			console.info("initExtension 4");
 		}
 		await initTabMenu();
-		// informViews("initialized");
+		await initBackupProviders();
 		console.info("initExtension 5");
 		Processes.ExtensionInitialization.finish();
 		Processes.extensionInitialized = true;

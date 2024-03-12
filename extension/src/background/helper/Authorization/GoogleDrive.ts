@@ -4,7 +4,9 @@ import Browser from "webextension-polyfill";
 import StorageProvider from "./StorageProvider";
 import { BrowserStorage } from "@root/background/Entities";
 
-const REDIRECT_URL = Browser.identity.getRedirectURL();
+const REDIRECT_URL = import.meta.env.PROD
+	? "https://simpleworkspaces.com/auth/googledrive"
+	: "http://localhost:3000/auth/googledrive";
 const CLIENT_ID =
 	"758528028452-hlu883tbm6bu8oolrso5sripso72a5ig.apps.googleusercontent.com";
 // drive.appdata, drive.file, drive.metadata, drive.readonly
@@ -13,10 +15,19 @@ const SCOPES = [
 	"https://www.googleapis.com/auth/drive.file",
 ];
 
-// &prompt=consent&access_type=offline
-const AUTH_URL = `https://accounts.google.com/o/oauth2/auth?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(
-	REDIRECT_URL
-)}&scope=${encodeURIComponent(SCOPES.join(" "))}`;
+const AUTH_URL_PARAMS = {
+	client_id: CLIENT_ID,
+	response_type: "code",
+	redirect_uri: encodeURIComponent(REDIRECT_URL),
+	scope: encodeURIComponent(SCOPES.join(" ")),
+	prompt: "consent",
+	access_type: "offline",
+};
+
+const AUTH_URL = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams(
+	AUTH_URL_PARAMS
+)}`;
+
 const VALIDATION_BASE_URL = "https://www.googleapis.com/oauth2/v3/tokeninfo";
 
 const FILES_URL = "https://www.googleapis.com/drive/v3/files";
@@ -31,8 +42,9 @@ export default class GoogleDrive extends StorageProvider {
 	}
 
 	async init() {
-		const { access_token = null, refresh_token = null } =
-			await BrowserStorage.getGoogleDriveCredentials();
+		const {
+			GoogleDriveCredentials: { access_token = null, refresh_token = null },
+		} = await BrowserStorage.getGoogleDriveCredentials();
 		if (access_token) this.#accessToken = access_token;
 		if (refresh_token) this.#refreshToken = refresh_token;
 	}
@@ -41,10 +53,20 @@ export default class GoogleDrive extends StorageProvider {
 		return "Google Drive";
 	}
 
+	async openAuhPage() {
+		console.info({ REDIRECT_URL, AUTH_URL });
+		Browser.windows.create({
+			url: AUTH_URL,
+			type: "popup",
+			allowScriptsToClose: true,
+		});
+	}
+
 	getCredentials() {
-		return this.#accessToken
-			? { accessToken: this.#accessToken, refreshToken: this.#refreshToken! }
-			: null;
+		return {
+			accessToken: this.#accessToken || null,
+			refreshToken: this.#refreshToken! || null,
+		};
 	}
 
 	setCredentials(
@@ -90,8 +112,22 @@ export default class GoogleDrive extends StorageProvider {
 				throw new Error("Token validation error");
 			}
 
-			const json = (await response.json()) as { aud: string };
-			if (json.aud && json.aud === CLIENT_ID) {
+			const json = (await response.json()) as {
+				aud: string;
+				// iss: "accounts.google.com" | "https://accounts.google.com";
+			};
+			/*
+				TODO: check for other criteria
+				https://developers.google.com/identity/sign-in/web/backend-auth?hl=de#verify-the-integrity-of-the-id-token
+			*/
+
+			const allCriteriaMet = json.aud && json.aud === CLIENT_ID;
+			// &&
+			// json.iss &&
+			// ["accounts.google.com", "https://accounts.google.com"].includes(
+			// 	json.iss
+			// )
+			if (allCriteriaMet) {
 				return;
 			} else {
 				throw new Error("Token validation error");
