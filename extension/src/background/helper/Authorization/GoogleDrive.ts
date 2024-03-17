@@ -1,15 +1,48 @@
 /* exported getAccessToken */
 
 import Browser from "webextension-polyfill";
-import type { IBackupProvider } from "./IBackupProvider";
+import { StorageProviderError, type IBackupProvider } from "./IBackupProvider";
 import type {
 	BackupProviderCredentials,
 	BackupProviderStatusProps,
 } from "@root/background/Entities/Singletons/BackupProviders";
 
+export class GoogleDriveError extends StorageProviderError {
+	code?: number;
+
+	constructor(
+		message:
+			| "invalid or expired access token"
+			| "no refresh token"
+			| (string & {}),
+		code?: number
+	) {
+		super(message);
+		code && (this.code = code);
+	}
+
+	static get #InvalidOrExpiredAccessToken() {
+		return new this("invalid or expired access token", 401);
+	}
+
+	static get NoRefreshToken() {
+		return new this("no refresh token");
+	}
+
+	static throwError(code: number) {
+		switch (code) {
+			case 401:
+				throw GoogleDriveError.#InvalidOrExpiredAccessToken;
+			default:
+				throw new GoogleDriveError(code.toString(), code);
+		}
+	}
+}
+
 const REDIRECT_URL = import.meta.env.PROD
 	? "https://simpleworkspaces.com/auth/googledrive"
 	: "http://localhost:3000/auth/googledrive";
+
 const CLIENT_ID =
 	"758528028452-hlu883tbm6bu8oolrso5sripso72a5ig.apps.googleusercontent.com";
 // drive.appdata, drive.file, drive.metadata, drive.readonly
@@ -26,6 +59,10 @@ const AUTH_URL = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIEN
 
 const FILES_URL = "https://www.googleapis.com/drive/v3/files";
 const FILES_UPLOAD_URL = "https://www.googleapis.com/upload/drive/v3/files";
+
+const REFRESH_TOKEN_URL = import.meta.env.PROD
+	? "https://simpleworkspaces.com/auth/googledrive/refreshtoken"
+	: "http://localhost:3000/auth/googledrive/refreshtoken";
 
 export default class GoogleDrive implements IBackupProvider {
 	#accessToken?: string;
@@ -159,6 +196,10 @@ export default class GoogleDrive implements IBackupProvider {
 			}
 		);
 
+		if (!response.ok) {
+			GoogleDriveError.throwError(response.status);
+		}
+
 		const data = await response.json();
 		const fullFileList = data.files;
 
@@ -179,8 +220,38 @@ export default class GoogleDrive implements IBackupProvider {
 					mimeType: "application/vnd.google-apps.folder",
 				}),
 			});
+
+			if (!response.ok) {
+				GoogleDriveError.throwError(response.status);
+			}
+
 			const data = await response.json();
 			return data;
+		}
+	}
+
+	async refreshAccessToken() {
+		if (!this.#refreshToken) {
+			throw GoogleDriveError.NoRefreshToken;
+		}
+
+		const params = {
+			refresh_token: this.#refreshToken,
+		};
+
+		const response = await fetch(
+			`${REFRESH_TOKEN_URL}?${new URLSearchParams(params)}`
+		);
+
+		if (response.ok) {
+			const data = await response.json();
+			const { access_token } = data;
+
+			this.#accessToken = access_token;
+		} else {
+			await this.deauthorize();
+			//TODO: error: no refresh token
+			GoogleDriveError.throwError(response.status);
 		}
 	}
 
@@ -190,6 +261,10 @@ export default class GoogleDrive implements IBackupProvider {
 		const response = await fetch(FILES_URL, {
 			headers: { Authorization: `Bearer ${this.#accessToken}` },
 		});
+
+		if (!response.ok) {
+			GoogleDriveError.throwError(response.status);
+		}
 
 		const data = await response.json();
 
@@ -232,8 +307,14 @@ export default class GoogleDrive implements IBackupProvider {
 
 		const params = { uploadType: "resumable" };
 
+		// Regex with lookbehind (keeps solo .json): /(?<=.)\.json$/
+		const name = `${(existingFile ? existingFile.name : data.name).replace(
+			/\.json$/,
+			""
+		)}.json`;
+
 		const metadata = {
-			name: existingFile ? existingFile.name : data.name,
+			name,
 			mimeType: "application/json",
 			...(!existingFile && { parents: [appFolder.id] }),
 		};
@@ -254,7 +335,11 @@ export default class GoogleDrive implements IBackupProvider {
 			body: JSON.stringify(metadata),
 		});
 
-		await fetch(`${response.headers.get("location")}`, {
+		if (!response.ok) {
+			GoogleDriveError.throwError(response.status);
+		}
+
+		const response2 = await fetch(`${response.headers.get("location")}`, {
 			method: "PUT",
 			headers: {
 				Authorization: `Bearer ${this.#accessToken}`,
@@ -262,13 +347,17 @@ export default class GoogleDrive implements IBackupProvider {
 			},
 			body: file,
 		});
+
+		if (!response2.ok) {
+			GoogleDriveError.throwError(response2.status);
+		}
 	}
 
 	async fileDownload(data: {
 		id: string;
 		name: string;
 		contents: any;
-	}): Promise<{ contents: any }> {
+	}): Promise<{ contents: unknown }> {
 		//TODO: check validation
 
 		const files = await this.filesList();
@@ -285,6 +374,10 @@ export default class GoogleDrive implements IBackupProvider {
 				headers: { Authorization: `Bearer ${this.#accessToken}` },
 			}
 		);
+
+		if (!response.ok) {
+			GoogleDriveError.throwError(response.status);
+		}
 
 		const _data = await response.blob();
 
