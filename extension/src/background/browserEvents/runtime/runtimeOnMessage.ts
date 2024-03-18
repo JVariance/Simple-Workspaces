@@ -3,7 +3,10 @@ import { informViews } from "../../informViews";
 import Browser from "webextension-polyfill";
 import * as API from "@root/browserAPI";
 import { exportData } from "@root/background/helper/exportData";
-import { importData } from "@root/background/helper/importData";
+import {
+	importData,
+	type ImportData,
+} from "@root/background/helper/importData";
 import {
 	convertDaysToMinutes,
 	convertHoursToMinutes,
@@ -17,6 +20,7 @@ import type {
 import BackupProviders from "@root/background/Entities/Singletons/BackupProviders";
 import { GoogleDriveError } from "@root/background/helper/Authorization/GoogleDrive";
 import { StorageProviderError } from "@root/background/helper/Authorization/IBackupProvider";
+import { backupData } from "@root/background/helper/backupData";
 
 function switchWorkspaceCommand({
 	workspaceUUID,
@@ -83,78 +87,6 @@ function switchWorkspaceAndFocusTab({
 // 		}
 // 	});
 // }
-
-async function backupData({ provider }: { provider: "Google Drive" }) {
-	console.info("bg - backupData to: ", provider);
-	switch (provider) {
-		case "Google Drive":
-			Processes.authorizingProvider = true;
-			let currentProvider = await BackupProviders.getProvider(provider);
-
-			// const currentProvider = BackupProviders.activeProvider;
-
-			// console.info({ currentProvider });
-			const { accessToken } = currentProvider!.getCredentials();
-			console.info({ accessToken });
-			// const info = accessToken ? await getUserInfo(accessToken) : null;
-			// console.info({ info });
-
-			// try {
-			// 	const files = await currentProvider?.filesList();
-			// 	console.info({ files });
-			// } catch (error) {}
-
-			const exportedData = await exportData();
-
-			console.info({ exportedData });
-
-			const { backupDeviceName } = await BrowserStorage.getBackupDeviceName();
-
-			const fileUploadParams: Parameters<
-				BackupProviderInstance["fileUpload"]
-			>["0"] = {
-				id: "",
-				name: `${backupDeviceName}.json`,
-				contents: exportedData,
-			};
-
-			async function uploadFile() {
-				let attempts = 0;
-
-				while (attempts < 3) {
-					try {
-						await currentProvider?.fileUpload(fileUploadParams);
-						break;
-					} catch (error) {
-						attempts++;
-
-						if (error instanceof StorageProviderError) {
-							if (error.message === "invalid or expired access token") {
-								try {
-									await currentProvider.refreshAccessToken();
-								} catch (error2) {
-									throw error2;
-								}
-							} else {
-								throw error;
-							}
-						} else {
-							throw error;
-						}
-					}
-				}
-			}
-
-			try {
-				await uploadFile();
-			} catch (error) {}
-
-			Processes.authorizingProvider = false;
-			break;
-		default:
-			break;
-	}
-}
 
 const processAuthTokens = immediateDebounceFunc(_processAuthTokens, 1000);
 
@@ -484,6 +416,20 @@ export function runtimeOnMessage(message: any) {
 			return new Promise<void>(async (resolve) => {
 				await backupData(message);
 				return resolve();
+			});
+		case "getBackupData":
+			return new Promise<ImportData>(async (resolve) => {
+				const { provider } = message as { provider: BackupProvider };
+				const fileList = await (
+					await BackupProviders.getProvider(provider)
+				).filesList();
+				const file = await (
+					await BackupProviders.getProvider(provider)
+				).fileDownload({ id: fileList[0].id, name: fileList[0].name });
+
+				console.info({ file });
+
+				return resolve(file.contents);
 			});
 		default:
 			break;

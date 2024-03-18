@@ -185,6 +185,11 @@
 		Browser.runtime.sendMessage({ msg: 'backupData', provider: activeBackupProvider });
 	}
 
+	async function getBackupData() {
+		const _backupData = await Browser.runtime.sendMessage({ msg: 'getBackupData', provider: activeBackupProvider });
+		console.info({ _backupData });
+	}
+
 	async function openBackupProviderAuthPage() {
 		setActiveBackupProvider(selectedBackupProvider);
 		Browser.runtime.sendMessage({ msg: 'openBackupProviderAuthPage', provider: selectedBackupProvider });
@@ -474,6 +479,10 @@
 						<button class="btn primary-btn" disabled={!deviceName?.length && !deviceNameInput?.checkValidity()} onclick={backupData}>
 							<Icon icon="sync" />
 							<span>{i18n.getMessage('backup')}</span>
+						</button>
+						<button class="btn primary-btn" disabled={!deviceName?.length && !deviceNameInput?.checkValidity()} onclick={getBackupData}>
+							<Icon icon="sync" />
+							<span>download</span>
 						</button>
 					{/if}
 				</div>

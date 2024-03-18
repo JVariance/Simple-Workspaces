@@ -126,7 +126,16 @@ export default class GoogleDrive implements IBackupProvider {
 		};
 	}
 
-	get type() {
+	set status(props: Partial<BackupProviderStatusProps>) {
+		for (let [key, val] of Object.entries(props)) {
+			//@ts-ignore
+			this[key] = val;
+		}
+
+		this.setLocalStatus(this.status);
+	}
+
+	get name(): "Google Drive" {
 		return "Google Drive";
 	}
 
@@ -156,6 +165,7 @@ export default class GoogleDrive implements IBackupProvider {
 			refresh_token,
 		});
 
+		this.#authorized = true;
 		await this.setLocalStatus({
 			selected: this.#selected,
 			lastBackupTimeStamp: 0,
@@ -170,6 +180,8 @@ export default class GoogleDrive implements IBackupProvider {
 	async deauthorize() {
 		this.#accessToken = undefined;
 		this.#refreshToken = undefined;
+
+		this.#authorized = false;
 		await this.setLocalStatus({
 			selected: this.#selected,
 			lastBackupTimeStamp: 0,
@@ -246,16 +258,14 @@ export default class GoogleDrive implements IBackupProvider {
 		if (response.ok) {
 			const data = await response.json();
 			const { access_token } = data;
-
 			this.#accessToken = access_token;
 		} else {
 			await this.deauthorize();
-			//TODO: error: no refresh token
 			GoogleDriveError.throwError(response.status);
 		}
 	}
 
-	async filesList(): Promise<[]> {
+	async filesList(): Promise<{ id: string; name: string }[]> {
 		await this.getOrCreateAppFolder();
 
 		const response = await fetch(FILES_URL, {
@@ -356,7 +366,6 @@ export default class GoogleDrive implements IBackupProvider {
 	async fileDownload(data: {
 		id: string;
 		name: string;
-		contents: any;
 	}): Promise<{ contents: unknown }> {
 		//TODO: check validation
 
@@ -379,12 +388,13 @@ export default class GoogleDrive implements IBackupProvider {
 			GoogleDriveError.throwError(response.status);
 		}
 
-		const _data = await response.blob();
+		// const _data = await response.blob();
+		const _data = await response.json();
 
 		console.info("file downloaded", _data);
 
 		//TODO: when encrypted, decrypt the data
 
-		return { contents: JSON.parse(_data) };
+		return { contents: _data };
 	}
 }

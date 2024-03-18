@@ -69,5 +69,6 @@ export async function exportData() {
 		finalFullExportData[windowUUID] = { w: Array.from(window) };
 	}
 
-	return finalFullExportData;
+	return { windows: finalFullExportData };
+	// return finalFullExportData;
 }

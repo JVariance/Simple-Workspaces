@@ -1,6 +1,4 @@
-import type { ExportData } from "@root/background/helper/exportData";
 import Browser from "webextension-polyfill";
-import type { BackupProvider } from "../Singletons/BackupProviders";
 
 type WorkspaceHistoryType = [
 	string,
@@ -80,29 +78,6 @@ export class BrowserStorage {
 
 	static setBackupDeviceName(deviceName: string): Promise<void> {
 		return Browser.storage.local.set({ backupDeviceName: deviceName });
-	}
-
-	static getSyncedBackupDeviceNames(): Promise<
-		Record<"syncedBackupDeviceNames", string>
-	> {
-		return Browser.storage.sync.get("syncedBackupDeviceNames");
-	}
-
-	static setSyncedBackupDeviceNames(deviceNames: string[]): Promise<void> {
-		return Browser.storage.sync.set({ syncedBackupDeviceNames: deviceNames });
-	}
-
-	static getBackupDataFromDevice(
-		device: string
-	): Promise<Record<string, ExportData>> {
-		return Browser.storage.sync.get(`backup_${device}`);
-	}
-
-	static setBackupDataFromDevice(
-		device: string,
-		backupData: ExportData
-	): Promise<void> {
-		return Browser.storage.sync.set({ [`backup_${device}`]: backupData });
 	}
 
 	static getBackupEnabled(): Promise<Record<"backupEnabled", boolean>> {

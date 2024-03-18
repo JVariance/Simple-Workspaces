@@ -4,7 +4,10 @@
 	modified
 */
 
-import type { BackupProviderCredentials } from "@root/background/Entities/Singletons/BackupProviders";
+import type {
+	BackupProvider,
+	BackupProviderCredentials,
+} from "@root/background/Entities/Singletons/BackupProviders";
 
 // import LZString from  "lz-string";
 // gzip, zstd,, brotli
@@ -26,7 +29,7 @@ export class StorageProviderError extends Error {
 }
 
 export interface IBackupProvider {
-	get type(): string;
+	get name(): BackupProvider;
 	getCredentials(): {
 		accessToken: string | null;
 		refreshToken: string | null;
@@ -35,7 +38,7 @@ export interface IBackupProvider {
 	isAuthed: () => boolean;
 	authorize: (credentials: BackupProviderCredentials) => Promise<void>;
 	deauthorize: () => Promise<void>;
-	filesList: () => Promise<[]>;
+	filesList: () => Promise<any[]>;
 	fileUpload: (data: any) => Promise<void>;
 	fileDownload: (data: any) => Promise<void>;
 	encryptData: (contents: any) => string;

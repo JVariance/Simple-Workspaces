@@ -8,6 +8,7 @@ import { createBackupAlarm } from "./helper/backupAlarm";
 import { convertMillisecondsToMinutes } from "./helper/Time";
 import { DEFAULT_BACKUP_INTERVAL_IN_MINUTES } from "./helper/Constants";
 import BackupProviders from "./Entities/Singletons/BackupProviders";
+import { backupData } from "./helper/backupData";
 
 async function initTabMenu() {
 	await TabMenuMove.init(
@@ -67,7 +68,7 @@ export function initExtension(options: { extensionUpdated?: boolean } = {}) {
 			const { backupIntervalInMinutes = DEFAULT_BACKUP_INTERVAL_IN_MINUTES } =
 				await BrowserStorage.getBackupIntervalInMinutes();
 			const backupLastTimeStamp =
-				BackupProviders.currentProvider.status.lastBackupTimeStamp;
+				BackupProviders.activeProvider.status.lastBackupTimeStamp;
 
 			if (backupLastTimeStamp) {
 				const currentTime = new Date().getTime();
@@ -76,7 +77,10 @@ export function initExtension(options: { extensionUpdated?: boolean } = {}) {
 				);
 
 				if (timeDiffInMinutes > backupIntervalInMinutes) {
-					//TODO: backup data
+					console.info(
+						`timeDiffInMinutes > backupIntervalInMinutes: ${timeDiffInMinutes} > ${backupIntervalInMinutes}`
+					);
+					backupData();
 				}
 			}
 		}
