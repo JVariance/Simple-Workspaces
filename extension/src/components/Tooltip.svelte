@@ -62,7 +62,7 @@
 
 <svelte:window onresize={onResize}></svelte:window>
 
-<div class="flex flex-wrap gap-1 items-center" aria-describedby={id}>
+<div class="flex gap-1 items-center" aria-describedby={id}>
 	{#if children}
 		<div class="contents">
 			{@render children()}

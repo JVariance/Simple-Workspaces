@@ -41,7 +41,7 @@ export class GoogleDriveError extends StorageProviderError {
 
 const REDIRECT_URL = import.meta.env.PROD
 	? "https://simpleworkspaces.com/auth/googledrive"
-	: "http://localhost:3000/auth/googledrive";
+	: "http://localhost:5174/auth/googledrive";
 
 const CLIENT_ID =
 	"758528028452-hlu883tbm6bu8oolrso5sripso72a5ig.apps.googleusercontent.com";
@@ -62,7 +62,7 @@ const FILES_UPLOAD_URL = "https://www.googleapis.com/upload/drive/v3/files";
 
 const REFRESH_TOKEN_URL = import.meta.env.PROD
 	? "https://simpleworkspaces.com/auth/googledrive/refreshtoken"
-	: "http://localhost:3000/auth/googledrive/refreshtoken";
+	: "http://localhost:5174/auth/googledrive/refreshtoken";
 
 export default class GoogleDrive implements IBackupProvider {
 	#accessToken?: string;

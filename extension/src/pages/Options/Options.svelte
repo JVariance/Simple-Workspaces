@@ -71,6 +71,11 @@
 			authorized: false,
 			selected: false,
 			lastBackupTimeStamp: 0,
+		},
+		'Dropbox': {
+			authorized: false,
+			selected: false,
+			lastBackupTimeStamp: 0,
 		}
 	});
 
@@ -369,22 +374,8 @@
 			<!-- <a href={Browser.identity.getRedirectURL()}>Link</a> -->
 			<div>
 				<h2 class="text-xl font-semibold text-[--heading-2-color]">Backup</h2>
-				<div class="mt-4 grid gap-4">
-					<label class="grid gap-1">
-						<span class="text-[--heading-2-color] font-semibold first-letter:uppercase">
-							{i18n.getMessage('provider')}
-						</span>
-						<select 
-							id="select-backup-provider"
-							name="select-backup-provider"
-							bind:value={selectedBackupProvider}
-						>
-							{#each ["Google Drive"] as provider}
-								<option value={provider}>{provider}</option>
-							{/each}
-						</select>
-					</label>
-					<div class="grid gap-1">
+				<div class="mt-4 grid">
+					<div class="grid gap-1 mb-4">
 						<label for="device-name-input" class="text-[--heading-2-color] font-semibold first-letter:uppercase">
 							{i18n.getMessage('device_name')} ({i18n.getMessage('required')})
 						</label>
@@ -429,62 +420,108 @@
 							{/if}
 						</div>
 					</div>
-					<div>
-						<p>authorized: {provider?.authorized}</p>
-						<p>selected: {provider?.selected}</p>
-						<p>last backup: {provider?.lastBackupTimeStamp || '-'}</p>
-					</div>
-					<div class="grid gap-1">
-						<label for="backup-interval-input" class="text-[--heading-2-color] font-semibold">
-							{i18n.getMessage('backup_interval')}
-						</label>
-						<div class="flex gap-2 items-stretch">
+					<div role="tablist" class="tabs grid grid-rows-[auto_1fr] grid-cols-1">
+						{#each Object.entries(backupProviders) as [providerName, provider], i}
 							<input 
-								id="backup-interval-input"
-								type="number" 
-								min="1" max="60" step="0.25"
-								bind:value={backupIntervalNumber}
-								class="rounded-md p-2 invalid:!bg-red-300 max-w-[8ch]" 
-								onchange={changedBackupInterval}
-							/>
-							<select 
-								name="select-backup-interval-unit" 
-								id="select-backup-interval-unit" 
-								bind:value={backupIntervalUnit}
-								onchange={changedBackupInterval}
+								id="provider-{i}" 
+								type="radio" 
+								name="provider-tabs" 
+								role="tab" 
+								aria-label="Tab {i + 1}" 
+								class="absolute pointer-events-none opacity-0" 
+								checked={provider.selected}
 							>
-								{#each ['minutes', 'hours', 'days'] as unit}
-									<option value={unit}>{i18n.getMessage(unit)}</option>
-								{/each}
-							</select>
+						{/each}
+						<div class="flex gap-4 rounded-t-md p-2 bg-[color-mix(in_srgb,_black_25%,_transparent)]">
+							{#each Object.entries(backupProviders) as [providerName, provider], i}
+								<label for="provider-{i}" class="row-start-1 cursor-pointer p-2 rounded-md flex gap-2">
+									{#if provider.selected}
+										<Icon icon="check-cirlce" />
+									{/if}
+									{#if provider.authorized}
+										<Icon icon="person" />
+									{/if}
+									{providerName}
+								</label>
+							{/each}
+						</div>
+						<div class="bg-[color-mix(in_srgb,_black_35%,_transparent)] p-2 rounded-b-md">
+							{#each Object.entries(backupProviders) as [providerName, provider], i}
+								<div role="tabpanel" class="tab hidden gap-4 row-start-2 col-start-1">
+									<div>
+										<p>last backup: {provider?.lastBackupTimeStamp || '-'}</p>
+									</div>
+									<div class="grid gap-1">
+										<label for="backup-interval-input" class="text-[--heading-2-color] font-semibold">
+											{i18n.getMessage('backup_interval')}
+										</label>
+										<div class="flex gap-2 items-stretch">
+											<input 
+												id="backup-interval-input"
+												type="number" 
+												min="1" max="60" step="0.25"
+												bind:value={backupIntervalNumber}
+												class="rounded-md p-2 invalid:!bg-red-300 max-w-[8ch]" 
+												onchange={changedBackupInterval}
+											/>
+											<select 
+												name="select-backup-interval-unit" 
+												id="select-backup-interval-unit" 
+												bind:value={backupIntervalUnit}
+												onchange={changedBackupInterval}
+											>
+												{#each ['minutes', 'hours', 'days'] as unit}
+													<option value={unit}>{i18n.getMessage(unit)}</option>
+												{/each}
+											</select>
+										</div>
+									</div>
+									{#if provider?.selected && provider.authorized}
+										<button class="btn primary-btn" title={i18n.getMessage('disconnect_from_provider')}>
+											<Icon icon="sync" />
+											<span>{i18n.getMessage('disconnect')}</span>
+										</button>
+									{:else}
+										<button 
+											class="btn primary-btn disabled:pointer-events-none disabled:opacity-50" 
+											title={i18n.getMessage('connect_to_provider')}
+											onclick={openBackupProviderAuthPage}
+											disabled={!deviceName?.length && !deviceNameInput?.checkValidity()}
+										>
+											<Icon icon="sync" />
+											<span>{i18n.getMessage('connect')}</span>
+										</button>
+									{/if}
+									{#if provider?.authorized}
+										<button class="btn primary-btn" disabled={!deviceName?.length && !deviceNameInput?.checkValidity()} onclick={backupData}>
+											<Icon icon="sync" />
+											<span>{i18n.getMessage('backup')}</span>
+										</button>
+										<button class="btn primary-btn" disabled={!deviceName?.length && !deviceNameInput?.checkValidity()} onclick={getBackupData}>
+											<Icon icon="sync" />
+											<span>download</span>
+										</button>
+									{/if}
+								</div>
+							{/each}
 						</div>
 					</div>
-					{#if provider?.selected && provider.authorized}
-						<button class="btn primary-btn" title={i18n.getMessage('disconnect_from_provider')}>
-							<Icon icon="sync" />
-							<span>{i18n.getMessage('disconnect')}</span>
-						</button>
-					{:else}
-						<button 
-							class="btn primary-btn disabled:pointer-events-none disabled:opacity-50" 
-							title={i18n.getMessage('connect_to_provider')}
-							onclick={openBackupProviderAuthPage}
-							disabled={!deviceName?.length && !deviceNameInput?.checkValidity()}
+
+					<!-- <label class="grid gap-1">
+						<span class="text-[--heading-2-color] font-semibold first-letter:uppercase">
+							{i18n.getMessage('provider')}
+						</span>
+						<select 
+							id="select-backup-provider"
+							name="select-backup-provider"
+							bind:value={selectedBackupProvider}
 						>
-							<Icon icon="sync" />
-							<span>{i18n.getMessage('connect')}</span>
-						</button>
-					{/if}
-					{#if provider?.authorized}
-						<button class="btn primary-btn" disabled={!deviceName?.length && !deviceNameInput?.checkValidity()} onclick={backupData}>
-							<Icon icon="sync" />
-							<span>{i18n.getMessage('backup')}</span>
-						</button>
-						<button class="btn primary-btn" disabled={!deviceName?.length && !deviceNameInput?.checkValidity()} onclick={getBackupData}>
-							<Icon icon="sync" />
-							<span>download</span>
-						</button>
-					{/if}
+							{#each ["Google Drive"] as provider}
+								<option value={provider}>{provider}</option>
+							{/each}
+						</select>
+					</label> -->
+					
 				</div>
 			</div>
 		{/snippet}
@@ -592,5 +629,15 @@
 
 	option {
 		@apply bg-[--workspace-bg] text-[--workspace-color];
+	}
+
+	[role="tab"]#provider-0 {
+		&:checked ~ div > label[for="provider-0"] {
+			@apply bg-blue-500;
+		}
+
+		&:checked ~ div > .tab:nth-child(1) {
+			@apply grid;
+		}
 	}
 </style>
