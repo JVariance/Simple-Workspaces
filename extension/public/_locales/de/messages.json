@@ -308,5 +308,8 @@
   },
   "edit_device_name": {
     "message": "Gerätenamen bearbeiten"
+  },
+  "enable_automatic_backup": {
+    "message": "automatisches Backup aktivieren"
   }
 }

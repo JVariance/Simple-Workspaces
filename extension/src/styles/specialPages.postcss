@@ -41,6 +41,7 @@ kbd {
 	--badge-bg: light-dark(#f8f8fe, #282853);
 	--heading-color: #8c88e3;
 	--heading-2-color: light-dark(#625eb7, #aca8f9);
+	--table-cell-bg: light-dark(#e5e5ff, #342c59);
 }
 
 html {
@@ -101,11 +102,11 @@ dd {
 }
 
 dt {
-	@apply bg-[light-dark(#e5e5ff,_#342c59)] py-1 px-2;
+	@apply bg-[--table-cell-bg] py-1 px-2;
 }
 
 dd {
-	@apply bg-[light-dark(#e5e5ff,_#342c59)] text-[light-dark(#000,_#fff)];
+	@apply bg-[--table-cell-bg] text-[light-dark(#000,_#fff)];
 }
 
 dl > div:first-of-type dt {

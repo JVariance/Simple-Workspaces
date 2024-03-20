@@ -37,8 +37,18 @@ export function storageOnChanged(
 			case "backupEnabled":
 				if (item.newValue) {
 					createBackupAlarm();
+					WorkspaceStorage.windows.forEach((window) => {
+						informViews(window.windowId, "backupEnabledChanged", {
+							enabled: item.newValue,
+						});
+					});
 				} else {
 					clearBackupAlarm();
+					WorkspaceStorage.windows.forEach((window) => {
+						informViews(window.windowId, "backupEnabledChanged", {
+							enabled: item.newValue,
+						});
+					});
 				}
 				break;
 			case "backupIntervalInMinutes":

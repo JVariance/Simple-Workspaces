@@ -311,5 +311,8 @@
   },
   "edit_device_name": {
     "message": "edit device name"
+  },
+  "enable_automatic_backup": {
+    "message": "enable automatic backup"
   }
 }

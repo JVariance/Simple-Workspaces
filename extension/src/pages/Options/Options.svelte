@@ -13,7 +13,7 @@
 	import Logo from "@root/components/Logo.svelte";
 	import HomeWorkspace from "@root/components/ViewBlocks/HomeWorkspace.svelte";
 	import Layout from "@pages/Special_Pages/Layout.svelte";
-	import { BackupProviderStatusNotifier, getBackupDeviceName, getKeepPinnedTabs, getWorkspacesState, initView, setActiveBackupProvider } from "@pages/states.svelte";
+	import { BackupProviderStatusNotifier, getBackupDeviceName, getBackupEnabled, setBackupEnabled, getKeepPinnedTabs, getWorkspacesState, initView, setActiveBackupProvider } from "@pages/states.svelte";
 	import ThemeSwitch from "@root/components/ViewBlocks/ThemeSwitch.svelte";
 	import { BrowserStorage } from "@root/background/Entities";
 	import Tooltip from "@root/components/Tooltip.svelte";
@@ -36,6 +36,7 @@
 	let deviceName = $state<string>();
 	let editDeviceName = $state<boolean>();
 	let _deviceName = $derived(getBackupDeviceName());
+	let backupEnabled = $derived(getBackupEnabled());
 	// let _deviceName = $derived.by(() => {
 	// 	const name = getBackupDeviceName();
 	// 	deviceName = _deviceName;
@@ -374,7 +375,13 @@
 			<!-- <a href={Browser.identity.getRedirectURL()}>Link</a> -->
 			<div>
 				<h2 class="text-xl font-semibold text-[--heading-2-color]">Backup</h2>
-				<div class="mt-4 grid">
+
+				<label class="flex gap-4 items-center">
+					<input type="checkbox" checked={backupEnabled} onchange={(e) => setBackupEnabled(e.currentTarget.checked)}>
+					<span>{i18n.getMessage('enable_automatic_backup')}</span>
+				</label>
+
+				<div class="mt-4 grid {backupEnabled ? '' : 'opacity-25 pointer-events-none'}">
 					<div class="grid gap-1 mb-4">
 						<label for="device-name-input" class="text-[--heading-2-color] font-semibold first-letter:uppercase">
 							{i18n.getMessage('device_name')} ({i18n.getMessage('required')})
@@ -420,7 +427,32 @@
 							{/if}
 						</div>
 					</div>
-					<div role="tablist" class="tabs grid grid-rows-[auto_1fr] grid-cols-1">
+					<div class="grid gap-1 mb-4">
+						<label for="backup-interval-input" class="text-[--heading-2-color] font-semibold">
+							{i18n.getMessage('backup_interval')}
+						</label>
+						<div class="flex gap-2 items-stretch">
+							<input 
+								id="backup-interval-input"
+								type="number" 
+								min="1" max="60" step="0.25"
+								bind:value={backupIntervalNumber}
+								class="rounded-md p-2 invalid:!bg-red-300 max-w-[8ch]" 
+								onchange={changedBackupInterval}
+							/>
+							<select 
+								name="select-backup-interval-unit" 
+								id="select-backup-interval-unit" 
+								bind:value={backupIntervalUnit}
+								onchange={changedBackupInterval}
+							>
+								{#each ['minutes', 'hours', 'days'] as unit}
+									<option value={unit}>{i18n.getMessage(unit)}</option>
+								{/each}
+							</select>
+						</div>
+					</div>
+					<div role="tablist" class="tabs grid gap-4 grid-rows-[auto_1fr] grid-cols-1 bg-[--table-cell-bg] p-2 rounded-md">
 						{#each Object.entries(backupProviders) as [providerName, provider], i}
 							<input 
 								id="provider-{i}" 
@@ -432,9 +464,9 @@
 								checked={provider.selected}
 							>
 						{/each}
-						<div class="flex gap-4 rounded-t-md p-2 bg-[color-mix(in_srgb,_black_25%,_transparent)]">
+						<div class="flex rounded-md bg-[color-mix(in_srgb,_var(--table-cell-bg)_95%,_var(--button-primary-bg))] ">
 							{#each Object.entries(backupProviders) as [providerName, provider], i}
-								<label for="provider-{i}" class="row-start-1 cursor-pointer p-2 rounded-md flex gap-2">
+								<label for="provider-{i}" class="row-start-1 cursor-pointer p-2 rounded-md flex gap-2 text-[--workspace-color]">
 									{#if provider.selected}
 										<Icon icon="check-cirlce" />
 									{/if}
@@ -445,36 +477,11 @@
 								</label>
 							{/each}
 						</div>
-						<div class="bg-[color-mix(in_srgb,_black_35%,_transparent)] p-2 rounded-b-md">
+						<div>
 							{#each Object.entries(backupProviders) as [providerName, provider], i}
 								<div role="tabpanel" class="tab hidden gap-4 row-start-2 col-start-1">
 									<div>
 										<p>last backup: {provider?.lastBackupTimeStamp || '-'}</p>
-									</div>
-									<div class="grid gap-1">
-										<label for="backup-interval-input" class="text-[--heading-2-color] font-semibold">
-											{i18n.getMessage('backup_interval')}
-										</label>
-										<div class="flex gap-2 items-stretch">
-											<input 
-												id="backup-interval-input"
-												type="number" 
-												min="1" max="60" step="0.25"
-												bind:value={backupIntervalNumber}
-												class="rounded-md p-2 invalid:!bg-red-300 max-w-[8ch]" 
-												onchange={changedBackupInterval}
-											/>
-											<select 
-												name="select-backup-interval-unit" 
-												id="select-backup-interval-unit" 
-												bind:value={backupIntervalUnit}
-												onchange={changedBackupInterval}
-											>
-												{#each ['minutes', 'hours', 'days'] as unit}
-													<option value={unit}>{i18n.getMessage(unit)}</option>
-												{/each}
-											</select>
-										</div>
 									</div>
 									{#if provider?.selected && provider.authorized}
 										<button class="btn primary-btn" title={i18n.getMessage('disconnect_from_provider')}>
@@ -633,10 +640,20 @@
 
 	[role="tab"]#provider-0 {
 		&:checked ~ div > label[for="provider-0"] {
-			@apply bg-blue-500;
+			@apply bg-[--button-primary-bg] text-[--button-primary-color];
 		}
 
 		&:checked ~ div > .tab:nth-child(1) {
+			@apply grid;
+		}
+	}
+
+	[role="tab"]#provider-1 {
+		&:checked ~ div > label[for="provider-1"] {
+			@apply bg-[--button-primary-bg] text-[--button-primary-color];
+		}
+		
+		&:checked ~ div > .tab:nth-child(2) {
 			@apply grid;
 		}
 	}

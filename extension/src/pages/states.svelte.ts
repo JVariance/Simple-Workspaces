@@ -41,6 +41,9 @@ export const setActiveWorkspaceIndexState = (i: number) =>
 	(activeWorkspaceIndex.value = i);
 export const getKeepPinnedTabs = () => keepPinnedTabs;
 export const getBackupEnabled = () => backupEnabled;
+export const setBackupEnabled = (enabled: boolean) => {
+	BrowserStorage.setBackupEnabled(enabled);
+};
 export const getBackupDeviceName = () => backupDeviceName;
 export const setActiveBackupProvider = (provider: BackupProvider) =>
 	(activeBackupProvider = provider);
@@ -237,7 +240,7 @@ async function setKeepPinnedTabs() {
 	keepPinnedTabs = _keepPinnedTabs;
 }
 
-async function setBackupEnabled() {
+async function initBackupEnabled() {
 	const { backupEnabled: _backupEnabled } =
 		await BrowserStorage.getBackupEnabled();
 	backupEnabled = _backupEnabled;
@@ -353,7 +356,7 @@ export async function initView() {
 		setTheme(),
 		setKeepPinnedTabs(),
 		setForceDefaultThemeIfDarkMode(),
-		setBackupEnabled(),
+		initBackupEnabled(),
 		setBackupDeviceName(),
 	]);
 }
