@@ -8,14 +8,25 @@ import { StorageProviderError } from "./Authorization/IBackupProvider";
 import { exportData } from "./exportData";
 
 export async function backupData(props: { provider?: BackupProvider } = {}) {
+	const { backupEnabled } = await BrowserStorage.getBackupEnabled();
+	const { backupDeviceName } = await BrowserStorage.getBackupDeviceName();
+
 	const { provider = BackupProviders.activeProvider.name } = props;
+	let currentProvider = await BackupProviders.getProvider(provider);
+
+	if (
+		!backupEnabled &&
+		!backupDeviceName?.length &&
+		!currentProvider.authorized
+	) {
+		return;
+	}
 
 	console.info("bg - backupData to: ", provider);
 
 	switch (provider) {
 		case "Google Drive":
 			Processes.authorizingProvider = true;
-			let currentProvider = await BackupProviders.getProvider(provider);
 
 			// const currentProvider = BackupProviders.activeProvider;
 

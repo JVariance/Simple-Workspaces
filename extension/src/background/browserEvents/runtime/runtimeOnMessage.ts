@@ -400,6 +400,11 @@ export function runtimeOnMessage(message: any) {
 				const fullExportDataArray = await exportData();
 				return resolve(fullExportDataArray);
 			});
+		case "disconnectFromProvider":
+			return new Promise<void>(async (resolve) => {
+				const { provider } = message as { provider: BackupProvider };
+				await (await BackupProviders.getProvider(provider)).deauthorize();
+			});
 		case "openBackupProviderAuthPage":
 			return new Promise<void>(async (resolve) => {
 				const { provider } = message as { provider: BackupProvider };

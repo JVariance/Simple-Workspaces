@@ -314,5 +314,8 @@
   },
   "enable_automatic_backup": {
     "message": "enable automatic backup"
+  },
+  "enable_backup": {
+    "message": "enable backup"
   }
 }

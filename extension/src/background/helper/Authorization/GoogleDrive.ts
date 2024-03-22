@@ -165,6 +165,10 @@ export default class GoogleDrive implements IBackupProvider {
 			refresh_token,
 		});
 
+		if (import.meta.env.DEV) {
+			console.log({ refresh_token });
+		}
+
 		this.#authorized = true;
 		await this.setLocalStatus({
 			selected: this.#selected,
@@ -199,50 +203,57 @@ export default class GoogleDrive implements IBackupProvider {
 			supportsAllDrives: "true",
 		};
 
-		const response = await fetch(
-			`${FILES_URL}?${new URLSearchParams(params)}`,
-			{
-				headers: {
-					Authorization: `Bearer ${this.#accessToken}`,
-				},
-			}
-		);
-
-		if (!response.ok) {
-			GoogleDriveError.throwError(response.status);
-		}
-
-		const data = await response.json();
-		const fullFileList = data.files;
-
-		let appFolder = fullFileList.find(
-			(file) =>
-				file.mimeType === "application/vnd.google-apps.folder" &&
-				file.name === "simpleworkspaces"
-		);
-
-		if (appFolder) {
-			return appFolder;
-		} else {
-			const response = await fetch(FILES_URL, {
-				method: "POST",
-				headers: { Authorization: `Bearer ${this.#accessToken}` },
-				body: JSON.stringify({
-					name: "simpleworkspaces",
-					mimeType: "application/vnd.google-apps.folder",
-				}),
-			});
+		try {
+			const response = await fetch(
+				`${FILES_URL}?${new URLSearchParams(params)}`,
+				{
+					headers: {
+						Authorization: `Bearer ${this.#accessToken}`,
+					},
+				}
+			);
 
 			if (!response.ok) {
 				GoogleDriveError.throwError(response.status);
 			}
 
 			const data = await response.json();
-			return data;
+			const fullFileList = data.files;
+
+			let appFolder = fullFileList.find(
+				(file) =>
+					file.mimeType === "application/vnd.google-apps.folder" &&
+					file.name === "simpleworkspaces"
+			);
+
+			if (appFolder) {
+				return appFolder;
+			} else {
+				const response = await fetch(FILES_URL, {
+					method: "POST",
+					headers: { Authorization: `Bearer ${this.#accessToken}` },
+					body: JSON.stringify({
+						name: "simpleworkspaces",
+						mimeType: "application/vnd.google-apps.folder",
+					}),
+				});
+
+				if (!response.ok) {
+					GoogleDriveError.throwError(response.status);
+				}
+
+				const data = await response.json();
+				return data;
+			}
+		} catch (error) {
+			throw error;
 		}
 	}
 
 	async refreshAccessToken() {
+		console.info("GoogleDrive - refreshAccessToken");
+		// console.info(this.#refreshToken);
+
 		if (!this.#refreshToken) {
 			throw GoogleDriveError.NoRefreshToken;
 		}
@@ -251,17 +262,32 @@ export default class GoogleDrive implements IBackupProvider {
 			refresh_token: this.#refreshToken,
 		};
 
-		const response = await fetch(
-			`${REFRESH_TOKEN_URL}?${new URLSearchParams(params)}`
-		);
+		try {
+			const response = await fetch(
+				`${REFRESH_TOKEN_URL}?${new URLSearchParams(params)}`,
+				{
+					method: "GET",
+				}
+			);
 
-		if (response.ok) {
-			const data = await response.json();
-			const { access_token } = data;
-			this.#accessToken = access_token;
-		} else {
-			await this.deauthorize();
-			GoogleDriveError.throwError(response.status);
+			console.info({ response });
+
+			if (response.ok) {
+				console.info("response was ok");
+				// console.info(await response.text());
+				const data = await response.json();
+				console.info({ data });
+				const { access_token } = data;
+
+				console.info("refreshed access_token", access_token, data);
+
+				this.#accessToken = access_token;
+			} else {
+				await this.deauthorize();
+				GoogleDriveError.throwError(response.status);
+			}
+		} catch (error) {
+			throw error;
 		}
 	}
 

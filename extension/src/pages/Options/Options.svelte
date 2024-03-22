@@ -196,6 +196,10 @@
 		console.info({ _backupData });
 	}
 
+	async function disconnectFromProvider(){
+		Browser.runtime.sendMessage({ msg: 'disconnectFromProvider', provider: activeBackupProvider });
+	}
+
 	async function openBackupProviderAuthPage() {
 		setActiveBackupProvider(selectedBackupProvider);
 		Browser.runtime.sendMessage({ msg: 'openBackupProviderAuthPage', provider: selectedBackupProvider });
@@ -359,7 +363,6 @@
 			</ButtonLink>
 		{/snippet}
 		{#snippet Section_ImportExport()}
-			{@const provider = backupProviders[selectedBackupProvider]}
 			<h1 class="text-xl font-semibold text-[--heading-2-color]">Import/Export</h1>
 			<div class="flex gap-4 flex-wrap">
 				<button class="btn primary-btn" onclick={exportData}>
@@ -374,162 +377,162 @@
 			</div>
 			<!-- <a href={Browser.identity.getRedirectURL()}>Link</a> -->
 			<div>
-				<h2 class="text-xl font-semibold text-[--heading-2-color]">Backup</h2>
-
-				<label class="flex gap-4 items-center">
-					<input type="checkbox" checked={backupEnabled} onchange={(e) => setBackupEnabled(e.currentTarget.checked)}>
-					<span>{i18n.getMessage('enable_automatic_backup')}</span>
-				</label>
-
-				<div class="mt-4 grid {backupEnabled ? '' : 'opacity-25 pointer-events-none'}">
-					<div class="grid gap-1 mb-4">
-						<label for="device-name-input" class="text-[--heading-2-color] font-semibold first-letter:uppercase">
-							{i18n.getMessage('device_name')} ({i18n.getMessage('required')})
-						</label>
-						<div class="flex gap-2 items-center">
-							<div class="relative flex items-start w-max">
-								<input 
-									id="device-name-input"
-									type="text" 
-									class="
-										rounded-md p-2 placeholder:text-[color-mix(in_srgb,_var(--heading-color)_50%,_transparent)] w-[37ch]
-										[&:user-invalid]:!bg-red-200
-									"
-									placeholder="Win10 Nightly @Home"
-									value={deviceName || ''} 
-									oninput={(e) => deviceName = e.currentTarget.value}
-									required
-									minlength="1" maxlength="32"
-									disabled={!editDeviceName}
-									bind:this={deviceNameInput}
-								/>
-								<span class="absolute right-1 text-[13px] text-[color-mix(in_srgb,_var(--heading-color)_50%,_transparent)]">
-									{deviceName?.length || 0}/32
-								</span>
-							</div>
-							{#if editDeviceName}	
-								<button 
-									class="btn primary-btn !p-1 h-max w-max disabled:pointer-events-none disabled:opacity-50" 
-									onclick={applyDeviceName} 
-									title={i18n.getMessage('apply_device_name')}
-									disabled={deviceName?.length ? !deviceNameInput.checkValidity() : true}
-								>
-									<Icon icon="check" />
-								</button>
-								{:else}
-									<button 
-										class="btn primary-btn !p-2 h-max w-max" 
-										onclick={() => editDeviceName = !editDeviceName} 
-										title={i18n.getMessage('edit_device_name')}
-									>
-										<Icon icon="edit" width={18} />
-									</button>
-							{/if}
-						</div>
-					</div>
-					<div class="grid gap-1 mb-4">
-						<label for="backup-interval-input" class="text-[--heading-2-color] font-semibold">
-							{i18n.getMessage('backup_interval')}
-						</label>
-						<div class="flex gap-2 items-stretch">
+				<h2 class="text-xl font-semibold text-[--heading-2-color] mb-4">Backup</h2>
+				<div class="grid gap-1 mb-4">
+					<label for="device-name-input" class="text-[--heading-2-color] font-semibold first-letter:uppercase">
+						{i18n.getMessage('device_name')} ({i18n.getMessage('required')})
+					</label>
+					<div class="flex gap-2 items-center">
+						<div class="relative flex items-start w-max">
 							<input 
-								id="backup-interval-input"
-								type="number" 
-								min="1" max="60" step="0.25"
-								bind:value={backupIntervalNumber}
-								class="rounded-md p-2 invalid:!bg-red-300 max-w-[8ch]" 
-								onchange={changedBackupInterval}
+								id="device-name-input"
+								type="text" 
+								class="
+									rounded-md p-2 placeholder:text-[color-mix(in_srgb,_var(--heading-color)_50%,_transparent)] w-[37ch]
+									[&:user-invalid]:!bg-red-200
+								"
+								placeholder="Win10 Nightly @Home"
+								value={deviceName || ''} 
+								oninput={(e) => deviceName = e.currentTarget.value}
+								required
+								minlength="1" maxlength="32"
+								disabled={!editDeviceName}
+								bind:this={deviceNameInput}
 							/>
-							<select 
-								name="select-backup-interval-unit" 
-								id="select-backup-interval-unit" 
-								bind:value={backupIntervalUnit}
-								onchange={changedBackupInterval}
+							<span class="absolute right-1 text-[13px] text-[color-mix(in_srgb,_var(--heading-color)_50%,_transparent)]">
+								{deviceName?.length || 0}/32
+							</span>
+						</div>
+						{#if editDeviceName}	
+							<button 
+								class="btn primary-btn !p-1 h-max w-max disabled:pointer-events-none disabled:opacity-50" 
+								onclick={applyDeviceName} 
+								title={i18n.getMessage('apply_device_name')}
+								disabled={deviceName?.length ? !deviceNameInput.checkValidity() : true}
 							>
-								{#each ['minutes', 'hours', 'days'] as unit}
-									<option value={unit}>{i18n.getMessage(unit)}</option>
-								{/each}
-							</select>
-						</div>
+								<Icon icon="check" />
+							</button>
+							{:else}
+								<button 
+									class="btn primary-btn !p-2 h-max w-max" 
+									onclick={() => editDeviceName = !editDeviceName} 
+									title={i18n.getMessage('edit_device_name')}
+								>
+									<Icon icon="edit" width={18} />
+								</button>
+						{/if}
 					</div>
-					<div role="tablist" class="tabs grid gap-4 grid-rows-[auto_1fr] grid-cols-1 bg-[--table-cell-bg] p-2 rounded-md">
-						{#each Object.entries(backupProviders) as [providerName, provider], i}
-							<input 
-								id="provider-{i}" 
-								type="radio" 
-								name="provider-tabs" 
-								role="tab" 
-								aria-label="Tab {i + 1}" 
-								class="absolute pointer-events-none opacity-0" 
-								checked={provider.selected}
-							>
-						{/each}
-						<div class="flex rounded-md bg-[color-mix(in_srgb,_var(--table-cell-bg)_95%,_var(--button-primary-bg))] ">
-							{#each Object.entries(backupProviders) as [providerName, provider], i}
-								<label for="provider-{i}" class="row-start-1 cursor-pointer p-2 rounded-md flex gap-2 text-[--workspace-color]">
-									{#if provider.selected}
-										<Icon icon="check-cirlce" />
-									{/if}
-									{#if provider.authorized}
-										<Icon icon="person" />
-									{/if}
-									{providerName}
-								</label>
-							{/each}
-						</div>
-						<div>
-							{#each Object.entries(backupProviders) as [providerName, provider], i}
-								<div role="tabpanel" class="tab hidden gap-4 row-start-2 col-start-1">
-									<div>
-										<p>last backup: {provider?.lastBackupTimeStamp || '-'}</p>
-									</div>
-									{#if provider?.selected && provider.authorized}
-										<button class="btn primary-btn" title={i18n.getMessage('disconnect_from_provider')}>
-											<Icon icon="sync" />
-											<span>{i18n.getMessage('disconnect')}</span>
-										</button>
-									{:else}
-										<button 
-											class="btn primary-btn disabled:pointer-events-none disabled:opacity-50" 
-											title={i18n.getMessage('connect_to_provider')}
-											onclick={openBackupProviderAuthPage}
-											disabled={!deviceName?.length && !deviceNameInput?.checkValidity()}
-										>
-											<Icon icon="sync" />
-											<span>{i18n.getMessage('connect')}</span>
-										</button>
-									{/if}
-									{#if provider?.authorized}
-										<button class="btn primary-btn" disabled={!deviceName?.length && !deviceNameInput?.checkValidity()} onclick={backupData}>
-											<Icon icon="sync" />
-											<span>{i18n.getMessage('backup')}</span>
-										</button>
-										<button class="btn primary-btn" disabled={!deviceName?.length && !deviceNameInput?.checkValidity()} onclick={getBackupData}>
-											<Icon icon="sync" />
-											<span>download</span>
-										</button>
-									{/if}
-								</div>
-							{/each}
-						</div>
-					</div>
-
-					<!-- <label class="grid gap-1">
-						<span class="text-[--heading-2-color] font-semibold first-letter:uppercase">
-							{i18n.getMessage('provider')}
-						</span>
+				</div>
+				<div class="grid gap-1 mb-4">
+					<label for="backup-interval-input" class="text-[--heading-2-color] font-semibold">
+						{i18n.getMessage('backup_interval')}
+					</label>
+					<div class="flex gap-2 items-stretch">
+						<input 
+							id="backup-interval-input"
+							type="number" 
+							min="1" max="60" step="0.25"
+							bind:value={backupIntervalNumber}
+							class="rounded-md p-2 invalid:!bg-red-300 max-w-[8ch]" 
+							onchange={changedBackupInterval}
+						/>
 						<select 
-							id="select-backup-provider"
-							name="select-backup-provider"
-							bind:value={selectedBackupProvider}
+							name="select-backup-interval-unit" 
+							id="select-backup-interval-unit" 
+							bind:value={backupIntervalUnit}
+							onchange={changedBackupInterval}
 						>
-							{#each ["Google Drive"] as provider}
-								<option value={provider}>{provider}</option>
+							{#each ['minutes', 'hours', 'days'] as unit}
+								<option value={unit}>{i18n.getMessage(unit)}</option>
 							{/each}
 						</select>
-					</label> -->
-					
+					</div>
 				</div>
+				<label class="flex gap-2 items-center w-max my-4 cursor-pointer">
+					<input 
+						type="checkbox" 
+						checked={backupEnabled} 
+						disabled={!_deviceName?.length}
+						onchange={(e) => setBackupEnabled(e.currentTarget.checked)}
+					/>
+					<span>{i18n.getMessage('enable_automatic_backup')}</span>
+				</label>
+				<div role="tablist" class="tabs grid gap-4 grid-rows-[auto_1fr] grid-cols-1 bg-[--table-cell-bg] p-2 rounded-md">
+					{#each Object.entries(backupProviders) as [providerName, provider], i}
+						<input 
+							id="provider-{i}" 
+							type="radio" 
+							name="provider-tabs" 
+							role="tab" 
+							aria-label="Tab {i + 1}" 
+							class="absolute pointer-events-none opacity-0" 
+							checked={provider.selected}
+						>
+					{/each}
+					<div class="flex rounded-md bg-[color-mix(in_srgb,_var(--table-cell-bg)_95%,_var(--button-primary-bg))] ">
+						{#each Object.entries(backupProviders) as [providerName, provider], i}
+							<label for="provider-{i}" class="row-start-1 cursor-pointer p-2 rounded-md flex gap-2 text-[--workspace-color]">
+								{#if provider.selected}
+									<Icon icon="check-cirlce" />
+								{/if}
+								{#if provider.authorized}
+									<Icon icon="person" />
+								{/if}
+								{providerName}
+							</label>
+						{/each}
+					</div>
+					<div>
+						{#each Object.entries(backupProviders) as [providerName, provider], i}
+							<div role="tabpanel" class="tab hidden gap-4 row-start-2 col-start-1">
+								<div>
+									<p>last backup: {provider?.lastBackupTimeStamp || '-'}</p>
+								</div>
+								{#if provider?.selected && provider.authorized}
+									<button class="btn primary-btn" title={i18n.getMessage('disconnect_from_provider')} onclick={disconnectFromProvider}>
+										<Icon icon="sync" />
+										<span>{i18n.getMessage('disconnect')}</span>
+									</button>
+								{:else}
+									<button 
+										class="btn primary-btn" 
+										title={i18n.getMessage('connect_to_provider')}
+										onclick={openBackupProviderAuthPage}
+										disabled={!_deviceName?.length && !deviceNameInput?.checkValidity()}
+									>
+										<Icon icon="sync" />
+										<span>{i18n.getMessage('connect')}</span>
+									</button>
+								{/if}
+								{#if provider?.authorized}
+									<button class="btn primary-btn" disabled={!_deviceName?.length && !deviceNameInput?.checkValidity()} onclick={backupData}>
+										<Icon icon="sync" />
+										<span>{i18n.getMessage('backup')}</span>
+									</button>
+									<button class="btn primary-btn" disabled={!_deviceName?.length && !deviceNameInput?.checkValidity()} onclick={getBackupData}>
+										<Icon icon="sync" />
+										<span>download</span>
+									</button>
+								{/if}
+							</div>
+						{/each}
+					</div>
+				</div>
+
+				<!-- <label class="grid gap-1">
+					<span class="text-[--heading-2-color] font-semibold first-letter:uppercase">
+						{i18n.getMessage('provider')}
+					</span>
+					<select 
+						id="select-backup-provider"
+						name="select-backup-provider"
+						bind:value={selectedBackupProvider}
+					>
+						{#each ["Google Drive"] as provider}
+							<option value={provider}>{provider}</option>
+						{/each}
+					</select>
+				</label> -->
 			</div>
 		{/snippet}
 

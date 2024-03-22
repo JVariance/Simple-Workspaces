@@ -311,5 +311,8 @@
   },
   "enable_automatic_backup": {
     "message": "automatisches Backup aktivieren"
+  },
+  "enable_backup": {
+    "message": "Backup aktivieren"
   }
 }
