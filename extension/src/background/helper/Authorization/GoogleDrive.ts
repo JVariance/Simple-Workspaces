@@ -103,7 +103,12 @@ export default class GoogleDrive implements IBackupProvider {
 	}
 
 	setLocalCredentials(credentials: BackupProviderCredentials): Promise<void> {
-		return Browser.storage.local.set({ GoogleDriveCredentials: credentials });
+		const GoogleDriveCredentials = {
+			access_token: this.#accessToken,
+			refresh_token: this.#refreshToken,
+			...credentials,
+		};
+		return Browser.storage.local.set({ GoogleDriveCredentials });
 	}
 
 	getLocalStatus(): Promise<
@@ -282,6 +287,7 @@ export default class GoogleDrive implements IBackupProvider {
 				console.info("refreshed access_token", access_token, data);
 
 				this.#accessToken = access_token;
+				this.setLocalCredentials({ access_token: access_token });
 			} else {
 				await this.deauthorize();
 				GoogleDriveError.throwError(response.status);

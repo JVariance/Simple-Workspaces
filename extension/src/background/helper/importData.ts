@@ -3,9 +3,22 @@ import { Processes, Window, WorkspaceStorage } from "../Entities";
 import { Workspace } from "../Entities/Workspace";
 
 // w: workspaces, i: icon, n: name, t: tabs, u:url, a: active, p: pinned
-export type ImportData<WindowProps = {}> = Record<
-	"windows",
-	Record<
+export type ImportData<WindowProps = {}> = {
+	settings: {
+		theme: "" | "browser";
+		forceDefaultThemeIfDarkMode: boolean;
+		keepPinnedTabs: boolean;
+		workspaces: {
+			homeWorkspace: {
+				name: string;
+				icon: string;
+			};
+			defaultWorkspaces: Ext.SimpleWorkspace[];
+		};
+		backupEnabled: boolean;
+		backupIntervalInMinutes: number;
+	};
+	windows: Record<
 		Ext.Window["UUID"],
 		Record<
 			"w",
@@ -19,8 +32,8 @@ export type ImportData<WindowProps = {}> = Record<
 			][]
 		> &
 			WindowProps
-	>
->;
+	>;
+};
 
 export async function importData({
 	data,

@@ -1,6 +1,9 @@
 <script lang="ts">
-	let { width = 50, height = 50 }: { width?: number; height?: number } =
-		$props();
+	let {
+		width = 50,
+		height = 50,
+		class: classes = "",
+	}: { width?: number; height?: number; class?: string } = $props();
 </script>
 
 <svg
@@ -8,7 +11,7 @@
 	{width}
 	{height}
 	viewBox="0 0 24 24"
-	class="[&>g>circle]:stroke-1 col-start-1 col-end-2 row-start-1 row-end-2"
+	class="[&>g>circle]:stroke-1 {classes}"
 >
 	<g stroke="currentColor">
 		<circle

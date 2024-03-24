@@ -18,9 +18,8 @@ import type {
 	BackupProviderStatusProps,
 } from "@root/background/Entities/Singletons/BackupProviders";
 import BackupProviders from "@root/background/Entities/Singletons/BackupProviders";
-import { GoogleDriveError } from "@root/background/helper/Authorization/GoogleDrive";
-import { StorageProviderError } from "@root/background/helper/Authorization/IBackupProvider";
 import { backupData } from "@root/background/helper/backupData";
+import { StorageProviderError } from "@root/background/helper/Authorization/IBackupProvider";
 
 function switchWorkspaceCommand({
 	workspaceUUID,
@@ -70,24 +69,6 @@ function switchWorkspaceAndFocusTab({
 	}
 }
 
-// function getUserInfo(accessToken: string) {
-// 	const requestURL = "https://www.googleapis.com/oauth2/v1/userinfo?alt=json";
-// 	const requestHeaders = new Headers();
-// 	requestHeaders.append("Authorization", "Bearer " + accessToken);
-// 	const driveRequest = new Request(requestURL, {
-// 		method: "GET",
-// 		headers: requestHeaders,
-// 	});
-
-// 	return fetch(driveRequest).then((response) => {
-// 		if (response.status === 200) {
-// 			return response.json();
-// 		} else {
-// 			throw response.status;
-// 		}
-// 	});
-// }
-
 const processAuthTokens = immediateDebounceFunc(_processAuthTokens, 1000);
 
 async function _processAuthTokens({
@@ -104,6 +85,34 @@ async function _processAuthTokens({
 		access_token,
 		refresh_token,
 	});
+}
+
+async function getFilesList(
+	provider: BackupProviderInstance
+): Promise<{ id: string; name: string }[]> {
+	let attempts = 0;
+	while (attempts < 3) {
+		try {
+			const filesList = await provider.filesList();
+			return filesList;
+		} catch (error) {
+			attempts++;
+			if (error instanceof StorageProviderError) {
+				if (error.message === "invalid or expired access token") {
+					try {
+						await provider.refreshAccessToken();
+					} catch (error2) {
+						throw error2;
+					}
+				} else {
+					throw error;
+				}
+			} else {
+				throw error;
+			}
+		}
+	}
+	return [];
 }
 
 export function runtimeOnMessage(message: any) {
@@ -403,13 +412,18 @@ export function runtimeOnMessage(message: any) {
 		case "getAllBackupDeviceNames":
 			return new Promise<string[]>(async (resolve) => {
 				const { provider } = message as { provider: BackupProvider };
-				const filesList = await (
-					await BackupProviders.getProvider(provider)
-				).filesList();
-				console.info({ filesList });
-				const fileNames = filesList?.map((file) => file.name) ?? [];
-				console.info({ fileNames });
-				return resolve(fileNames);
+
+				const _provider = await BackupProviders.getProvider(provider);
+
+				try {
+					const filesList = await getFilesList(_provider);
+					console.info({ filesList });
+					const deviceNames = filesList?.map((file) => file.name) ?? [];
+					console.info({ deviceNames });
+					return resolve(deviceNames);
+				} catch (e) {
+					return resolve([]);
+				}
 			});
 		case "disconnectFromProvider":
 			return new Promise<void>(async (resolve) => {
@@ -434,18 +448,30 @@ export function runtimeOnMessage(message: any) {
 				return resolve();
 			});
 		case "getBackupData":
-			return new Promise<ImportData>(async (resolve) => {
-				const { provider } = message as { provider: BackupProvider };
-				const fileList = await (
-					await BackupProviders.getProvider(provider)
-				).filesList();
-				const file = await (
-					await BackupProviders.getProvider(provider)
-				).fileDownload({ id: fileList[0].id, name: fileList[0].name });
+			return new Promise<ImportData | null>(async (resolve) => {
+				const { provider, deviceName } = message as {
+					provider: BackupProvider;
+					deviceName: string;
+				};
 
-				console.info({ file });
+				const _provider = await BackupProviders.getProvider(provider);
 
-				return resolve(file.contents);
+				const fileList = await getFilesList(_provider);
+
+				const deviceFile = fileList.find((file) => file.name === deviceName);
+
+				if (deviceFile) {
+					const file = await _provider.fileDownload({
+						id: deviceFile.id,
+						name: deviceFile.name,
+					});
+
+					// console.info({ file });
+
+					return resolve(file.contents);
+				} else {
+					return resolve(null);
+				}
 			});
 		default:
 			break;

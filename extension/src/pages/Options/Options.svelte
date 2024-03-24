@@ -38,6 +38,10 @@
 	let _deviceName = $derived(getBackupDeviceName());
 	let backupEnabled = $derived(getBackupEnabled());
 	let backupDeviceNames = $state<string[]>([]);
+	let selectedDevice = $state<string>();
+	// let selectedBackupData = $derived<ImportData |undefined>(selectedDevice && backupDataPerDevice[selectedDevice] ? backupDataPerDevice[selectedDevice]: undefined);
+	let selectedBackupData = $state<Promise<ImportData> | ImportData>(new Promise(() => {}));
+	let mounted = $state(false);
 	// let _deviceName = $derived.by(() => {
 	// 	const name = getBackupDeviceName();
 	// 	deviceName = _deviceName;
@@ -49,7 +53,10 @@
 	$effect(() => {
 			untrack(() => editDeviceName);
 			untrack(() => deviceName);
+			untrack(() => selectedDevice);
+
 			deviceName = _deviceName;
+			selectedDevice = _deviceName && backupDeviceNames.includes(_deviceName) ? _deviceName : selectedDevice;
 			editDeviceName = _deviceName ? _deviceName?.length <= 0 : true;
 	});
 
@@ -188,9 +195,8 @@
 		Browser.runtime.sendMessage({ msg: 'backupData', provider: activeBackupProvider });
 	}
 
-	async function getBackupData() {
-		const _backupData = await Browser.runtime.sendMessage({ msg: 'getBackupData', provider: activeBackupProvider });
-		console.info({ _backupData });
+	async function getBackupData(): Promise<ImportData> {
+		return Browser.runtime.sendMessage({ msg: 'getBackupData', provider: activeBackupProvider, deviceName: selectedDevice });
 	}
 
 	async function disconnectFromProvider(){
@@ -214,6 +220,7 @@
 	}
 
 	onMount(async () => {
+		mounted = true;
 		await initView();
 
 		for(let provider of Object.keys(backupProviders) as BackupProvider[]) {
@@ -228,6 +235,22 @@
 		const names = await Browser.runtime.sendMessage({ msg: 'getAllBackupDeviceNames', provider: activeBackupProvider});
 		return names;
 	}
+
+	async function backupImportDeviceChanged() {
+		console.info({ selectedDevice });
+		if(!selectedDevice) return;
+		selectedBackupData = getBackupData();
+	}
+
+	async function selectedDeviceChanged() {
+		backupImportDeviceChanged();
+	}
+
+	$effect(() => {
+		if(!mounted) return;
+		selectedDevice;
+		selectedDeviceChanged();
+	});
 </script>
 
 {#snippet Section(content: Snippet, {class: classes, ...props}: HTMLAttributes<HTMLElement>)}
@@ -659,7 +682,7 @@
 				<div class="flex gap-2 items-center overflow-x-auto">
 					{#each backupDeviceNames as deviceName}
 						<label class="p-2 rounded-md has-[input:checked]:bg-blue-100 has-[input:checked]:border-blue-300 dark:has-[input:checked]:bg-blue-950 dark:has-[input:checked]:border-blue-800 cursor-pointer">
-							<input type="radio" value={deviceName} checked={deviceName === _deviceName} name="backupDeviceNames" class="absolute pointer-events-none opacity-0" />
+							<input type="radio" value={deviceName} bind:group={selectedDevice} onclick={selectedDeviceChanged} name="backupDeviceNames" class="absolute pointer-events-none opacity-0" />
 							{deviceName}
 						</label>
 						{:else}
@@ -667,6 +690,11 @@
 					{/each}
 				</div>
 			</div>
+			{#await selectedBackupData}
+				<Spinner />
+				{:then data}
+					{@render ImportDataSelection(data)}
+			{/await}
 		</dialog>
 	</main>
 </Layout>

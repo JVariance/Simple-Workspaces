@@ -7,6 +7,7 @@
 ### Content
 ### Translations
 ### Logic
+[] outsource refreshAccessToken-while-loop (pass function that gets called repeatedly)
 [] highlight workspace which received new tabs (after send action)
 
 ### Bugs
