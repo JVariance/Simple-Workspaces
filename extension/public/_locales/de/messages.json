@@ -329,5 +329,11 @@
   },
   "devices": {
     "message": "Geräte"
+  },
+  "loading_devices": {
+    "message": "lädt Geräte"
+  },
+  "loading_device_backup_data": {
+    "message": "lädt Geräte-Backup-Daten"
   }
 }

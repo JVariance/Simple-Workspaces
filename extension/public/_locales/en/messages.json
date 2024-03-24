@@ -332,5 +332,11 @@
   },
   "devices": {
     "message": "devices"
+  },
+  "loading_devices": {
+    "message": "loading devices"
+  },
+  "loading_device_backup_data": {
+    "message": "loading device's backup data"
   }
 }

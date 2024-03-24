@@ -1,7 +1,7 @@
 <script lang="ts">
 	let {
 		width = 50,
-		height = 50,
+		height = width,
 		class: classes = "",
 	}: { width?: number; height?: number; class?: string } = $props();
 </script>

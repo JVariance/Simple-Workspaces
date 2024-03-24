@@ -686,12 +686,18 @@
 							{deviceName}
 						</label>
 						{:else}
-						<Spinner />
+						<p class="flex gap-2 items-center">
+							<Spinner width={20} />
+							{i18n.getMessage('loading_devices')}
+						</p>
 					{/each}
 				</div>
 			</div>
 			{#await selectedBackupData}
-				<Spinner />
+				<p class="flex gap-2 items-center">
+					<Spinner width={20} />
+					{i18n.getMessage('loading_device_backup_data')}
+				</p>
 				{:then data}
 					{@render ImportDataSelection(data)}
 			{/await}
