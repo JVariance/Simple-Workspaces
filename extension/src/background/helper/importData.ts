@@ -1,5 +1,10 @@
 import * as API from "@root/browserAPI";
-import { Processes, Window, WorkspaceStorage } from "../Entities";
+import {
+	BrowserStorage,
+	Processes,
+	Window,
+	WorkspaceStorage,
+} from "../Entities";
 import { Workspace } from "../Entities/Workspace";
 
 // w: workspaces, i: icon, n: name, t: tabs, u:url, a: active, p: pinned
@@ -40,9 +45,47 @@ export async function importData({
 }: {
 	data: ImportData<{ skip?: boolean }>;
 }) {
-	const { windows } = data;
+	const { windows, settings } = data;
 	Processes.importingData = true;
 	Processes.DataImport.start();
+
+	const {
+		backupEnabled,
+		backupIntervalInMinutes,
+		forceDefaultThemeIfDarkMode,
+		keepPinnedTabs,
+		theme,
+		workspaces: { defaultWorkspaces, homeWorkspace },
+	} = settings;
+
+	if (theme) {
+		BrowserStorage.setTheme(theme);
+	}
+
+	if (backupEnabled) {
+		BrowserStorage.setBackupEnabled(backupEnabled);
+	}
+
+	if (backupIntervalInMinutes) {
+		BrowserStorage.setBackupIntervalInMinutes(backupIntervalInMinutes);
+	}
+
+	if (forceDefaultThemeIfDarkMode) {
+		BrowserStorage.setForceDefaultThemeIfDarkMode(forceDefaultThemeIfDarkMode);
+	}
+
+	if (keepPinnedTabs) {
+		BrowserStorage.setKeepPinnedTabs(keepPinnedTabs);
+	}
+
+	if (homeWorkspace) {
+		//@ts-ignore
+		BrowserStorage.setHomeWorkspace(homeWorkspace);
+	}
+
+	if (defaultWorkspaces) {
+		BrowserStorage.setDefaultWorkspaces(defaultWorkspaces);
+	}
 
 	for (let [windowUUID, window] of Object.entries(windows)) {
 		if (window?.skip) continue;
