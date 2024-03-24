@@ -56,7 +56,7 @@
 			untrack(() => selectedDevice);
 
 			deviceName = _deviceName;
-			selectedDevice = _deviceName && backupDeviceNames.includes(_deviceName) ? _deviceName : selectedDevice;
+			selectedDevice = !selectedDevice && _deviceName && backupDeviceNames.includes(_deviceName) ? _deviceName : selectedDevice;
 			editDeviceName = _deviceName ? _deviceName?.length <= 0 : true;
 	});
 
@@ -184,11 +184,12 @@
 		}
 	}
 
-	async function importData() {
+	async function importData(data: ImportData) {
 		importDialogElem?.close();
-		console.info({importedData});
-		await Browser.runtime.sendMessage({ msg: 'importData', data: unstate(importedData) });
-		importedData = undefined;
+		backupDialogElem?.close();
+		console.info({ data });
+		await Browser.runtime.sendMessage({ msg: 'importData', data: unstate(data) });
+		// data = undefined;
 	}
 
 	async function backupData() {
@@ -247,6 +248,7 @@
 	}
 
 	$effect(() => {
+		untrack(() => mounted);
 		if(!mounted) return;
 		selectedDevice;
 		selectedDeviceChanged();
@@ -639,7 +641,7 @@
 			<div class="flex gap-2 items-center flex-wrap">
 				<button 
 					class="btn primary-btn disabled:pointer-events-none disabled:opacity-20" 
-					onclick={importData} 
+					onclick={() => importData(data)} 
 					disabled={selectedWindowsCount < 1}
 				>
 					<Icon icon="json-file" />
@@ -682,7 +684,7 @@
 				<div class="flex gap-2 items-center overflow-x-auto">
 					{#each backupDeviceNames as deviceName}
 						<label class="p-2 rounded-md has-[input:checked]:bg-blue-100 has-[input:checked]:border-blue-300 dark:has-[input:checked]:bg-blue-950 dark:has-[input:checked]:border-blue-800 cursor-pointer">
-							<input type="radio" value={deviceName} bind:group={selectedDevice} onclick={selectedDeviceChanged} name="backupDeviceNames" class="absolute pointer-events-none opacity-0" />
+							<input type="radio" value={deviceName} bind:group={selectedDevice} onclick={(e) => {deviceName === selectedDevice && selectedDeviceChanged();}} name="backupDeviceNames" class="absolute pointer-events-none opacity-0" />
 							{deviceName}
 						</label>
 						{:else}
