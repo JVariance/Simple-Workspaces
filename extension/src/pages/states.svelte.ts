@@ -3,6 +3,7 @@ import { BrowserStorage } from "@root/background/Entities/Static/BrowserStorage"
 import { tick } from "svelte";
 import { Subscriber, debounceFunc } from "@root/utils";
 import type { BackupProviderStatusProps } from "@root/background/Entities/Singletons/BackupProviders";
+import { DEFAULT_BACKUP_INTERVAL_IN_MINUTES } from "@root/background/helper/Constants";
 
 type BackupProvider = "Google Drive";
 
@@ -27,6 +28,7 @@ const activeWorkspaceIndex = (() => {
 let keepPinnedTabs = $state<boolean>(false);
 let backupDeviceName = $state<string>();
 let backupEnabled = $state<boolean>(false);
+let backupInterval = $state<number>(DEFAULT_BACKUP_INTERVAL_IN_MINUTES);
 let activeBackupProvider = $state<BackupProvider>("Google Drive");
 
 export const getWorkspacesState = () => workspaces;
@@ -47,6 +49,7 @@ export const setBackupEnabled = (enabled: boolean) => {
 export const getBackupDeviceName = () => backupDeviceName;
 export const setActiveBackupProvider = (provider: BackupProvider) =>
 	(activeBackupProvider = provider);
+export const getBackupInterval = () => backupInterval;
 
 function addedWorkspace({ workspace }: { workspace: Ext.Workspace }) {
 	console.info("states: addedWorkspace");
@@ -246,6 +249,12 @@ async function initBackupEnabled() {
 	backupEnabled = _backupEnabled;
 }
 
+async function initBackupInterval() {
+	const { backupIntervalInMinutes } =
+		await BrowserStorage.getBackupIntervalInMinutes();
+	backupInterval = backupIntervalInMinutes;
+}
+
 async function setBackupDeviceName() {
 	const { backupDeviceName: _backupDeviceName = "" } =
 		await BrowserStorage.getBackupDeviceName();
@@ -358,6 +367,7 @@ export async function initView() {
 		setForceDefaultThemeIfDarkMode(),
 		initBackupEnabled(),
 		setBackupDeviceName(),
+		initBackupInterval(),
 	]);
 }
 

@@ -400,6 +400,17 @@ export function runtimeOnMessage(message: any) {
 				const fullExportDataArray = await exportData();
 				return resolve(fullExportDataArray);
 			});
+		case "getAllBackupDeviceNames":
+			return new Promise<string[]>(async (resolve) => {
+				const { provider } = message as { provider: BackupProvider };
+				const filesList = await (
+					await BackupProviders.getProvider(provider)
+				).filesList();
+				console.info({ filesList });
+				const fileNames = filesList?.map((file) => file.name) ?? [];
+				console.info({ fileNames });
+				return resolve(fileNames);
+			});
 		case "disconnectFromProvider":
 			return new Promise<void>(async (resolve) => {
 				const { provider } = message as { provider: BackupProvider };

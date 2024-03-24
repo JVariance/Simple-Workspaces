@@ -12,15 +12,15 @@
 	import Shortcuts from "@root/components/ViewBlocks/Shortcuts.svelte";
 	import Logo from "@root/components/Logo.svelte";
 	import HomeWorkspace from "@root/components/ViewBlocks/HomeWorkspace.svelte";
+	import Spinner from "@root/components/Spinner.svelte";
 	import Layout from "@pages/Special_Pages/Layout.svelte";
-	import { BackupProviderStatusNotifier, getBackupDeviceName, getBackupEnabled, setBackupEnabled, getKeepPinnedTabs, getWorkspacesState, initView, setActiveBackupProvider } from "@pages/states.svelte";
+	import { BackupProviderStatusNotifier, getBackupDeviceName, getBackupEnabled, setBackupEnabled, getKeepPinnedTabs, getWorkspacesState, initView, setActiveBackupProvider, getBackupInterval } from "@pages/states.svelte";
 	import ThemeSwitch from "@root/components/ViewBlocks/ThemeSwitch.svelte";
 	import { BrowserStorage } from "@root/background/Entities";
 	import Tooltip from "@root/components/Tooltip.svelte";
 	import { type ImportData } from "@root/background/helper/importData";
 	import type { HTMLAttributes } from "svelte/elements";
 	import type { Snippet } from "svelte";
-	import { DEFAULT_BACKUP_INTERVAL_IN_MINUTES } from "@root/background/helper/Constants";
 	import { debounceFunc } from "@root/utils";
 	import type { BackupProvider, BackupProviderStatusProps } from "@root/background/Entities/Singletons/BackupProviders";
 
@@ -37,6 +37,7 @@
 	let editDeviceName = $state<boolean>();
 	let _deviceName = $derived(getBackupDeviceName());
 	let backupEnabled = $derived(getBackupEnabled());
+	let backupDeviceNames = $state<string[]>([]);
 	// let _deviceName = $derived.by(() => {
 	// 	const name = getBackupDeviceName();
 	// 	deviceName = _deviceName;
@@ -59,21 +60,17 @@
 	// 	selectedBackupProvider = activeBackupProvider;
 	// });
 
-	let backupIntervalNumber = $state<number>(DEFAULT_BACKUP_INTERVAL_IN_MINUTES);
+	let backupIntervalNumber = $derived<number>(getBackupInterval());
 	let backupIntervalUnit = $state<"minutes" | "hours" | "days">("minutes");
 
 	let deviceNameInput = $state<HTMLInputElement>();
 	let importDialogElem = $state<HTMLDialogElement>();
+	let backupDialogElem = $state<HTMLDialogElement>();
 
 	let clearExtensionDataConfirmed = $state(false);
 
 	const backupProviders = $state<Record<BackupProvider, BackupProviderStatusProps>>({
 		'Google Drive': {
-			authorized: false,
-			selected: false,
-			lastBackupTimeStamp: 0,
-		},
-		'Dropbox': {
 			authorized: false,
 			selected: false,
 			lastBackupTimeStamp: 0,
@@ -225,6 +222,12 @@
 			backupProviders[provider] = status;
 		}
 	});
+
+
+	async function getAllBackupDeviceNames() {
+		const names = await Browser.runtime.sendMessage({ msg: 'getAllBackupDeviceNames', provider: activeBackupProvider});
+		return names;
+	}
 </script>
 
 {#snippet Section(content: Snippet, {class: classes, ...props}: HTMLAttributes<HTMLElement>)}
@@ -432,7 +435,7 @@
 							id="backup-interval-input"
 							type="number" 
 							min="1" max="60" step="0.25"
-							bind:value={backupIntervalNumber}
+							value={backupIntervalNumber}
 							class="rounded-md p-2 invalid:!bg-red-300 max-w-[8ch]" 
 							onchange={changedBackupInterval}
 						/>
@@ -473,10 +476,14 @@
 						{#each Object.entries(backupProviders) as [providerName, provider], i}
 							<label for="provider-{i}" class="row-start-1 cursor-pointer p-2 rounded-md flex gap-2 text-[--workspace-color]">
 								{#if provider.selected}
-									<Icon icon="check-cirlce" />
+									<span title={i18n.getMessage('selected')}>
+										<Icon icon="check-cirlce" />
+									</span>
 								{/if}
 								{#if provider.authorized}
-									<Icon icon="person" />
+									<span title={i18n.getMessage('authorized')}>
+										<Icon icon="person" />
+									</span>
 								{/if}
 								{providerName}
 							</label>
@@ -509,9 +516,17 @@
 										<Icon icon="sync" />
 										<span>{i18n.getMessage('backup')}</span>
 									</button>
-									<button class="btn primary-btn" disabled={!_deviceName?.length && !deviceNameInput?.checkValidity()} onclick={getBackupData}>
+									<button 
+										class="btn primary-btn" 
+										disabled={!_deviceName?.length && !deviceNameInput?.checkValidity()} 
+										onclick={async () => { 
+											backupDialogElem?.showModal(); 
+											const names = await getAllBackupDeviceNames();
+											names && (backupDeviceNames = names);
+										}}
+									>
 										<Icon icon="sync" />
-										<span>download</span>
+										<span>{i18n.getMessage('import_file')}...</span>
 									</button>
 								{/if}
 							</div>
@@ -546,20 +561,9 @@
 		{@render Section(Section_ClearExtensionData, {class: "basis-full"})}
 		{@render Section(Section_WelcomePage, {class: "flex-1"})}
 		{@render Section(Section_FurtherLinks, {class: "flex-1"})}
-	</main>
-	<dialog 
-		bind:this={importDialogElem}
-		class="open:grid grid-rows-[auto_1fr_auto] content-start gap-4 p-6 backdrop:bg-black/10 backdrop:backdrop-blur bg-[--body-bg] rounded-md w-[90dvw] h-[90dvh]"
-	>
-		<button
-			class="btn ghost absolute right-6 top-6 w-max !p-0"
-		 	onclick={() => importDialogElem?.close()}
-		>
-			<Icon icon="cross"/>
-		</button>
-		<h1 class="text-xl font-semibold text-[--heading-2-color]">{i18n.getMessage('import_select_windows')}</h1>
-		{#if importedData}
-			{@const windowsArray = Object.entries(importedData.windows)}
+
+		{#snippet ImportDataSelection(data: typeof importedData)}
+			{@const windowsArray = Object.entries(data!.windows)}
 			{@const selectedWindowsCount = windowsArray.filter(([_, window]) => !window?.skip).length}
 			<label class="flex gap-3 items-center w-max ml-4 cursor-pointer">
 				<input 
@@ -622,8 +626,49 @@
 					{selectedWindowsCount}/{windowsArray.length} {i18n.getMessage('selected')}
 				</p>
 			</div>
-		{/if}
-	</dialog>
+		{/snippet}
+
+		<dialog 
+			bind:this={importDialogElem}
+			class="open:grid grid-rows-[auto_1fr_auto] content-start gap-4 p-6 backdrop:bg-black/10 backdrop:backdrop-blur bg-[--body-bg] rounded-md w-[90dvw] h-[90dvh]"
+		>
+			<button
+				class="btn ghost absolute right-6 top-6 w-max !p-0"
+				onclick={() => importDialogElem?.close()}
+			>
+				<Icon icon="cross"/>
+			</button>
+			<h1 class="text-xl font-semibold text-[--heading-2-color]">{i18n.getMessage('import_select_windows')}</h1>
+			{#if importedData}
+				{@render ImportDataSelection(importedData)}
+			{/if}
+		</dialog>
+		<dialog 
+			bind:this={backupDialogElem}
+			class="open:grid content-start items-start gap-4 p-6 backdrop:bg-black/10 backdrop:backdrop-blur bg-[--body-bg] rounded-md w-[90dvw] h-[90dvh]"
+		>
+			<button
+				class="btn ghost absolute right-6 top-6 w-max !p-0"
+				onclick={() => backupDialogElem?.close()}
+			>
+				<Icon icon="cross"/>
+			</button>
+			<h1 class="text-xl font-semibold text-[--heading-2-color]">{i18n.getMessage('import_select_windows')}</h1>
+			<div>
+				<h2 class="text-lg font-semibold text-[--heading-2-color]">{i18n.getMessage('devices')}</h2>
+				<div class="flex gap-2 items-center overflow-x-auto">
+					{#each backupDeviceNames as deviceName}
+						<label class="p-2 rounded-md has-[input:checked]:bg-blue-100 has-[input:checked]:border-blue-300 dark:has-[input:checked]:bg-blue-950 dark:has-[input:checked]:border-blue-800 cursor-pointer">
+							<input type="radio" value={deviceName} checked={deviceName === _deviceName} name="backupDeviceNames" class="absolute pointer-events-none opacity-0" />
+							{deviceName}
+						</label>
+						{:else}
+						<Spinner />
+					{/each}
+				</div>
+			</div>
+		</dialog>
+	</main>
 </Layout>
 
 <style lang="postcss">
@@ -647,16 +692,6 @@
 		}
 
 		&:checked ~ div > .tab:nth-child(1) {
-			@apply grid;
-		}
-	}
-
-	[role="tab"]#provider-1 {
-		&:checked ~ div > label[for="provider-1"] {
-			@apply bg-[--button-primary-bg] text-[--button-primary-color];
-		}
-		
-		&:checked ~ div > .tab:nth-child(2) {
 			@apply grid;
 		}
 	}

@@ -317,5 +317,20 @@
   },
   "enable_backup": {
     "message": "enable backup"
+  },
+  "authorized": {
+    "message": "authorized"
+  },
+  "import_file": {
+    "message": "import backup"
+  },
+  "device": {
+    "message": "device"
+  },
+  "device_names": {
+    "message": "device names"
+  },
+  "devices": {
+    "message": "devices"
   }
 }

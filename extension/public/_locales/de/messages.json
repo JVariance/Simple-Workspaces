@@ -314,5 +314,20 @@
   },
   "enable_backup": {
     "message": "Backup aktivieren"
+  },
+  "authorized": {
+    "message": "authorisiert"
+  },
+  "import_file": {
+    "message": "Backup importieren"
+  },
+  "device": {
+    "message": "Gerät"
+  },
+  "device_names": {
+    "message": "Gerätenamen"
+  },
+  "devices": {
+    "message": "Geräte"
   }
 }
