@@ -522,7 +522,7 @@
 								</div>
 								{#if provider?.selected && provider.authorized}
 									<button class="btn primary-btn" title={i18n.getMessage('disconnect_from_provider')} onclick={disconnectFromProvider}>
-										<Icon icon="sync" />
+										<Icon icon="cloud-disconnect" />
 										<span>{i18n.getMessage('disconnect')}</span>
 									</button>
 								{:else}
@@ -550,7 +550,7 @@
 											names && (backupDeviceNames = names);
 										}}
 									>
-										<Icon icon="sync" />
+										<Icon icon="import-file" />
 										<span>{i18n.getMessage('import_file')}...</span>
 									</button>
 								{/if}

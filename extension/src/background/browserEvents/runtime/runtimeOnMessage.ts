@@ -367,8 +367,8 @@ export function runtimeOnMessage(message: any) {
 			});
 		case "authTokens":
 			return new Promise<void>((resolve) => {
+				resolve();
 				processAuthTokens(message);
-				return resolve();
 			});
 		case "applyBackupDeviceName":
 			return new Promise<void>(async (resolve) => {

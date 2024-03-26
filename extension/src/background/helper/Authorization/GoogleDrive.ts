@@ -39,7 +39,7 @@ export class GoogleDriveError extends StorageProviderError {
 	}
 }
 
-const AUTH_BASE_URL = import.meta.env.DEV
+const AUTH_BASE_URL = import.meta.env.PROD
 	? "http://localhost:5174"
 	: "https://simple-workspaces-auth.vercel.app";
 
@@ -94,6 +94,20 @@ export default class GoogleDrive implements IBackupProvider {
 		this.#authorized = authorized;
 		this.#selected = selected;
 		this.#lastBackupTimeStamp = lastBackupTimeStamp;
+
+		const code = `window.addEventListener('tokens', async function(event){
+				await browser.runtime.sendMessage({msg: 'authTokens', tokens: event.detail.tokens, provider: 'Google Drive'});
+				setTimeout(() => { window.close(); }, 3000);
+			})`;
+
+		await Browser.contentScripts.register({
+			matches: [
+				"https://simple-workspaces-auth.vercel.app/auth/googledrive/*",
+				"https://simple-workspaces-auth.vercel.app/auth/googledrive?*",
+			],
+			js: [{ code }],
+			runAt: "document_start",
+		});
 	}
 
 	getLocalCredentials(): Promise<
