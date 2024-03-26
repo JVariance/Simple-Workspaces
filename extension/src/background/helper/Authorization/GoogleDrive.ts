@@ -40,7 +40,7 @@ export class GoogleDriveError extends StorageProviderError {
 }
 
 const REDIRECT_URL = import.meta.env.PROD
-	? "https://simpleworkspaces.com/auth/googledrive"
+	? "https://simple-workspaces-auth.vercel.app/auth/googledrive"
 	: "http://localhost:5174/auth/googledrive";
 
 const CLIENT_ID =
@@ -61,7 +61,7 @@ const FILES_URL = "https://www.googleapis.com/drive/v3/files";
 const FILES_UPLOAD_URL = "https://www.googleapis.com/upload/drive/v3/files";
 
 const REFRESH_TOKEN_URL = import.meta.env.PROD
-	? "https://simpleworkspaces.com/auth/googledrive/refreshtoken"
+	? "https://simple-workspaces-auth.vercel.app/auth/googledrive/refreshtoken"
 	: "http://localhost:5174/auth/googledrive/refreshtoken";
 
 export default class GoogleDrive implements IBackupProvider {
