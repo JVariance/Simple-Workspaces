@@ -39,9 +39,11 @@ export class GoogleDriveError extends StorageProviderError {
 	}
 }
 
-const REDIRECT_URL = import.meta.env.PROD
-	? "https://simple-workspaces-auth.vercel.app/auth/googledrive"
-	: "http://localhost:5174/auth/googledrive";
+const AUTH_BASE_URL = import.meta.env.DEV
+	? "http://localhost:5174"
+	: "https://simple-workspaces-auth.vercel.app";
+
+const REDIRECT_URL = `${AUTH_BASE_URL}/auth/googledrive`;
 
 const CLIENT_ID =
 	"758528028452-hlu883tbm6bu8oolrso5sripso72a5ig.apps.googleusercontent.com";
@@ -60,9 +62,7 @@ const AUTH_URL = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIEN
 const FILES_URL = "https://www.googleapis.com/drive/v3/files";
 const FILES_UPLOAD_URL = "https://www.googleapis.com/upload/drive/v3/files";
 
-const REFRESH_TOKEN_URL = import.meta.env.PROD
-	? "https://simple-workspaces-auth.vercel.app/auth/googledrive/refreshtoken"
-	: "http://localhost:5174/auth/googledrive/refreshtoken";
+const REFRESH_TOKEN_URL = `${AUTH_BASE_URL}/auth/googledrive/refreshtoken`;
 
 export default class GoogleDrive implements IBackupProvider {
 	#accessToken?: string;
