@@ -252,7 +252,7 @@ async function initBackupEnabled() {
 async function initBackupInterval() {
 	const { backupIntervalInMinutes } =
 		await BrowserStorage.getBackupIntervalInMinutes();
-	backupInterval = backupIntervalInMinutes;
+	backupInterval = backupIntervalInMinutes ?? backupInterval;
 }
 
 async function setBackupDeviceName() {

@@ -588,8 +588,46 @@
 		{@render Section(Section_FurtherLinks, {class: "flex-1"})}
 
 		{#snippet ImportDataSelection(data: typeof importedData)}
+			{@const settings = data!.settings}
 			{@const windowsArray = Object.entries(data!.windows)}
 			{@const selectedWindowsCount = windowsArray.filter(([_, window]) => !window?.skip).length}
+
+			<ul>
+				{#if settings.theme}
+					<li>{settings.theme}</li>
+				{/if}
+				{#if settings.backupEnabled}
+					<li>
+						<input id="import_backupEnabled" type="checkbox">
+						<label for="import_backupEnabled">{i18n.getMessage('enable_backup')}: {settings.backupEnabled}</label>
+					</li>
+				{/if}
+				{#if settings.backupIntervalInMinutes}
+					<li>
+						<input id="import_backupInterval" type="checkbox">
+						<label for="import_backupInterval">{i18n.getMessage('backup_interval')}: {settings.backupIntervalInMinutes} {i18n.getMessage('minutes')}</label>
+					</li>
+				{/if}
+				{#if settings.forceDefaultThemeIfDarkMode}
+					<li>
+						<input type="checkbox" name="" id="import_forceDefaultThemeIfDarkMode">
+						<label for="import_forceDefaultThemeIfDarkMode">AA: {settings.forceDefaultThemeIfDarkMode}</label>
+					</li>
+				{/if}
+				{#if settings.keepPinnedTabs}
+					<li>{settings.keepPinnedTabs}</li>
+				{/if}
+				{#if settings.workspaces}
+					{#if settings.workspaces.homeWorkspace}
+						<li><label>{i18n.getMessage('home_workspace')}: {settings.workspaces.homeWorkspace.icon} {settings.workspaces.homeWorkspace.name}</label></li>
+					{/if}
+					{#if settings.workspaces.defaultWorkspaces}
+						{#each settings.workspaces.defaultWorkspaces as defaultWorkspace}
+							<label>{defaultWorkspace.icon} {defaultWorkspace.name}</label>
+						{/each}
+					{/if}
+				{/if}
+			</ul>
 			<label class="flex gap-3 items-center w-max ml-4 cursor-pointer">
 				<input 
 					type="checkbox" 

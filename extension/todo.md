@@ -5,8 +5,10 @@
 [] support history?
 ### Styles
 ### Content
+[] Options: impl select import settings (homeWorkspace, defaultWorkspaces, theme, ...)
 ### Translations
 ### Logic
+[] Options: Notification auth - success, ...
 [] outsource refreshAccessToken-while-loop (pass function that gets called repeatedly)
 [] highlight workspace which received new tabs (after send action)
 

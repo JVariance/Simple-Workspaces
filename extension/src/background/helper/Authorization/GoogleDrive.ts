@@ -39,7 +39,7 @@ export class GoogleDriveError extends StorageProviderError {
 	}
 }
 
-const AUTH_BASE_URL = import.meta.env.PROD
+const AUTH_BASE_URL = import.meta.env.DEV
 	? "http://localhost:5174"
 	: "https://simple-workspaces-auth.vercel.app";
 
@@ -104,6 +104,7 @@ export default class GoogleDrive implements IBackupProvider {
 			matches: [
 				"https://simple-workspaces-auth.vercel.app/auth/googledrive/*",
 				"https://simple-workspaces-auth.vercel.app/auth/googledrive?*",
+				"http://localhost/*",
 			],
 			js: [{ code }],
 			runAt: "document_start",
