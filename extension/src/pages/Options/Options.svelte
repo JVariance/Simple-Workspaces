@@ -23,6 +23,7 @@
 	import type { Snippet } from "svelte";
 	import { debounceFunc } from "@root/utils";
 	import type { BackupProvider, BackupProviderStatusProps } from "@root/background/Entities/Singletons/BackupProviders";
+	import { DEFAULT_BACKUP_INTERVAL_IN_MINUTES } from "@root/background/helper/Constants";
 
 	BackupProviderStatusNotifier.subscribe(({ provider, newStatus }: { provider: BackupProvider; newStatus: BackupProviderStatusProps }) => {
 		backupProviders[provider] = newStatus;
@@ -593,40 +594,46 @@
 			{@const selectedWindowsCount = windowsArray.filter(([_, window]) => !window?.skip).length}
 
 			<ul>
-				{#if settings.theme}
-					<li>{settings.theme}</li>
-				{/if}
-				{#if settings.backupEnabled}
-					<li>
-						<input id="import_backupEnabled" type="checkbox">
-						<label for="import_backupEnabled">{i18n.getMessage('enable_backup')}: {settings.backupEnabled}</label>
-					</li>
-				{/if}
-				{#if settings.backupIntervalInMinutes}
-					<li>
-						<input id="import_backupInterval" type="checkbox">
-						<label for="import_backupInterval">{i18n.getMessage('backup_interval')}: {settings.backupIntervalInMinutes} {i18n.getMessage('minutes')}</label>
-					</li>
-				{/if}
-				{#if settings.forceDefaultThemeIfDarkMode}
-					<li>
-						<input type="checkbox" name="" id="import_forceDefaultThemeIfDarkMode">
-						<label for="import_forceDefaultThemeIfDarkMode">AA: {settings.forceDefaultThemeIfDarkMode}</label>
-					</li>
-				{/if}
-				{#if settings.keepPinnedTabs}
-					<li>{settings.keepPinnedTabs}</li>
-				{/if}
-				{#if settings.workspaces}
-					{#if settings.workspaces.homeWorkspace}
-						<li><label>{i18n.getMessage('home_workspace')}: {settings.workspaces.homeWorkspace.icon} {settings.workspaces.homeWorkspace.name}</label></li>
-					{/if}
-					{#if settings.workspaces.defaultWorkspaces}
-						{#each settings.workspaces.defaultWorkspaces as defaultWorkspace}
-							<label>{defaultWorkspace.icon} {defaultWorkspace.name}</label>
+				<li class="flex gap-2 items-center">
+					<input type="checkbox" name="theme" id="import_theme">
+					<label for="import_theme">{i18n.getMessage('theme')}: {settings?.theme || i18n.getMessage('default')} </label>
+				</li>
+				<li class="flex gap-2 items-center">
+					<input id="import_backupEnabled" name="backupEnabled" type="checkbox">
+					<label for="import_backupEnabled">{i18n.getMessage('backup_enabled')}: {settings?.backupEnabled ? '✔' : '❌'}</label>
+				</li>
+				<li class="flex gap-2 items-center">
+					<input id="import_backupInterval" name="backupInterval" type="checkbox">
+					<label for="import_backupInterval">{i18n.getMessage('backup_interval')}: {settings?.backupIntervalInMinutes || DEFAULT_BACKUP_INTERVAL_IN_MINUTES} {i18n.getMessage('minutes')}</label>
+				</li>
+				<li class="flex gap-2 items-center">
+					<input type="checkbox" name="forceDefaultThemeIfDarkMode" id="import_forceDefaultThemeIfDarkMode">
+					<label for="import_forceDefaultThemeIfDarkMode">{i18n.getMessage('force_default_dark_theme_in_dark_mode')}: {settings?.forceDefaultThemeIfDarkMode ? '✔' : '❌'}</label>
+				</li>
+				<li class="flex gap-2 items-center">
+					<input type="checkbox" name="keepPinnedTabs" id="import_keepPinnedTabs">
+					<label for="import_keepPinnedTabs">{i18n.getMessage('keep_pinned_tabs')}: {settings?.keepPinnedTabs ? '✔' : '❌'}</label>
+				</li>
+				<li class="flex gap-2 items-center">
+					<input type="checkbox" name="homeWorkspace" id="import_homeWorkspace">
+					<label for="import_homeWorkspace">{i18n.getMessage('home_workspace')}: {settings.workspaces.homeWorkspace.icon} {settings.workspaces.homeWorkspace.name}</label>
+				</li>
+				<li>
+					<div class="flex gap-2 items-center">
+						<input type="checkbox" name="defaultWorkspaces" id="import_defaultWorkspaces">
+						<label for="import_defaultWorkspaces">{i18n.getMessage('default_workspaces')}</label>
+					</div>
+					<ul>
+						{#each settings.workspaces.defaultWorkspaces as defaultWorkspace, i}
+							<li class="flex gap-2 items-center">
+								<input type="checkbox" id="import_defaultWorkspace-{i}" name="defaultWorkspace[{i}]">
+								<label for="import_defaultWorkspace-{i}">{defaultWorkspace.icon} {defaultWorkspace.name}</label>
+							</li>
+							{:else}
+							{i18n.getMessage('no_default_workspaces')}
 						{/each}
-					{/if}
-				{/if}
+					</ul>
+				</li>
 			</ul>
 			<label class="flex gap-3 items-center w-max ml-4 cursor-pointer">
 				<input 

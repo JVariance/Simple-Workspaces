@@ -335,5 +335,14 @@
   },
   "loading_device_backup_data": {
     "message": "lädt Geräte-Backup-Daten"
+  },
+  "default": {
+    "message": "Standard"
+  },
+  "backup_enabled": {
+    "message": "Backup aktiviert"
+  },
+  "no_default_workspaces": {
+    "message": "keine Standard-Arbeitsbereiche"
   }
 }

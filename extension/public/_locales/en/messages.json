@@ -338,5 +338,14 @@
   },
   "loading_device_backup_data": {
     "message": "loading device's backup data"
+  },
+  "default": {
+    "message": "default"
+  },
+  "backup_enabled": {
+    "message": "Backup enabled"
+  },
+  "no_default_workspaces": {
+    "message": "no default workspaces"
   }
 }
