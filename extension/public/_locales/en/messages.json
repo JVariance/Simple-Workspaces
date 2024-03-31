@@ -347,5 +347,11 @@
   },
   "no_default_workspaces": {
     "message": "no default workspaces"
+  },
+  "value": {
+    "message": "value"
+  },
+  "setting": {
+    "message": "setting"
   }
 }

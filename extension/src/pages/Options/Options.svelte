@@ -593,35 +593,40 @@
 			{@const windowsArray = Object.entries(data!.windows)}
 			{@const selectedWindowsCount = windowsArray.filter(([_, window]) => !window?.skip).length}
 
-			<ul>
-				<li class="flex gap-2 items-center">
+			<ul class="grid grid-cols-[max-content_max-content_auto] border border-[--table-border-color] rounded-md" style:--table-border-color="#eee">
+				<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-1">
+					<input type="checkbox" id="">
+					<span class="font-semibold">{i18n.getMessage('setting')}</span>
+					<span class="font-semibold">{i18n.getMessage('value')}</span>
+				</li>
+				<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-1 border-t border-t-[--table-border-color]">
 					<input type="checkbox" name="theme" id="import_theme">
-					<label for="import_theme">{i18n.getMessage('theme')}: {settings?.theme || i18n.getMessage('default')} </label>
+					<label class="contents" for="import_theme"><span>{i18n.getMessage('theme')}:</span> <span>{settings?.theme || i18n.getMessage('default')} </span></label>
 				</li>
-				<li class="flex gap-2 items-center">
+				<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-1 border-t border-t-[--table-border-color]">
 					<input id="import_backupEnabled" name="backupEnabled" type="checkbox">
-					<label for="import_backupEnabled">{i18n.getMessage('backup_enabled')}: {settings?.backupEnabled ? '✔' : '❌'}</label>
+					<label class="contents" for="import_backupEnabled"><span>{i18n.getMessage('backup_enabled')}:</span> <span>{settings?.backupEnabled ? '✔' : '❌'}</span></label>
 				</li>
-				<li class="flex gap-2 items-center">
+				<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-1 border-t border-t-[--table-border-color]">
 					<input id="import_backupInterval" name="backupInterval" type="checkbox">
-					<label for="import_backupInterval">{i18n.getMessage('backup_interval')}: {settings?.backupIntervalInMinutes || DEFAULT_BACKUP_INTERVAL_IN_MINUTES} {i18n.getMessage('minutes')}</label>
+					<label class="contents" for="import_backupInterval"><span>{i18n.getMessage('backup_interval')}:</span> <span>{settings?.backupIntervalInMinutes || DEFAULT_BACKUP_INTERVAL_IN_MINUTES} {i18n.getMessage('minutes')}</span></label>
 				</li>
-				<li class="flex gap-2 items-center">
+				<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-1 border-t border-t-[--table-border-color]">
 					<input type="checkbox" name="forceDefaultThemeIfDarkMode" id="import_forceDefaultThemeIfDarkMode">
-					<label for="import_forceDefaultThemeIfDarkMode">{i18n.getMessage('force_default_dark_theme_in_dark_mode')}: {settings?.forceDefaultThemeIfDarkMode ? '✔' : '❌'}</label>
+					<label class="contents" for="import_forceDefaultThemeIfDarkMode"><span>{i18n.getMessage('force_default_dark_theme_in_dark_mode')}:</span> <span>{settings?.forceDefaultThemeIfDarkMode ? '✔' : '❌'}</span></label>
 				</li>
-				<li class="flex gap-2 items-center">
+				<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-1 border-t border-t-[--table-border-color]">
 					<input type="checkbox" name="keepPinnedTabs" id="import_keepPinnedTabs">
-					<label for="import_keepPinnedTabs">{i18n.getMessage('keep_pinned_tabs')}: {settings?.keepPinnedTabs ? '✔' : '❌'}</label>
+					<label class="contents" for="import_keepPinnedTabs"><span>{i18n.getMessage('keep_pinned_tabs')}:</span> <span>{settings?.keepPinnedTabs ? '✔' : '❌'}</span></label>
 				</li>
-				<li class="flex gap-2 items-center">
+				<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-1 border-t border-t-[--table-border-color]">
 					<input type="checkbox" name="homeWorkspace" id="import_homeWorkspace">
-					<label for="import_homeWorkspace">{i18n.getMessage('home_workspace')}: {settings.workspaces.homeWorkspace.icon} {settings.workspaces.homeWorkspace.name}</label>
+					<label class="contents" for="import_homeWorkspace"><span>{i18n.getMessage('home_workspace')}:</span> <span>{settings.workspaces.homeWorkspace.icon} {settings.workspaces.homeWorkspace.name}</span></label>
 				</li>
-				<li>
+				<li class="col-span-full py-2 px-1 border-t border-t-[--table-border-color]">
 					<div class="flex gap-2 items-center">
 						<input type="checkbox" name="defaultWorkspaces" id="import_defaultWorkspaces">
-						<label for="import_defaultWorkspaces">{i18n.getMessage('default_workspaces')}</label>
+						<label class="" for="import_defaultWorkspaces">{i18n.getMessage('default_workspaces')}</label>
 					</div>
 					<ul>
 						{#each settings.workspaces.defaultWorkspaces as defaultWorkspace, i}

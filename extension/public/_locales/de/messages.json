@@ -344,5 +344,11 @@
   },
   "no_default_workspaces": {
     "message": "keine Standard-Arbeitsbereiche"
+  },
+  "value": {
+    "message": "Wert"
+  },
+  "setting": {
+    "message": "Einstellung"
   }
 }
