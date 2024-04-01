@@ -603,8 +603,8 @@
 			{@const windowsArray = Object.entries(data!.windows)}
 			{@const selectedWindowsCount = windowsArray.filter(([_, window]) => !window?.skip).length}
 
-			<form action="javascript:void(0);" target="_self" method="post" onsubmit={(e) => { e.stopImmediatePropagation(); e.preventDefault(); console.log(new FormData(e.currentTarget))}}>
-				<ul class="grid grid-cols-[max-content_max-content_auto] border border-[--table-border-color] rounded-md" style:--table-border-color="light-dark(#eee,#43447b)">
+			<form class="grid overflow-hidden" action="javascript:void(0);" target="_self" method="post" onsubmit={(e) => { e.stopImmediatePropagation(); e.preventDefault(); console.log(new FormData(e.currentTarget))}}>
+				<ul class="grid grid-cols-[max-content_max-content_auto] border border-[--table-border-color] rounded-md overflow-auto [scrollbar-width:thin]" style:--table-border-color="light-dark(#eee,#43447b)">
 					<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-4">
 						<input 
 							type="checkbox" 
@@ -667,7 +667,7 @@
 							</label>
 						</li>
 					{/if}
-					<li class="col-span-full py-2 px-4 border-t border-t-[--table-border-color]">
+					<li class="col-span-full py-2 px-4 border-t border-t-[--table-border-color] has-[>div>input:checked]:bg-blue-100 dark:has-[>div>input:checked]:bg-blue-950 hover:bg-[light-dark(#f4f4fb,#323060)]">
 						<div class="flex gap-2 items-center">
 							<input 
 								type="checkbox" 
@@ -694,57 +694,48 @@
 							{/each}
 						</ul>
 					</li>
-				</ul>
-				<div class="mt-4">
-					<label class="flex gap-3 items-center w-max ml-4 cursor-pointer">
+					<!------------------------------------------------------------------------------->
+					<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-4 border-t border-t-[--table-border-color] border-dashed pt-6">
 						<input
+							id=""
 							type="checkbox"
-							class="rounded-full"
 							checked={selectedWindowsCount === windowsArray.length}
 							onchange={(e) => windowsArray.forEach(([_, window]) => window.skip = !e.currentTarget.checked)}
 						/>
-						{#if selectedWindowsCount === windowsArray.length}
-							{i18n.getMessage('deselect_all')}
-							{:else}
-								{i18n.getMessage('select_all')}
-						{/if}
-					</label>
-					<div class="overflow-auto [scrollbar-width:thin] pr-2 grid gap-2 overscroll-contain mt-2">
-						{#each windowsArray as [_, window], i}
-							<div
-								class="
-									group relative grid gap-4 border has-[input:checked]:bg-blue-100 has-[input:checked]:border-blue-300 px-12 py-4 rounded-md
-									dark:has-[input:checked]:bg-blue-950 dark:has-[input:checked]:border-blue-800 dark:border-white/25
-								"
-							>
-								<h2 class="font-thin leading-tight">{i18n.getMessage('window')} {i + 1}</h2>
-								<label class="absolute inset-0 cursor-pointer z-[1]">
-									<input
-										type="checkbox"
-										checked={window?.skip ? false : true}
-										class="absolute top-4 left-4 !rounded-full"
-										onchange={(e) => window.skip = !e.currentTarget.checked}
-									/>
-								</label>
-								<div class="grid gap-4">
-									{#each Object.entries(window.w) as [_, [__, workspace]]}
-										<div>
-											<p><span class="[font-family:_Noto_Color_Emoji]">{workspace.i}</span> <span class="font-semibold">{workspace.n}</span></p>
-											<div class="tabs-wrapper grid gap-1 relative pl-2">
-												{#each workspace.t as tab}
-													{@const url = new URL(tab.u)}
-													{#if url.protocol !== 'about:'}
-														<p class="ml-4 overflow-x-auto whitespace-nowrap font-thin">{url.hostname.replace('www.', '')}</p>
-													{/if}
-												{/each}
-											</div>
+						<span class="font-semibold ml-1">{i18n.getMessage('window')}</span>
+						<span class="font-semibold ml-4">{i18n.getMessage('value')}</span>
+					</li>
+					{#each windowsArray as [_, window], i}
+						<li
+							class="group grid gap-2 items-start grid-cols-subgrid col-span-full py-2 px-4 border-t border-t-[--table-border-color] hover:bg-[light-dark(#f4f4fb,#323060)] has-[input:checked]:bg-blue-100 dark:has-[input:checked]:bg-blue-950"
+						>
+							<input
+								id="import_window-{i}"
+								type="checkbox"
+								checked={window?.skip ? false : true}
+								onchange={(e) => window.skip = !e.currentTarget.checked}
+							/>
+							<label for="import_window-{i}" class="ml-1 cursor-pointer -mt-[0.15rem]">
+								{i18n.getMessage('window')} {i + 1}
+							</label>
+							<div class="grid gap-4 ml-4">
+								{#each Object.entries(window.w) as [_, [__, workspace]]}
+									<div>
+										<p><span class="[font-family:_Noto_Color_Emoji]">{workspace.i}</span> <span class="font-semibold">{workspace.n}</span></p>
+										<div class="tabs-wrapper grid gap-1 relative pl-2">
+											{#each workspace.t as tab}
+												{@const url = new URL(tab.u)}
+												{#if url.protocol !== 'about:'}
+													<p class="ml-4 overflow-x-auto whitespace-nowrap font-thin">{url.hostname.replace('www.', '')}</p>
+												{/if}
+											{/each}
 										</div>
-									{/each}
-								</div>
+									</div>
+								{/each}
 							</div>
-						{/each}
-					</div>
-				</div>
+						</li>
+					{/each}
+				</ul>
 				<div class="flex gap-2 items-center flex-wrap mt-4">
 					<!-- onclick={() => importData(data)}  -->
 					<button 
