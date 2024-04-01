@@ -700,6 +700,7 @@
 							id=""
 							type="checkbox"
 							checked={selectedWindowsCount === windowsArray.length}
+							indeterminate={selectedWindowsCount > 0 && selectedWindowsCount !== windowsArray.length}
 							onchange={(e) => windowsArray.forEach(([_, window]) => window.skip = !e.currentTarget.checked)}
 						/>
 						<span class="font-semibold ml-1">{i18n.getMessage('window')}</span>
@@ -738,16 +739,17 @@
 				</ul>
 				<div class="flex gap-2 items-center flex-wrap mt-4">
 					<!-- onclick={() => importData(data)}  -->
+					<!-- disabled={selectedWindowsCount < 1} -->
 					<button 
 						class="btn primary-btn disabled:pointer-events-none disabled:opacity-20" 
-						disabled={selectedWindowsCount < 1}
+						disabled={selectedWindowsCount < 1 && importSettingsCheckAllCheckboxUnchecked}
 					>
 						<Icon icon="json-file" />
 						{i18n.getMessage('import')}
 					</button>
-					<p class="text-black/50 dark:text-white/50">
+					<!-- <p class="text-black/50 dark:text-white/50">
 						{selectedWindowsCount}/{windowsArray.length} {i18n.getMessage('selected')}
-					</p>
+					</p> -->
 				</div>
 			</form>
 		{/snippet}
