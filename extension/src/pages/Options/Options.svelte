@@ -51,6 +51,12 @@
 	// 	return name;
 	// });
 
+	let importSettingsCheckedVals = $state<boolean[]>([]);
+	let importSettingsCheckboxes = $state<HTMLInputElement[]>([]);
+	let importSettingsCheckAllCheckboxChecked = $derived<boolean>(!importSettingsCheckedVals.includes(false));
+	let importSettingsCheckAllCheckboxUnchecked = $derived<boolean>(!importSettingsCheckedVals.includes(true));
+	let importSettingsCheckAllCheckboxIndeterminate = $derived<boolean>(!importSettingsCheckAllCheckboxChecked && !importSettingsCheckAllCheckboxUnchecked);
+
 	$effect(() => {
 			untrack(() => editDeviceName);
 			untrack(() => deviceName);
@@ -593,35 +599,59 @@
 			{@const windowsArray = Object.entries(data!.windows)}
 			{@const selectedWindowsCount = windowsArray.filter(([_, window]) => !window?.skip).length}
 
-			<ul class="grid grid-cols-[max-content_max-content_auto] border border-[--table-border-color] rounded-md" style:--table-border-color="#eee">
+			<ul class="grid grid-cols-[max-content_max-content_auto] border border-[--table-border-color] rounded-md" style:--table-border-color="light-dark(#eee,#43447b)">
 				<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-1">
-					<input type="checkbox" id="">
+					<input 
+						type="checkbox" 
+						id=""
+						on:change={(e) => importSettingsCheckedVals = importSettingsCheckedVals.map((_) => e.currentTarget.checked)}
+						checked={importSettingsCheckAllCheckboxChecked}
+						indeterminate={importSettingsCheckAllCheckboxIndeterminate}
+					/>
 					<span class="font-semibold">{i18n.getMessage('setting')}</span>
-					<span class="font-semibold">{i18n.getMessage('value')}</span>
+					<span class="font-semibold ml-4">{i18n.getMessage('value')}</span>
 				</li>
-				<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-1 border-t border-t-[--table-border-color]">
-					<input type="checkbox" name="theme" id="import_theme">
-					<label class="contents" for="import_theme"><span>{i18n.getMessage('theme')}:</span> <span>{settings?.theme || i18n.getMessage('default')} </span></label>
+				<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-1 border-t border-t-[--table-border-color] hover:bg-[light-dark(#f4f4fb,#323060)]">
+					<input type="checkbox" name="theme" id="import_theme" bind:this={importSettingsCheckboxes[0]} bind:checked={importSettingsCheckedVals[0]}>
+					<label class="contents cursor-pointer" for="import_theme">
+						<span>{i18n.getMessage('theme')}:</span>
+						<span class="ml-4">{settings?.theme || i18n.getMessage('default')} </span>
+					</label>
 				</li>
-				<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-1 border-t border-t-[--table-border-color]">
-					<input id="import_backupEnabled" name="backupEnabled" type="checkbox">
-					<label class="contents" for="import_backupEnabled"><span>{i18n.getMessage('backup_enabled')}:</span> <span>{settings?.backupEnabled ? '✔' : '❌'}</span></label>
+				<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-1 border-t border-t-[--table-border-color] hover:bg-[light-dark(#f4f4fb,#323060)]">
+					<input id="import_backupEnabled" name="backupEnabled" type="checkbox" bind:this={importSettingsCheckboxes[1]} bind:checked={importSettingsCheckedVals[1]}>
+					<label class="contents cursor-pointer" for="import_backupEnabled">
+						<span>{i18n.getMessage('backup_enabled')}:</span>
+						<span class="ml-4">{settings?.backupEnabled ? '✔' : '❌'}</span>
+					</label>
 				</li>
-				<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-1 border-t border-t-[--table-border-color]">
-					<input id="import_backupInterval" name="backupInterval" type="checkbox">
-					<label class="contents" for="import_backupInterval"><span>{i18n.getMessage('backup_interval')}:</span> <span>{settings?.backupIntervalInMinutes || DEFAULT_BACKUP_INTERVAL_IN_MINUTES} {i18n.getMessage('minutes')}</span></label>
+				<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-1 border-t border-t-[--table-border-color] hover:bg-[light-dark(#f4f4fb,#323060)]">
+					<input id="import_backupInterval" name="backupInterval" type="checkbox" bind:this={importSettingsCheckboxes[2]} bind:checked={importSettingsCheckedVals[2]}>
+					<label class="contents cursor-pointer" for="import_backupInterval">
+						<span>{i18n.getMessage('backup_interval')}:</span>
+						<span class="ml-4">{settings?.backupIntervalInMinutes || DEFAULT_BACKUP_INTERVAL_IN_MINUTES} {i18n.getMessage('minutes')}</span>
+					</label>
 				</li>
-				<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-1 border-t border-t-[--table-border-color]">
-					<input type="checkbox" name="forceDefaultThemeIfDarkMode" id="import_forceDefaultThemeIfDarkMode">
-					<label class="contents" for="import_forceDefaultThemeIfDarkMode"><span>{i18n.getMessage('force_default_dark_theme_in_dark_mode')}:</span> <span>{settings?.forceDefaultThemeIfDarkMode ? '✔' : '❌'}</span></label>
+				<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-1 border-t border-t-[--table-border-color] hover:bg-[light-dark(#f4f4fb,#323060)]">
+					<input type="checkbox" name="forceDefaultThemeIfDarkMode" id="import_forceDefaultThemeIfDarkMode" bind:this={importSettingsCheckboxes[3]} bind:checked={importSettingsCheckedVals[3]}>
+					<label class="contents cursor-pointer" for="import_forceDefaultThemeIfDarkMode">
+						<span>{i18n.getMessage('force_default_dark_theme_in_dark_mode')}:</span>
+						<span class="ml-4">{settings?.forceDefaultThemeIfDarkMode ? '✔' : '❌'}</span>
+					</label>
 				</li>
-				<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-1 border-t border-t-[--table-border-color]">
-					<input type="checkbox" name="keepPinnedTabs" id="import_keepPinnedTabs">
-					<label class="contents" for="import_keepPinnedTabs"><span>{i18n.getMessage('keep_pinned_tabs')}:</span> <span>{settings?.keepPinnedTabs ? '✔' : '❌'}</span></label>
+				<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-1 border-t border-t-[--table-border-color] hover:bg-[light-dark(#f4f4fb,#323060)]">
+					<input type="checkbox" name="keepPinnedTabs" id="import_keepPinnedTabs" bind:this={importSettingsCheckboxes[4]} bind:checked={importSettingsCheckedVals[4]}>
+					<label class="contents cursor-pointer" for="import_keepPinnedTabs">
+						<span>{i18n.getMessage('keep_pinned_tabs')}:</span>
+						<span class="ml-4">{settings?.keepPinnedTabs ? '✔' : '❌'}</span>
+					</label>
 				</li>
-				<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-1 border-t border-t-[--table-border-color]">
-					<input type="checkbox" name="homeWorkspace" id="import_homeWorkspace">
-					<label class="contents" for="import_homeWorkspace"><span>{i18n.getMessage('home_workspace')}:</span> <span>{settings.workspaces.homeWorkspace.icon} {settings.workspaces.homeWorkspace.name}</span></label>
+				<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-1 border-t border-t-[--table-border-color] hover:bg-[light-dark(#f4f4fb,#323060)]">
+					<input type="checkbox" name="homeWorkspace" id="import_homeWorkspace" bind:this={importSettingsCheckboxes[5]} bind:checked={importSettingsCheckedVals[5]}>
+					<label class="contents cursor-pointer" for="import_homeWorkspace">
+						<span>{i18n.getMessage('home_workspace')}:</span>
+						<span class="ml-4">{settings.workspaces.homeWorkspace.icon} {settings.workspaces.homeWorkspace.name}</span>
+					</label>
 				</li>
 				<li class="col-span-full py-2 px-1 border-t border-t-[--table-border-color]">
 					<div class="flex gap-2 items-center">
