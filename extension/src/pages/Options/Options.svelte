@@ -258,6 +258,44 @@
 		backupImportDeviceChanged();
 	}
 
+	function submitImportData(e: SubmitEvent & { currentTarget: HTMLFormElement }) {
+		e.stopImmediatePropagation(); 
+		e.preventDefault(); 
+
+		const formData = new FormData(e.currentTarget);
+
+		function parseData(data: FormDataEntryValue | FormDataEntryValue[] | null){
+			if(!data) return undefined;
+			try {
+				if(Array.isArray(data)){
+					return data.map((d) => JSON.parse(d));
+				}
+
+				return JSON.parse(data as string);
+			} catch(e) {
+				return undefined;
+			}
+		}
+
+		const data: ImportData = {
+			settings: {
+				backupEnabled: parseData(formData.get('backupEnabled')) || false,
+				backupIntervalInMinutes: parseData(formData.get('backupInterval')),
+				forceDefaultThemeIfDarkMode: parseData(formData.get('forceDefaultThemeIfDarkMode')),
+				keepPinnedTabs: parseData(formData.get('keepPinnedTabs')),
+				theme: parseData(formData.get('theme')),
+				workspaces: {
+					homeWorkspace: parseData(formData.get('homeWorkspace')),
+					defaultWorkspaces: parseData(formData.getAll('defaultWorkspaces[]')) || [],
+				}
+			}, 
+			windows: parseData(formData.getAll('windows[]')) || {}
+		}!;
+
+		console.info({ data });
+		importData(data);
+	}
+
 	$effect(() => {
 		untrack(() => mounted);
 		if(!mounted) return;
@@ -603,7 +641,7 @@
 			{@const windowsArray = Object.entries(data!.windows)}
 			{@const selectedWindowsCount = windowsArray.filter(([_, window]) => !window?.skip).length}
 
-			<form class="grid overflow-hidden" action="javascript:void(0);" target="_self" method="post" onsubmit={(e) => { e.stopImmediatePropagation(); e.preventDefault(); console.log(new FormData(e.currentTarget))}}>
+			<form class="grid overflow-hidden" action="javascript:void(0);" target="_self" method="post" onsubmit={submitImportData}>
 				<ul class="grid grid-cols-[max-content_max-content_auto] border border-[--table-border-color] rounded-md overflow-auto [scrollbar-width:thin]" style:--table-border-color="light-dark(#eee,#43447b)">
 					<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-4">
 						<input 
@@ -620,14 +658,14 @@
 						<span class="font-semibold ml-4">{i18n.getMessage('value')}</span>
 					</li>
 					<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-4 border-t border-t-[--table-border-color] hover:bg-[light-dark(#f4f4fb,#323060)] has-[input:checked]:bg-blue-100 dark:has-[input:checked]:bg-blue-950">
-						<input type="checkbox" name="theme" id="import_theme" bind:checked={importSettingsCheckedVals[0]} value={settings?.theme || ''}/>
+						<input type="checkbox" name="theme" id="import_theme" bind:checked={importSettingsCheckedVals[0]} value={JSON.stringify(settings?.theme || '')}/>
 						<label class="contents cursor-pointer" for="import_theme">
 							<span class="ml-1">{i18n.getMessage('theme')}:</span>
 							<span class="ml-4">{settings?.theme || i18n.getMessage('default')} </span>
 						</label>
 					</li>
 					<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-4 border-t border-t-[--table-border-color] hover:bg-[light-dark(#f4f4fb,#323060)] has-[input:checked]:bg-blue-100 dark:has-[input:checked]:bg-blue-950">
-						<input id="import_backupEnabled" name="backupEnabled" type="checkbox" bind:checked={importSettingsCheckedVals[1]} value={!!settings?.backupEnabled}/>
+						<input id="import_backupEnabled" name="backupEnabled" type="checkbox" bind:checked={importSettingsCheckedVals[1]} value={JSON.stringify(!!settings?.backupEnabled)}/>
 						<label class="contents cursor-pointer" for="import_backupEnabled">
 							<span class="ml-1">{i18n.getMessage('backup_enabled')}:</span>
 							<span class="ml-4">{settings?.backupEnabled ? '✔' : '❌'}</span>
@@ -636,7 +674,7 @@
 					{#if true}
 						{@const value = settings?.backupIntervalInMinutes || DEFAULT_BACKUP_INTERVAL_IN_MINUTES}
 						<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-4 border-t border-t-[--table-border-color] hover:bg-[light-dark(#f4f4fb,#323060)] has-[input:checked]:bg-blue-100 dark:has-[input:checked]:bg-blue-950">
-							<input id="import_backupInterval" name="backupInterval" type="checkbox" bind:checked={importSettingsCheckedVals[2]} {value}/>
+							<input id="import_backupInterval" name="backupInterval" type="checkbox" bind:checked={importSettingsCheckedVals[2]} value={JSON.stringify(value)}/>
 							<label class="contents cursor-pointer" for="import_backupInterval">
 								<span class="ml-1">{i18n.getMessage('backup_interval')}:</span>
 								<span class="ml-4">{value} {i18n.getMessage('minutes')}</span>
@@ -644,23 +682,25 @@
 						</li>
 					{/if}
 					<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-4 border-t border-t-[--table-border-color] hover:bg-[light-dark(#f4f4fb,#323060)] has-[input:checked]:bg-blue-100 dark:has-[input:checked]:bg-blue-950">
-						<input type="checkbox" name="forceDefaultThemeIfDarkMode" id="import_forceDefaultThemeIfDarkMode" bind:checked={importSettingsCheckedVals[3]} value={!!settings?.forceDefaultThemeIfDarkMode}/>
+						<input type="checkbox" name="forceDefaultThemeIfDarkMode" id="import_forceDefaultThemeIfDarkMode" bind:checked={importSettingsCheckedVals[3]} value={JSON.stringify(!!settings?.forceDefaultThemeIfDarkMode)}/>
 						<label class="contents cursor-pointer" for="import_forceDefaultThemeIfDarkMode">
 							<span class="ml-1">{i18n.getMessage('force_default_dark_theme_in_dark_mode')}:</span>
 							<span class="ml-4">{settings?.forceDefaultThemeIfDarkMode ? '✔' : '❌'}</span>
 						</label>
 					</li>
 					<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-4 border-t border-t-[--table-border-color] hover:bg-[light-dark(#f4f4fb,#323060)] has-[input:checked]:bg-blue-100 dark:has-[input:checked]:bg-blue-950">
-						<input type="checkbox" name="keepPinnedTabs" id="import_keepPinnedTabs" bind:checked={importSettingsCheckedVals[4]} value={!!settings?.keepPinnedTabs}/>
+						<input type="checkbox" name="keepPinnedTabs" id="import_keepPinnedTabs" bind:checked={importSettingsCheckedVals[4]} value={JSON.stringify(!!settings?.keepPinnedTabs)}/>
 						<label class="contents cursor-pointer" for="import_keepPinnedTabs">
 							<span class="ml-1">{i18n.getMessage('keep_pinned_tabs')}:</span>
 							<span class="ml-4">{settings?.keepPinnedTabs ? '✔' : '❌'}</span>
 						</label>
 					</li>
 					{#if true}
-						{@const value = `${settings.workspaces.homeWorkspace.icon} ${settings.workspaces.homeWorkspace.name}`}
+						{@const icon = settings.workspaces.homeWorkspace.icon}
+						{@const name = settings.workspaces.homeWorkspace.name}
+						{@const value = `${icon} ${name}`}
 						<li class="grid gap-2 items-center grid-cols-subgrid col-span-full py-2 px-4 border-t border-t-[--table-border-color] hover:bg-[light-dark(#f4f4fb,#323060)] has-[input:checked]:bg-blue-100 dark:has-[input:checked]:bg-blue-950">
-							<input type="checkbox" name="homeWorkspace" id="import_homeWorkspace" bind:checked={importSettingsCheckedVals[5]} {value}/>
+							<input type="checkbox" name="homeWorkspace" id="import_homeWorkspace" bind:checked={importSettingsCheckedVals[5]} value={JSON.stringify({icon, name})}/>
 							<label class="contents cursor-pointer" for="import_homeWorkspace">
 								<span class="ml-1">{i18n.getMessage('home_workspace')}:</span>
 								<span class="ml-4">{value}</span>
@@ -684,9 +724,11 @@
 						</div>
 						<ul class="ml-7 mt-4 grid gap-2">
 							{#each settings.workspaces.defaultWorkspaces as defaultWorkspace, i}
-								{@const value = `${defaultWorkspace.icon} ${defaultWorkspace.name}`}
+								{@const icon = defaultWorkspace.icon}
+								{@const name = defaultWorkspace.name}
+								{@const value = `${icon} ${name}`}
 								<li class="flex gap-2 items-center">
-									<input type="checkbox" id="import_defaultWorkspace-{i}" name="defaultWorkspaces[]" {value} bind:checked={importDefaultWorkspacesCheckedVals[i]}/>
+									<input type="checkbox" id="import_defaultWorkspace-{i}" name="defaultWorkspaces[]" value={JSON.stringify({icon, name})} bind:checked={importDefaultWorkspacesCheckedVals[i]}/>
 									<label class="cursor-pointer" for="import_defaultWorkspace-{i}">{value}</label>
 								</li>
 								{:else}
@@ -706,7 +748,7 @@
 						<span class="font-semibold ml-1">{i18n.getMessage('window')}</span>
 						<span class="font-semibold ml-4">{i18n.getMessage('value')}</span>
 					</li>
-					{#each windowsArray as [_, window], i}
+					{#each windowsArray as [windowUUID, window], i}
 						<li
 							class="group grid gap-2 items-start grid-cols-subgrid col-span-full py-2 px-4 border-t border-t-[--table-border-color] hover:bg-[light-dark(#f4f4fb,#323060)] has-[input:checked]:bg-blue-100 dark:has-[input:checked]:bg-blue-950"
 						>
@@ -714,6 +756,8 @@
 								id="import_window-{i}"
 								type="checkbox"
 								checked={window?.skip ? false : true}
+								name="windows[]"
+								value={JSON.stringify(window)}
 								onchange={(e) => window.skip = !e.currentTarget.checked}
 							/>
 							<label for="import_window-{i}" class="ml-1 cursor-pointer -mt-[0.15rem]">
@@ -738,8 +782,6 @@
 					{/each}
 				</ul>
 				<div class="flex gap-2 items-center flex-wrap mt-4">
-					<!-- onclick={() => importData(data)}  -->
-					<!-- disabled={selectedWindowsCount < 1} -->
 					<button 
 						class="btn primary-btn disabled:pointer-events-none disabled:opacity-20" 
 						disabled={selectedWindowsCount < 1 && importSettingsCheckAllCheckboxUnchecked}
@@ -747,9 +789,6 @@
 						<Icon icon="json-file" />
 						{i18n.getMessage('import')}
 					</button>
-					<!-- <p class="text-black/50 dark:text-white/50">
-						{selectedWindowsCount}/{windowsArray.length} {i18n.getMessage('selected')}
-					</p> -->
 				</div>
 			</form>
 		{/snippet}

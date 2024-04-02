@@ -88,6 +88,8 @@ export async function importData({
 	}
 
 	for (let [windowUUID, window] of Object.entries(windows)) {
+		console.info({ windowUUID, window });
+
 		if (window?.skip) continue;
 
 		const browserWindow = (
