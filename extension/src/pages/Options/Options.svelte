@@ -52,6 +52,11 @@
 	// 	return name;
 	// });
 
+	let importCheckedWindows = $state<boolean[]>([]);
+	let importCheckedWindowsAllChecked = $derived<boolean>(!importCheckedWindows.includes(false));
+	let importCheckedWindowsAllUnchecked = $derived<boolean>(!importCheckedWindows.includes(true));
+	let importCheckedWindowsIndeterminate = $derived<boolean>(!importCheckedWindowsAllChecked && !importCheckedWindowsAllUnchecked);
+
 	let importSettingsCheckedVals = $state<boolean[]>([]);
 	let importSettingsCheckAllCheckboxChecked = $derived<boolean>(!importSettingsCheckedVals.includes(false));
 	let importSettingsCheckAllCheckboxUnchecked = $derived<boolean>(!importSettingsCheckedVals.includes(true));
@@ -172,7 +177,7 @@
 		createAndDownloadExportFile(JSON.stringify(data, null, 2), `simple-workspaces-${date}.json`, "application/json");
 	}
 
-	let importedData  = $state<ImportData<{skip?: boolean}>>();
+	let importedData  = $state<ImportData>();
 
 	function importDataRequest(e: Event & { currentTarget: HTMLInputElement }) {
 		const files = e.currentTarget.files;
@@ -649,7 +654,6 @@
 		{#snippet ImportDataSelection(data: typeof importedData)}
 			{@const settings = data!.settings}
 			{@const windowsArray = Object.entries(data!.windows)}
-			{@const selectedWindowsCount = windowsArray.filter(([_, window]) => !window?.skip).length}
 
 			<form class="grid overflow-hidden" action="javascript:void(0);" target="_self" method="post" onsubmit={submitImportData}>
 				<ul class="grid grid-cols-[max-content_max-content_auto] border border-[--table-border-color] rounded-md overflow-auto [scrollbar-width:thin]" style:--table-border-color="light-dark(#eee,#43447b)">
@@ -751,24 +755,23 @@
 						<input
 							id=""
 							type="checkbox"
-							checked={selectedWindowsCount === windowsArray.length}
-							indeterminate={selectedWindowsCount > 0 && selectedWindowsCount !== windowsArray.length}
-							onchange={(e) => windowsArray.forEach(([_, window]) => window.skip = !e.currentTarget.checked)}
+							checked={importCheckedWindowsAllChecked}
+							indeterminate={importCheckedWindowsIndeterminate}
+							onchange={(e) => (importCheckedWindows = importCheckedWindows.map((_) => e.currentTarget.checked))}
 						/>
 						<span class="font-semibold ml-1">{i18n.getMessage('window')}</span>
 						<span class="font-semibold ml-4">{i18n.getMessage('value')}</span>
 					</li>
-					{#each windowsArray as [windowUUID, window], i}
+					{#each windowsArray as [_, window], i}
 						<li
 							class="group grid gap-2 items-start grid-cols-subgrid col-span-full py-2 px-4 border-t border-t-[--table-border-color] hover:bg-[light-dark(#f4f4fb,#323060)] has-[input:checked]:bg-blue-100 dark:has-[input:checked]:bg-blue-950"
 						>
 							<input
 								id="import_window-{i}"
 								type="checkbox"
-								checked={window?.skip ? false : true}
+								bind:checked={importCheckedWindows[i]}
 								name="windows[]"
 								value={JSON.stringify(window)}
-								onchange={(e) => window.skip = !e.currentTarget.checked}
 							/>
 							<label for="import_window-{i}" class="ml-1 cursor-pointer -mt-[0.15rem]">
 								{i18n.getMessage('window')} {i + 1}
@@ -794,7 +797,7 @@
 				<div class="flex gap-2 items-center flex-wrap mt-4">
 					<button 
 						class="btn primary-btn disabled:pointer-events-none disabled:opacity-20" 
-						disabled={selectedWindowsCount < 1 && importSettingsCheckAllCheckboxUnchecked}
+						disabled={importCheckedWindowsAllUnchecked && importSettingsCheckAllCheckboxUnchecked}
 					>
 						<Icon icon="json-file" />
 						{i18n.getMessage('import')}
