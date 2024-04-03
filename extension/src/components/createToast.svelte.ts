@@ -2,16 +2,18 @@ import { mount } from "svelte";
 import Toast from "./Toast.svelte";
 
 export function createToast({
-	loadingMessage,
-	successMessage,
-	errorMessage,
+	loadingMessage = "",
+	successMessage = "",
+	errorMessage = "",
+	state = "loading",
 }: {
-	loadingMessage: string;
-	successMessage: string;
-	errorMessage: string;
+	loadingMessage?: string;
+	successMessage?: string;
+	errorMessage?: string;
+	state?: "rest" | "success" | "error" | "loading";
 }) {
 	const props = $state({
-		state: "loading",
+		state,
 		errorMessage,
 		successMessage,
 		loadingMessage,

@@ -821,9 +821,9 @@
 			<h1 class="text-xl font-semibold text-[--heading-2-color]">{i18n.getMessage('import_select_windows')}</h1>
 			<div>
 				<h2 class="text-lg font-semibold text-[--heading-2-color]">{i18n.getMessage('devices')}</h2>
-				<div class="flex gap-2 items-center overflow-x-auto">
+				<div class="flex gap-2 items-center overflow-x-auto mt-1">
 					{#each backupDeviceNames as deviceName}
-						<label class="p-2 rounded-md has-[input:checked]:bg-blue-100 has-[input:checked]:border-blue-300 dark:has-[input:checked]:bg-blue-950 dark:has-[input:checked]:border-blue-800 cursor-pointer">
+						<label class="p-2 rounded-md border border-[--button-secondary-bg] has-[input:checked]:bg-blue-100 has-[input:checked]:border-blue-300 dark:has-[input:checked]:bg-blue-950 dark:has-[input:checked]:border-blue-800 cursor-pointer">
 							<input type="radio" value={deviceName} bind:group={selectedDevice} onclick={(e) => {deviceName === selectedDevice && selectedDeviceChanged();}} name="backupDeviceNames" class="absolute pointer-events-none opacity-0" />
 							{deviceName}
 						</label>
@@ -835,14 +835,16 @@
 					{/each}
 				</div>
 			</div>
-			{#await selectedBackupData}
-				<p class="flex gap-2 items-center">
-					<Spinner width={20} />
-					{i18n.getMessage('loading_device_backup_data')}
-				</p>
-				{:then data}
-					{@render ImportDataSelection(data)}
-			{/await}
+			{#if selectedDevice}
+				{#await selectedBackupData}
+					<p class="flex gap-2 items-center">
+						<Spinner width={20} />
+						{i18n.getMessage('loading_device_backup_data')}
+					</p>
+					{:then data}
+						{@render ImportDataSelection(data)}
+				{/await}
+			{/if}
 		</dialog>
 	</main>
 </Layout>

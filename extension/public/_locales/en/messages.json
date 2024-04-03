@@ -353,5 +353,8 @@
   },
   "setting": {
     "message": "setting"
+  },
+  "auth_tokens_couldnt_be_fetched_error": {
+    "message": "An error has occurred while retrieving the access data. Please try again!"
   }
 }

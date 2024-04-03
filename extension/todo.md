@@ -1,11 +1,12 @@
 **Today**
+[] if refresh_token/access_token null -> unauthorize GDrive
 ### Features
-[] Backup to Cloud Services
+[x] Backup to Cloud Services
 [] support bookmarks?
 [] support history?
 ### Styles
 ### Content
-[] Options: impl select import settings (homeWorkspace, defaultWorkspaces, theme, ...)
+[x] Options: impl select import settings (homeWorkspace, defaultWorkspaces, theme, ...)
 ### Translations
 ### Logic
 [] Options: Notification auth - success, ...

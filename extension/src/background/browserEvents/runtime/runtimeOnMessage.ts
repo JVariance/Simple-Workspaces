@@ -1,6 +1,6 @@
 import { WorkspaceStorage, Processes, BrowserStorage } from "../../Entities";
 import { informViews } from "../../informViews";
-import Browser from "webextension-polyfill";
+import Browser, { i18n } from "webextension-polyfill";
 import * as API from "@root/browserAPI";
 import { exportData } from "@root/background/helper/exportData";
 import {
@@ -81,9 +81,15 @@ async function _processAuthTokens({
 	const [access_token = undefined, refresh_token = undefined] =
 		tokens.split(":");
 	console.info({ access_token, refresh_token });
-	(await BackupProviders.getProvider(provider))?.authorize({
-		access_token,
-		refresh_token,
+	if (access_token && refresh_token) {
+		(await BackupProviders.getProvider(provider))?.authorize({
+			access_token,
+			refresh_token,
+		});
+	}
+
+	informViews(WorkspaceStorage.activeWindow.windowId, "error", {
+		message: i18n.getMessage("auth_tokens_couldnt_be_fetched_error"),
 	});
 }
 

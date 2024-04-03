@@ -4,6 +4,7 @@ import { tick } from "svelte";
 import { Subscriber, debounceFunc } from "@root/utils";
 import type { BackupProviderStatusProps } from "@root/background/Entities/Singletons/BackupProviders";
 import { DEFAULT_BACKUP_INTERVAL_IN_MINUTES } from "@root/background/helper/Constants";
+import { createToast } from "@root/components/createToast.svelte";
 
 type BackupProvider = "Google Drive";
 
@@ -281,6 +282,10 @@ function backupProviderStatusChanged({
 	BackupProviderStatusNotifier.notify({ provider, newStatus });
 }
 
+function showErrorToast({ message }: { message: string }) {
+	createToast({ state: "error", errorMessage: message });
+}
+
 Browser.runtime.onMessage.addListener((message) => {
 	console.info("states: browser.runtime.onMessage-Listener");
 
@@ -292,6 +297,9 @@ Browser.runtime.onMessage.addListener((message) => {
 	if (targetWindowId !== windowId && !messageExceptions.includes(msg)) return;
 
 	switch (msg) {
+		case "error":
+			showErrorToast(message);
+			break;
 		case "addedWorkspace":
 			addedWorkspace(message);
 			break;
