@@ -58,13 +58,17 @@
 	>
 		<span
 			class="
-				loading-spinner col-start-1 row-start-1 group-[&.success]:hidden group-[&.rest]:hidden
+				loading-spinner col-start-1 row-start-1 hidden group-[&.loading]:inline-block
 				animate-spin w-max h-max
 			">&#9692;</span
 		>
 		<span
-			class="checkmark col-start-1 row-start-1 group-[&.loading]:hidden group-[&.rest]:hidden"
+			class="checkmark col-start-1 row-start-1 hidden group-[&.success]:inline-block"
 			>&#10003;</span
+		>
+		<span
+			class="cross col-start-1 row-start-1 hidden group-[&.error]:inline-block"
+			>&#x2715;</span
 		>
 		<span class="col-start-2 row-start-1">
 			{#if _state === "loading"}

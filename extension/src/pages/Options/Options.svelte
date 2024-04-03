@@ -24,6 +24,7 @@
 	import { debounceFunc } from "@root/utils";
 	import type { BackupProvider, BackupProviderStatusProps } from "@root/background/Entities/Singletons/BackupProviders";
 	import { DEFAULT_BACKUP_INTERVAL_IN_MINUTES } from "@root/background/helper/Constants";
+	import { createToast } from "@root/components/createToast.svelte";
 
 	BackupProviderStatusNotifier.subscribe(({ provider, newStatus }: { provider: BackupProvider; newStatus: BackupProviderStatusProps }) => {
 		backupProviders[provider] = newStatus;
@@ -188,7 +189,16 @@
 							importedData = data;
 							importDialogElem?.showModal();
 						}
-					} catch(e){}
+					} catch(e) {
+						let errorMessage = "";
+						if(e instanceof SyntaxError) {
+							errorMessage = i18n.getMessage('error_invalid_json');
+						} else if(e instanceof Error) {
+							errorMessage = `${e.name}: ${e.message}`;
+						}
+						
+						createToast({state: 'error', errorMessage});
+					}
 				};
 				reader.readAsText(file);
 			}
@@ -810,7 +820,7 @@
 		</dialog>
 		<dialog 
 			bind:this={backupDialogElem}
-			class="open:grid content-start items-start gap-4 p-6 backdrop:bg-black/10 backdrop:backdrop-blur bg-[--body-bg] rounded-md w-[90dvw] h-[90dvh]"
+			class="open:grid grid-rows-[auto_auto_1fr_auto] content-start gap-4 p-6 backdrop:bg-black/10 backdrop:backdrop-blur bg-[--body-bg] rounded-md w-[90dvw] h-[90dvh]"
 		>
 			<button
 				class="btn ghost absolute right-6 top-6 w-max !p-0"
@@ -828,16 +838,16 @@
 							{deviceName}
 						</label>
 						{:else}
-						<p class="flex gap-2 items-center">
-							<Spinner width={20} />
-							{i18n.getMessage('loading_devices')}
-						</p>
+							<p class="flex gap-2 items-center h-max self-start">
+								<Spinner width={20} />
+								{i18n.getMessage('loading_devices')}
+							</p>
 					{/each}
 				</div>
 			</div>
 			{#if selectedDevice}
 				{#await selectedBackupData}
-					<p class="flex gap-2 items-center">
+					<p class="flex gap-2 items-center h-max self-start">
 						<Spinner width={20} />
 						{i18n.getMessage('loading_device_backup_data')}
 					</p>

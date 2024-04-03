@@ -472,8 +472,6 @@ export function runtimeOnMessage(message: any) {
 						name: deviceFile.name,
 					});
 
-					// console.info({ file });
-
 					return resolve(file.contents);
 				} else {
 					return resolve(null);

@@ -353,5 +353,8 @@
   },
   "auth_tokens_couldnt_be_fetched_error": {
     "message": "Beim Abrufen der Zugangsdaten ist ein Fehler aufgetreten. Bitte versuche es erneut!"
+  },
+  "error_invalid_json": {
+    "message": "Du hast eine ungültige JSON-Datei ausgewählt."
   }
 }
