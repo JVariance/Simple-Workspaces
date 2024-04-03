@@ -283,7 +283,17 @@ function backupProviderStatusChanged({
 }
 
 function showErrorToast({ message }: { message: string }) {
-	createToast({ state: "error", errorMessage: message });
+	createToast({ state: "error", errorMessage: message, duration: 8000 });
+}
+
+function showSuccessToast({ message }: { message: string }) {
+	// createToast({
+	// 	state: error ? "error" : "success",
+	// 	errorMessage: `${i18n.getMessage("error_connecting_to_backup_provider")}.`,
+	// 	successMessage: `${i18n.getMessage(
+	// 		"successfully_connected_to_backup_provider"
+	// 	)}.`,
+	// });
 }
 
 Browser.runtime.onMessage.addListener((message) => {
@@ -299,6 +309,9 @@ Browser.runtime.onMessage.addListener((message) => {
 	switch (msg) {
 		case "error":
 			showErrorToast(message);
+			break;
+		case "toast_success":
+			showSuccessToast(message);
 			break;
 		case "addedWorkspace":
 			addedWorkspace(message);

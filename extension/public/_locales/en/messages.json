@@ -359,5 +359,11 @@
   },
   "error_invalid_json": {
     "message": "The JSON file you provided is invalid."
+  },
+  "successfully_connected_to_backup_provider": {
+    "message": "successfully connected to backup provider"
+  },
+  "error_connecting_to_backup_provider": {
+    "message": "error connecting to backup provider"
   }
 }

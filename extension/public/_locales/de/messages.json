@@ -356,5 +356,11 @@
   },
   "error_invalid_json": {
     "message": "Du hast eine ungültige JSON-Datei ausgewählt."
+  },
+  "successfully_connected_to_backup_provider": {
+    "message": "Erfolgreich mit dem Backupanbieter verbunden"
+  },
+  "error_connecting_to_backup_provider": {
+    "message": "Fehler beim Verbinden mit dem Backupanbieter"
   }
 }

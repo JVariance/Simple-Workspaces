@@ -10,6 +10,7 @@
 		successMessage: string;
 		errorMessage: string;
 		class?: string;
+		duration?: number;
 	};
 	type State = "rest" | "success" | "error" | "loading";
 
@@ -19,6 +20,7 @@
 		loadingMessage,
 		successMessage,
 		errorMessage,
+		duration = 4000,
 	} = $props<Props>();
 
 	let visible = $state(false);
@@ -27,7 +29,7 @@
 		if (["success", "error"].includes(_state)) {
 			setTimeout(() => {
 				visible = false;
-			}, 4000);
+			}, duration ?? 4000);
 		}
 	});
 
