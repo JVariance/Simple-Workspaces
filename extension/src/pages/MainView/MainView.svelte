@@ -482,7 +482,7 @@
 <div 
 	class="
 		w-[100cqw] h-[100cqh] box-border overflow-auto [scrollbar-width:_thin]
-		grid gap-y-4 content-stretch items-start grid-rows-[max-content_max-content_max-content_1fr]
+		grid gap-y-4 content-stretch items-start grid-rows-[max-content_max-content_max-content_1fr] {searchValue.length ? 'grid-rows-[max-content_1fr_max-content_max-content_max-content]' : ''}
 		py-2 px-0 @[184px]:p-2 [--header-height:_3rem] @[56px]:[--header-height:_3.5rem]  @[184px]:[--header-height:_3.625rem]
 	" 
 >
@@ -644,7 +644,7 @@
 			content-start overflow-auto 
 			h-full
 			max-h-[calc(100cqh_-_var(--header-height)_-_9.75rem)]
-			min-h-16
+			{searchValue.length && matchingTabs.length ? 'min-h-10' : 'min-h-16'}
 			[scrollbar-width:_none] [scrollbar-color:transparent_transparent]
 			hover:[scrollbar-width:_thin] focus-within:[scrollbar-width:_thin]
 			hover:[scrollbar-color:initial] focus-within:[scrollbar-color:initial]
@@ -663,18 +663,18 @@
 				{i18n.getMessage('search_no_matches')}
 			</p>
 		{/if}
-		<li class="">
-			{#if !searchUnmatchingWorkspaceUUIDS.includes('HOME')}
+		{#if !searchUnmatchingWorkspaceUUIDS.includes('HOME')}
+			<li class="[&+div]:mt-4">
 				{@render SWorkspace(homeWorkspace, 0)}
-			{/if}
-		</li>
+			</li>
+		{/if}
 		<!-- viewWorkspaces.length !== workspaces.length || workspaces.length < 2, -->
 		<div
-			class="w-full grid gap-4 mt-4 empty:mt-0 {searchValue.length ? 'mt-0' : ''}"
+			class="w-full grid gap-4"
 		>
 			{#each viewWorkspaces as workspace, i (workspace.UUID)}
 				<li 
-					class="item relative max-w-[100cqw]"
+					class="item relative max-w-[100cqw] !h-max"
 					use:draggable={dragOptions}
 					transition:slide={{ delay: 0, duration: 175 }}
 				>

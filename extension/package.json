@@ -28,7 +28,7 @@
 		"webextension-polyfill": "^0.10.0"
 	},
 	"dependencies": {
-		"@neodrag/svelte": "^2.0.3",
+		"@neodrag/svelte": "^2.0.4",
 		"@tailwindcss/container-queries": "^0.1.1",
 		"emoji-picker-element": "^1.21.3",
 		"fuse.js": "^7.0.0",
