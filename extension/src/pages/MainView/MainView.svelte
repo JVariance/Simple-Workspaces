@@ -444,8 +444,11 @@
 	}
 
 	function updateWorkspaces(event: MouseEvent & { currentTarget: EventTarget & HTMLButtonElement; }) {
+
+		console.info({ workspaceInstances });
+
 		const updatedWorkspaces = workspaceInstances.slice(1).map((instance) => instance.getUpdatedWorkspace());
-		Browser.runtime.sendMessage({msg: 'editedWorkspaces', windowId, workspaces: updatedWorkspaces});
+		Browser.runtime.sendMessage({ msg: 'editedWorkspaces', windowId, workspaces: updatedWorkspaces });
 		multiEditMode = false;
 	}
 
@@ -578,6 +581,7 @@
 						_switchWorkspace(workspace);
 					}}
 					removeWorkspace={() => {
+						workspaceInstances = workspaceInstances.filter((_, index) => index !== i);
 						removeWorkspace(workspace);
 					}}
 				/>

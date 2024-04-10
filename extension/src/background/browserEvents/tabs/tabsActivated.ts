@@ -24,10 +24,9 @@ export async function tabsOnActivated(
 		"workspaceUUID"
 	);
 
-	const activeTabWorkspaceUUID = await API.getTabValue(
-		activeInfo.tabId,
-		"workspaceUUID"
-	);
+	const activeTabWorkspaceUUID =
+		(await API.getTabValue(activeInfo.tabId, "workspaceUUID")) ||
+		WorkspaceStorage.activeWindow.UUID;
 	const activeWindow = WorkspaceStorage.getWindow(activeInfo.windowId);
 
 	const firefoxSearchWasUsed =

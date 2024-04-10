@@ -63,7 +63,11 @@ export async function tabsOnCreated(tab: Browser.Tabs.Tab) {
 		console.info({ windowIsNew, tabSessionWorkspaceUUID });
 
 		!tabSessionWorkspaceUUID &&
-			(await WorkspaceStorage.getWindow(tab.windowId!).addTab(tab.id!));
+			(await WorkspaceStorage.getWindow(tab.windowId!).addTab(
+				tab.id!,
+				undefined,
+				false
+			));
 
 		informViews(tab.windowId!, "createdTab", { tabId: tab.id });
 	}

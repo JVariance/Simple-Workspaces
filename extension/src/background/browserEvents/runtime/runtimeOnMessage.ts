@@ -86,11 +86,13 @@ async function _processAuthTokens({
 			access_token,
 			refresh_token,
 		});
+	} else {
+		informViews(WorkspaceStorage.activeWindow.windowId, "showToast", {
+			type: "error",
+			duration: 8000,
+			message: i18n.getMessage("auth_tokens_couldnt_be_fetched_error"),
+		});
 	}
-
-	informViews(WorkspaceStorage.activeWindow.windowId, "error", {
-		message: i18n.getMessage("auth_tokens_couldnt_be_fetched_error"),
-	});
 }
 
 async function getFilesList(

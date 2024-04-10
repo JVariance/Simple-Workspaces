@@ -361,13 +361,23 @@ export class Window {
 		this.#persist();
 	}
 
-	async addTab(tabId: number, workspace?: Workspace) {
+	async addTab(
+		tabId: number,
+		workspace?: Workspace,
+		manualTabAddition?: boolean
+	) {
 		console.info("addTab");
-		await this.addTabs([tabId], workspace);
+		await this.addTabs([tabId], workspace, manualTabAddition);
 	}
 
-	async addTabs(tabIds: number[], workspace = this.#activeWorkspace) {
-		Processes.manualTabAddition = true;
+	async addTabs(
+		tabIds: number[],
+		workspace = this.#activeWorkspace,
+		manualTabAddition = true
+	) {
+		if (manualTabAddition) {
+			Processes.manualTabAddition = true;
+		}
 		console.info(
 			!this.#activeWorkspace && !workspace,
 			this.switchingWorkspace,
@@ -402,7 +412,9 @@ export class Window {
 			),
 		]);
 
-		Processes.manualTabAddition = false;
+		if (manualTabAddition) {
+			Processes.manualTabAddition = false;
+		}
 		this.#persist();
 	}
 

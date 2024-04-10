@@ -282,18 +282,23 @@ function backupProviderStatusChanged({
 	BackupProviderStatusNotifier.notify({ provider, newStatus });
 }
 
-function showErrorToast({ message }: { message: string }) {
-	createToast({ state: "error", errorMessage: message, duration: 8000 });
-}
-
-function showSuccessToast({ message }: { message: string }) {
-	// createToast({
-	// 	state: error ? "error" : "success",
-	// 	errorMessage: `${i18n.getMessage("error_connecting_to_backup_provider")}.`,
-	// 	successMessage: `${i18n.getMessage(
-	// 		"successfully_connected_to_backup_provider"
-	// 	)}.`,
-	// });
+function showToast({
+	message,
+	type = "success",
+	duration = undefined,
+}: {
+	message: string;
+	type?: "error" | "success" | "loading" | "rest";
+	duration?: number;
+}) {
+	createToast({
+		state: type,
+		duration,
+		...(type === "error" && { errorMessage: message }),
+		...(type === "success" && { successMessage: message }),
+		...(type === "loading" && { loadingMessage: message }),
+		...(type === "rest" && {}),
+	});
 }
 
 Browser.runtime.onMessage.addListener((message) => {
@@ -307,11 +312,8 @@ Browser.runtime.onMessage.addListener((message) => {
 	if (targetWindowId !== windowId && !messageExceptions.includes(msg)) return;
 
 	switch (msg) {
-		case "error":
-			showErrorToast(message);
-			break;
-		case "toast_success":
-			showSuccessToast(message);
+		case "showToast":
+			showToast(message);
 			break;
 		case "addedWorkspace":
 			addedWorkspace(message);
