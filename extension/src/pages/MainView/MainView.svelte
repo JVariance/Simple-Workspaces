@@ -487,7 +487,7 @@
 	" 
 >
 	<!-- <h1 class="mb-4">Workspaces</h1> -->
-	{#if true || import.meta.env.DEV}
+	{#if import.meta.env.DEV}
 		<div class="flex flex-wrap gap-1 absolute top-0 right-0 z-[51]">
 			<details class="bg-neutral-200 dark:bg-neutral-950 p-1 rounded-md">
 				<summary></summary>
